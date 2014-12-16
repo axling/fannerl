@@ -37,6 +37,7 @@ int do_fann_train_epoch(byte*buf, int * index, ei_x_buff * result);
 int do_fann_test_data(byte*buf, int * index, ei_x_buff * result);
 int do_fann_test(byte*buf, int * index, ei_x_buff * result);
 int do_fann_save_to_file(byte*buf, int * index, ei_x_buff * result);
+int do_fann_shuffle_train(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -223,6 +224,10 @@ int main() {
     } else if(!strcmp("save_to_file", command)) {
 
       if(do_fann_save_to_file(buf, &index, &result) != 1) return 22;
+
+    } else if(!strcmp("shuffle_train", command)) {
+
+      if(do_fann_shuffle_train(buf, &index, &result) != 1) return 24;
 
     } else {
       if (ei_x_encode_atom(&result, "error") ||
@@ -743,6 +748,22 @@ int do_fann_save_to_file(byte*buf, int * index, ei_x_buff * result) {
   if(ei_x_new_with_version(result) ||
      ei_x_encode_atom_len(result, "ok", 2)) return -1;
 
+  return 1;
+}
+
+int do_fann_shuffle_train(byte*buf, int * index, ei_x_buff * result) {
+  struct fann_train_data * train;
+  // Decode trainPtr, {}
+  if(get_fann_train_ptr(buf, index, &train) != 1) return -1;
+
+  // Skip the {} part
+  ei_skip_term((const char*)buf, index);
+
+  fann_shuffle_train_data(train);
+  
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+  
   return 1;
 }
 

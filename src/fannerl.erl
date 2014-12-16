@@ -29,7 +29,9 @@
 	 train_on_file/4,
 	 train_on_file/5,
 	 read_train_from_file/1,
-	 read_train_from_file/2]).
+	 read_train_from_file/2,
+	 shuffle_train/1,
+	 shuffle_train/2]).
 
 -export([test/2,
 	 test/3,
@@ -134,12 +136,12 @@ destroy(Instance, Ref)
        is_reference(Ref) ->
     call_port(Instance, {destroy, Ref, {}}).
 
-train(Ref, {train, TrainRef})
+train(Ref, TrainRef)
   when is_reference(Ref),
        is_reference(TrainRef) ->
-    train(?MODULE, Ref, {train, TrainRef}).
+    train(?MODULE, Ref, TrainRef).
 
-train(Instance, Ref, {train, TrainRef})
+train(Instance, Ref, TrainRef)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Ref),
        is_reference(TrainRef) ->
@@ -159,14 +161,14 @@ train(Instance, Ref, Input, DesiredOutput)
        is_tuple(DesiredOutput) ->
     call_port(Instance, {train, Ref, {Input, DesiredOutput}});
 
-train(Ref, {train, TrainRef}, MaxEpochs, DesiredError)
+train(Ref, TrainRef, MaxEpochs, DesiredError)
   when is_reference(Ref),
        is_reference(TrainRef),
        is_integer(MaxEpochs),
        is_number(DesiredError) ->
-    train(?MODULE, Ref, {train, TrainRef}, MaxEpochs, DesiredError).
+    train(?MODULE, Ref, TrainRef, MaxEpochs, DesiredError).
 
-train(Instance, Ref, {train, TrainRef}, MaxEpochs, DesiredError)
+train(Instance, Ref, TrainRef, MaxEpochs, DesiredError)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Ref),
        is_reference(TrainRef),
@@ -191,12 +193,12 @@ train_on_file(Instance, Ref, FileName, MaxEpochs, DesiredError)
     call_port(Instance, 
 	      {train_on_file, Ref, {FileName, MaxEpochs, DesiredError}}).
 
-test(Ref, {train, TrainRef})
+test(Ref, TrainRef)
   when is_reference(Ref),
        is_reference(TrainRef) ->
-    test(?MODULE, Ref, {train, TrainRef}).
+    test(?MODULE, Ref, TrainRef).
 
-test(Instance, Ref, {train, TrainRef})
+test(Instance, Ref, TrainRef)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Ref),
        is_reference(TrainRef) ->
@@ -224,6 +226,15 @@ read_train_from_file(Instance, FileName)
   when Instance == ?MODULE; is_pid(Instance),
        is_list(FileName) ->
     call_port(Instance, {read_train_from_file, FileName}).
+
+shuffle_train(TrainRef)
+  when is_reference(TrainRef) ->
+    shuffle_train(?MODULE, TrainRef).
+
+shuffle_train(Instance, TrainRef)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(TrainRef) ->
+    call_port(Instance, {shuffle_train,{train, TrainRef}, {}}).
 
 run(Ref, Input) 
   when is_reference(Ref),
@@ -332,7 +343,9 @@ valid_train(Ref, State) ->
 	false ->
 	    false
     end.
-    
+
+convert_message({Cmd, {train, _Ref}, Rest}, TrainPtr) ->
+    {Cmd, TrainPtr, Rest};
 convert_message({Cmd, _Ref, Rest}, NetworkPtr) ->
     {Cmd, NetworkPtr, Rest}.
 
@@ -353,6 +366,18 @@ handle_port_call(Port, State, Caller, {create_from_file, _}=Msg) ->
     call_port_with_msg(Port, State, Caller, Msg, undefined);
 handle_port_call(Port, State, Caller, {read_train_from_file, _}=Msg) ->
     call_port_with_msg(Port, State, Caller, Msg, undefined);
+handle_port_call(Port, State, Caller, {_Cmd, {train, TrainRef}, _}=Msg) ->
+    TrainRef = get_train_ref(Msg),
+    case valid_train(TrainRef, State) of
+	{true, TrainPtr} ->
+	    NewMsg = convert_message(Msg, TrainPtr),
+	    call_port_with_msg(Port, State, Caller, NewMsg, TrainRef);
+	false ->
+	    io:format("The passed training data ref ~p is not valid~n",
+		      [{train,TrainRef}]),
+	    Caller ! {fannerl_res, {error, invalid_training_data}},
+	    loop(Port, State)
+    end;
 handle_port_call(Port, State, Caller, {_Cmd, {Ref, TrainRef}, _}=Msg) ->
     Ref = get_ref(Msg),
     TrainRef = get_train_ref(Msg),
@@ -404,7 +429,7 @@ call_port_with_msg(Port, State, Caller, Msg, Ref) ->
 
 handle_return_val({read_train_from_file, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Ref = make_ref(),
-    Caller ! {fannerl_res, {ok, {train, Ref}}},
+    Caller ! {fannerl_res, {ok, Ref}},
     State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};
 handle_return_val({create_standard, _}, {ok, Ptr}, Caller, State, _Ref) ->
     %% Hide the ptr by giving a ref to the user instead

@@ -33,6 +33,16 @@ fannerl_save_test_() ->
      ]
     }.
 
+fannerl_train_test_() ->
+    {foreach,
+     fun setup/0,
+     fun cleanup/1,
+     [
+      fun fannerl_train_create/1,
+      fun fannerl_train_shuffle/1
+     ]
+    }.
+
 %%-----------------------------------------------------------
 %% FIXTURE FUNCTIONS
 %%-----------------------------------------------------------
@@ -172,4 +182,22 @@ fannerl_create_save_create(#{net:=R, filename:=FileName}) ->
 	   ?assert(true == check_file_exists(FileName)),
 	   {ok, R2} = fannerl:create(FileName),
 	   ?assert(ok == fannerl:destroy(R2))
+       end).
+
+
+fannerl_train_create(_) ->
+    ?_test(
+       begin
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   {ok, _N} = fannerl:read_train_from_file(Filename)
+       end).
+
+fannerl_train_shuffle(_) ->
+    ?_test(
+       begin
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   {ok, N} = fannerl:read_train_from_file(Filename),
+	   ?assert(ok == fannerl:shuffle_train(N))
        end).
