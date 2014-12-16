@@ -1,0 +1,29 @@
+# compiled source
+*.o
+*.so
+*.beam
+*.d
+
+#Emacs unsaved data
+*~
+
+# OS generated files
+.DS_Store
+
+#HTML
+
+
+# CT generated files
+all_runs.html
+ct_default.css
+index.html
+jquery*.js
+variables-ct*
+ct_run.ct*
+ct_log*
+
+.eunit/*
+.rebar/*
+
+#log dir
+logs/*
