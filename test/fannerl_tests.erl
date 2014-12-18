@@ -39,7 +39,8 @@ fannerl_train_test_() ->
      fun cleanup/1,
      [
       fun fannerl_train_create/1,
-      fun fannerl_train_shuffle/1
+      fun fannerl_train_shuffle/1,
+      fun fannerl_train_subset/1
      ]
     }.
 
@@ -200,4 +201,14 @@ fannerl_train_shuffle(_) ->
 	   Filename = filename:join(PrivDir, "xor.data"),
 	   {ok, N} = fannerl:read_train_from_file(Filename),
 	   ?assert(ok == fannerl:shuffle_train(N))
+       end).
+
+fannerl_train_subset(_) ->
+    ?_test(
+       begin
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   {ok, N} = fannerl:read_train_from_file(Filename),
+	   {ok, NewTrain} = fannerl:subset_train_data(N, 2, 1),
+	   ?assert(N /= NewTrain)
        end).

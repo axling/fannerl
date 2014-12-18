@@ -38,6 +38,7 @@ int do_fann_test_data(byte*buf, int * index, ei_x_buff * result);
 int do_fann_test(byte*buf, int * index, ei_x_buff * result);
 int do_fann_save_to_file(byte*buf, int * index, ei_x_buff * result);
 int do_fann_shuffle_train(byte*buf, int * index, ei_x_buff * result);
+int do_fann_subset_train_data(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -228,6 +229,10 @@ int main() {
     } else if(!strcmp("shuffle_train", command)) {
 
       if(do_fann_shuffle_train(buf, &index, &result) != 1) return 24;
+
+    } else if(!strcmp("subset_train_data", command)) {
+
+      if(do_fann_subset_train_data(buf, &index, &result) != 1) return 25;
 
     } else {
       if (ei_x_encode_atom(&result, "error") ||
@@ -766,6 +771,31 @@ int do_fann_shuffle_train(byte*buf, int * index, ei_x_buff * result) {
   
   return 1;
 }
+
+int do_fann_subset_train_data(byte*buf, int * index, ei_x_buff * result) {
+  struct fann_train_data * train;
+  struct fann_train_data * copy;
+  unsigned long pos, length;
+  int arity;
+  // Decode trainPtr, {Pos, Length}
+  if(get_fann_train_ptr(buf, index, &train) != 1) return -1;
+
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+  
+  if(ei_decode_ulong((const char *)buf, index, &pos)) return -1;
+  if(ei_decode_ulong((const char *)buf, index, &length)) return -1;
+
+  copy = fann_subset_train_data(train, pos, length);
+
+  if(ei_x_new_with_version(result)) return -1;
+  if(ei_x_encode_tuple_header(result, 2)) return -1;
+  if(ei_x_encode_atom(result, "ok") ||
+     ei_x_encode_long(result, (long)copy))
+    return -1;
+  return 1;
+}
+
+
 
 /*-----------------------------------------------------------------
  * Util functions

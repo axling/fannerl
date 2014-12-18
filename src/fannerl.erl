@@ -31,7 +31,9 @@
 	 read_train_from_file/1,
 	 read_train_from_file/2,
 	 shuffle_train/1,
-	 shuffle_train/2]).
+	 shuffle_train/2,
+	 subset_train_data/3,
+	 subset_train_data/4]).
 
 -export([test/2,
 	 test/3,
@@ -258,6 +260,17 @@ save(Instance, Ref, FileName)
        is_list(FileName) ->
     call_port(Instance, {save_to_file, Ref, {FileName}}).
 
+subset_train_data(TrainRef, Pos, Length) ->
+    subset_train_data(?MODULE, TrainRef, Pos, Length).
+
+subset_train_data(Instance, TrainRef, Pos, Length) 
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(TrainRef),
+       is_integer(Pos), Pos >= 0,
+       is_integer(Length), Length >= 0 ->
+    call_port(Instance, {subset_train_data, {train, TrainRef}, {Pos, Length}}).
+    
+
 get_params(Ref) 
   when is_reference(Ref) ->
     get_params(?MODULE, Ref).
@@ -427,6 +440,10 @@ call_port_with_msg(Port, State, Caller, Msg, Ref) ->
 	    exit(Reason)
     end.    
 
+handle_return_val({subset_train_data, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
+    Ref = make_ref(),
+    Caller ! {fannerl_res, {ok, Ref}},
+    State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};
 handle_return_val({read_train_from_file, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Ref = make_ref(),
     Caller ! {fannerl_res, {ok, Ref}},
