@@ -27,3 +27,5 @@ ct_log*
 
 #log dir
 logs/*
+
+priv/fannerl
