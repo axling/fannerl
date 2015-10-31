@@ -1,3 +1,4 @@
+%% @private
 -module(fannerl_app).
 
 -behaviour(application).

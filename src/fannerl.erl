@@ -329,6 +329,7 @@ get_params(Instance, Ref)
 %%****************************************************************%%       
 %% Private functions
 %%****************************************************************%%       
+%% @private
 call_port(?MODULE, Msg) ->
     case whereis(?MODULE) of
 	Pid when is_pid(Pid) ->
@@ -344,6 +345,7 @@ call_port(Instance, Msg) when is_pid(Instance) ->
 	    {error, process_not_alive}
     end.
 
+%% @private
 call(Instance, Msg) ->
     Instance ! {call, self(), Msg},
     receive
@@ -351,6 +353,7 @@ call(Instance, Msg) ->
 	    Result
     end.
 
+%% @private
 init(Type) ->
     PrivDir = code:priv_dir(fannerl),
     Program = filename:join(PrivDir, "fannerl"),
@@ -378,6 +381,7 @@ init(Type) ->
 			 trains   => dict:new()})
     end.
 
+%% @private
 loop(Port, State) ->
     receive
 	{call, Caller, Msg} ->
@@ -387,6 +391,7 @@ loop(Port, State) ->
 	    exit(normal)
     end.
 
+%% @private
 valid_network(Ref, State) ->
     case dict:is_key(Ref, maps:get(networks, State)) of
 	true ->
@@ -395,6 +400,7 @@ valid_network(Ref, State) ->
 	    false
     end.
 
+%% @private
 valid_train(Ref, State) ->
     case dict:is_key(Ref, maps:get(trains, State)) of
 	true ->
@@ -403,6 +409,7 @@ valid_train(Ref, State) ->
 	    false
     end.
 
+%% @private
 convert_message({Cmd, {train, _Ref}, Rest}, TrainPtr) ->
     {Cmd, TrainPtr, Rest};
 convert_message({Cmd, _Ref, Rest}, NetworkPtr) ->
@@ -411,14 +418,17 @@ convert_message({Cmd, _Ref, Rest}, NetworkPtr) ->
 convert_message({Cmd, {_Ref, _TrainRef}, Rest}, NetworkPtr, TrainPtr) ->
     {Cmd, {NetworkPtr, TrainPtr}, Rest}.
 
+%% @private
 get_train_ref({_Cmd, {_Ref, TrainRef}, _Rest}) ->
     TrainRef.
 
+%% @private
 get_ref({_Cmd, {Ref, _TrainRef}, _Rest}) ->
     Ref;
 get_ref({_Cmd, Ref, _Rest}) ->
     Ref.
 
+%% @private
 handle_port_call(Port, State, Caller, {create_standard, _}=Msg) ->
     call_port_with_msg(Port, State, Caller, Msg, undefined);
 handle_port_call(Port, State, Caller, {create_from_file, _}=Msg) ->
@@ -469,6 +479,7 @@ handle_port_call(Port, State, Caller, Msg) ->
 	    loop(Port, State)
     end.
 
+%% @private
 call_port_with_msg(Port, State, Caller, Msg, Ref) ->
     erlang:port_command(Port, term_to_binary(Msg)),
     receive
@@ -486,6 +497,7 @@ call_port_with_msg(Port, State, Caller, Msg, Ref) ->
 	    exit(Reason)
     end.    
 
+%% @private
 handle_return_val({subset_train_data, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Ref = make_ref(),
     Caller ! {fannerl_res, Ref},
@@ -511,6 +523,6 @@ handle_return_val(_Msg, Return, Caller, State, _Ref) ->
     Caller ! {fannerl_res, Return},
     State.
     
-
+%% @private
 default_options() ->
     #{type=>standard}.

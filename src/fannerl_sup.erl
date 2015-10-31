@@ -1,3 +1,4 @@
+%% @private
 -module(fannerl_sup).
 
 -behaviour(supervisor).
