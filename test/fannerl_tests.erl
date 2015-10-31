@@ -44,6 +44,16 @@ fannerl_train_test_() ->
      ]
     }.
 
+fannerl_run_and_test_test_() ->
+    {foreach,
+     fun setup/0,
+     fun cleanup/1,
+     [
+      fun fannerl_run/1,
+      fun fannerl_test/1
+     ]
+    }.
+
 %%-----------------------------------------------------------
 %% FIXTURE FUNCTIONS
 %%-----------------------------------------------------------
@@ -161,8 +171,8 @@ fannerl_create_with_learning_rate(_Map) ->
 	   LearningRate = 0.2,
 	   {ok, R} = fannerl:create({5,7,3}, #{learning_rate => LearningRate}),
 	   #{learning_rate := LearningRateAfter} = fannerl:get_params(R),
-	   ?_assert(LearningRateAfter == LearningRate),
-	   ok = fannerl:destroy(R)
+	   ok = fannerl:destroy(R),
+	   ?_assert(LearningRateAfter == LearningRate)
        end).
     
     
@@ -211,4 +221,20 @@ fannerl_train_subset(_) ->
 	   {ok, N} = fannerl:read_train_from_file(Filename),
 	   {ok, NewTrain} = fannerl:subset_train_data(N, 2, 1),
 	   ?assert(N /= NewTrain)
+       end).
+
+fannerl_run(_) ->
+    ?_test(
+       begin
+	   {ok, R} = fannerl:create({4,3,2}),
+	   {_X, _Y} = fannerl:run(R, {1,1,1,1}),
+	   ?_assert(ok == fannerl:destroy(R))
+       end).
+
+fannerl_test(_) ->
+    ?_test(
+       begin
+	   {ok, R} = fannerl:create({4,3,2}),
+	   {_X, _Y} = fannerl:test(R, {1,1,1,1}, {1,1}),
+	   ?_assert(ok == fannerl:destroy(R))
        end).
