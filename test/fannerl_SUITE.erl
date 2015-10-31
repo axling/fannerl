@@ -43,27 +43,24 @@ all() ->
     ].
 
 tc_create_and_destroy(_Config) ->
-    {ok, Ref} = fannerl:create({2,2,1}),
+    Ref = fannerl:create({2,2,1}),
     true = is_reference(Ref),
     ok = fannerl:destroy(Ref),
     
     %% create instance and destroy
     P = fannerl:start_instance(),
     true = is_pid(P),
-    {ok, Ref2} = fannerl:create(P, {2,2,1}),
+    Ref2 = fannerl:create(P, {2,2,1}),
     true = is_reference(Ref2),
     ok = fannerl:destroy(P, Ref2),
     fannerl:stop_instance(P).
-
-    
-
 
 tc_multiple_create_and_destroy(_Config) ->
     random:seed(now()),
     RefList = 
 	lists:map(
 	  fun(_X) ->
-		  {ok, Ref} = fannerl:create(
+		  Ref = fannerl:create(
 				{random:uniform(50),
 				 random:uniform(50),
 				 random:uniform(50)}),
@@ -77,7 +74,7 @@ tc_multiple_create_and_destroy(_Config) ->
 		  
 	      
 tc_train(_Config) ->
-    {ok, Ref} = fannerl:create({2,2,1}),
+    Ref = fannerl:create({2,2,1}),
     %% XOR training data, int
     fannerl:train(Ref, {-1, -1}, {-1}),
     fannerl:train(Ref, {-1, 1}, {1}),
@@ -102,8 +99,8 @@ tc_train(_Config) ->
     ok.
 
 tc_train_and_run(_Config) ->
-    {ok, Ref} = fannerl:create({2,2,1}, #{learning_rate => 0.01,
-					 randomize_weights => {-0.5, 0.5}}),
+    Ref = fannerl:create({2,2,1}, #{learning_rate => 0.01,
+				    randomize_weights => {-0.5, 0.5}}),
 
     lists:foreach(
       fun(_X) ->
@@ -144,11 +141,11 @@ tc_train_and_run(_Config) ->
     ok.
 	      
 tc_train_on_file(_Config) ->
-    {ok, Ref} = fannerl:create(
-		  {2,3,1}, 
-		  #{activation_func_hidden => fann_sigmoid_symmetric,
-		    activation_func_output => fann_sigmoid_symmetric,
-		    learning_rate => 0.5}),
+    Ref = fannerl:create(
+	    {2,3,1}, 
+	    #{activation_func_hidden => fann_sigmoid_symmetric,
+	      activation_func_output => fann_sigmoid_symmetric,
+	      learning_rate => 0.5}),
     PrivDir = code:priv_dir(fannerl),
     Filename = filename:join(PrivDir, "xor.data"),
     ok = fannerl:train_on_file(Ref, Filename, 100000, 0.001),
@@ -174,12 +171,12 @@ tc_train_on_file(_Config) ->
     end.
     
 tc_create_sparse_and_train(_Config) ->
-    {ok, Ref} = fannerl:create(
-		  {2,3,1},
-		  #{type => sparse,
-		    activation_func_hidden => fann_sigmoid_symmetric,
-		    activation_func_output => fann_sigmoid_symmetric,
-		    conn_rate => 0.3}),
+    Ref = fannerl:create(
+	    {2,3,1},
+	    #{type => sparse,
+	      activation_func_hidden => fann_sigmoid_symmetric,
+	      activation_func_output => fann_sigmoid_symmetric,
+	      conn_rate => 0.3}),
     PrivDir = code:priv_dir(fannerl),
     Filename = filename:join(PrivDir, "xor.data"),
     ok = fannerl:train_on_file(Ref, Filename, 500000, 0.001),
@@ -192,11 +189,11 @@ tc_create_sparse_and_train(_Config) ->
     ok.
 
 tc_create_shortcut_and_train(_Config) ->
-    {ok, Ref} = fannerl:create(
-		  {2,3,1}, #{type => shortcut,
-			     learning_rate => 0.01,
-			     activation_func_hidden => fann_sigmoid_symmetric,
-			     activation_func_output => fann_sigmoid_symmetric}),
+    Ref = fannerl:create(
+	    {2,3,1}, #{type => shortcut,
+		       learning_rate => 0.01,
+		       activation_func_hidden => fann_sigmoid_symmetric,
+		       activation_func_output => fann_sigmoid_symmetric}),
     PrivDir = code:priv_dir(fannerl),
     Filename = filename:join(PrivDir, "xor.data"),
     ok = fannerl:train_on_file(Ref, Filename, 500000, 0.001),
@@ -211,12 +208,12 @@ tc_create_shortcut_and_train(_Config) ->
 tc_read_train_from_file_and_train(_Config) ->
     PrivDir = code:priv_dir(fannerl),
     Filename = filename:join(PrivDir, "xor.data"),
-    {ok, TrainRef} = fannerl:read_train_from_file(Filename),
+    TrainRef = fannerl:read_train_from_file(Filename),
     
-    {ok, Ref} = fannerl:create(
-		  {2,3,1}, #{learning_rate => 0.01,
-			     activation_func_hidden => fann_sigmoid_symmetric,
-			     activation_func_output => fann_sigmoid_symmetric}),
+    Ref = fannerl:create(
+	    {2,3,1}, #{learning_rate => 0.01,
+		       activation_func_hidden => fann_sigmoid_symmetric,
+		       activation_func_output => fann_sigmoid_symmetric}),
     Map = fannerl:get_params(Ref),
     ct:pal("Params run 1: ~p", [maps:to_list(Map)]),
     ok = fannerl:train(Ref, TrainRef, 10000, 0.1),
@@ -226,12 +223,12 @@ tc_read_train_from_file_and_train(_Config) ->
 tc_read_train_from_file_and_train_one_epoch(_Config) ->
     PrivDir = code:priv_dir(fannerl),
     Filename = filename:join(PrivDir, "xor.data"),
-    {ok, TrainRef} = fannerl:read_train_from_file(Filename),
+    TrainRef = fannerl:read_train_from_file(Filename),
     
-    {ok, Ref} = fannerl:create(
-		  {2,3,1}, #{learning_rate => 0.01,
-			     activation_func_hidden => fann_sigmoid_symmetric,
-			     activation_func_output => fann_sigmoid_symmetric}),
+    Ref = fannerl:create(
+	    {2,3,1}, #{learning_rate => 0.01,
+		       activation_func_hidden => fann_sigmoid_symmetric,
+		       activation_func_output => fann_sigmoid_symmetric}),
     Map = fannerl:get_params(Ref),
     ct:pal("Params run 1: ~p", [maps:to_list(Map)]),
     ok = fannerl:train(Ref, TrainRef),
@@ -241,10 +238,10 @@ tc_read_train_from_file_and_train_one_epoch(_Config) ->
     ct:pal("MSE = ~p", [Mse]).
 
 tc_test(_Config) ->
-    {ok, Ref} = fannerl:create(
-		  {2,3,1}, #{learning_rate => 0.01,
-			     activation_func_hidden => fann_sigmoid_symmetric,
-			     activation_func_output => fann_sigmoid_symmetric}),
+    Ref = fannerl:create(
+	    {2,3,1}, #{learning_rate => 0.01,
+		       activation_func_hidden => fann_sigmoid_symmetric,
+		       activation_func_output => fann_sigmoid_symmetric}),
     lists:foreach(
       fun(_X) ->
 	      %% XOR training data, int

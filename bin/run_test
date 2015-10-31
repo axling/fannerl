@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# get the dir the SCRIPT is in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ct_run -suite $DIR/../test/fannerl_SUITE.erl -logdir $DIR/../logs/

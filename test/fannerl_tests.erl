@@ -72,7 +72,7 @@ cleanup(#{instances := Pids}) ->
 setup_for_save() ->
     FileName = "fannerl_test_saving_network.net",
     _Pid = fannerl:start(),
-    {ok, R} = fannerl:create({3,3,1}),
+    R = fannerl:create({3,3,1}),
     %% Check if file already exists, if so we delete it
     ok = check_and_delete_file(FileName),
     #{filename=>FileName, net=>R}.
@@ -118,7 +118,7 @@ fannerl_stop_on_unstarted_error() ->
     ?assert(fannerl:stop() == {error, fannerl_not_started}).
 
 fannerl_create(_Map) ->
-    {ok, R} = fannerl:create({2,2,1}),
+    R = fannerl:create({2,2,1}),
     ?_assert(ok == fannerl:destroy(R)).
     
 
@@ -129,10 +129,9 @@ fannerl_multiple_create(#{instances := Pids}) ->
 	   Fanns =
 	       lists:map(
 		 fun(_) ->
-			 {ok, R} = fannerl:create({random:uniform(100),
-						   random:uniform(100),
-						   random:uniform(100)}),
-			 R
+			 R = fannerl:create({random:uniform(100),
+					     random:uniform(100),
+					     random:uniform(100)})
 		 end, lists:seq(1,50)),
 
 	   OtherFanns = 
@@ -141,12 +140,11 @@ fannerl_multiple_create(#{instances := Pids}) ->
 			 LocalFanns =
 			     lists:map(
 			       fun(_) ->
-				       {ok, R} = fannerl:create(
+				       R = fannerl:create(
 						   Pid,
 						   {random:uniform(100),
 						    random:uniform(100),
-						    random:uniform(100)}),
-				       R
+						    random:uniform(100)})
 			       end, lists:seq(1,50)),
 			 {Pid, LocalFanns}
 		 end, Pids),
@@ -169,7 +167,7 @@ fannerl_create_with_learning_rate(_Map) ->
     ?_test(
        begin
 	   LearningRate = 0.2,
-	   {ok, R} = fannerl:create({5,7,3}, #{learning_rate => LearningRate}),
+	   R = fannerl:create({5,7,3}, #{learning_rate => LearningRate}),
 	   #{learning_rate := LearningRateAfter} = fannerl:get_params(R),
 	   ok = fannerl:destroy(R),
 	   ?_assert(LearningRateAfter == LearningRate)
@@ -191,7 +189,7 @@ fannerl_create_save_create(#{net:=R, filename:=FileName}) ->
 	   ?assert(false == check_file_exists(FileName)),
 	   ?assert(ok == fannerl:save(R, FileName)),
 	   ?assert(true == check_file_exists(FileName)),
-	   {ok, R2} = fannerl:create(FileName),
+	   R2 = fannerl:create(FileName),
 	   ?assert(ok == fannerl:destroy(R2))
        end).
 
@@ -201,7 +199,7 @@ fannerl_train_create(_) ->
        begin
 	   PrivDir = code:priv_dir(fannerl),
 	   Filename = filename:join(PrivDir, "xor.data"),
-	   {ok, _N} = fannerl:read_train_from_file(Filename)
+	   _N = fannerl:read_train_from_file(Filename)
        end).
 
 fannerl_train_shuffle(_) ->
@@ -209,7 +207,7 @@ fannerl_train_shuffle(_) ->
        begin
 	   PrivDir = code:priv_dir(fannerl),
 	   Filename = filename:join(PrivDir, "xor.data"),
-	   {ok, N} = fannerl:read_train_from_file(Filename),
+	   N = fannerl:read_train_from_file(Filename),
 	   ?assert(ok == fannerl:shuffle_train(N))
        end).
 
@@ -218,15 +216,15 @@ fannerl_train_subset(_) ->
        begin
 	   PrivDir = code:priv_dir(fannerl),
 	   Filename = filename:join(PrivDir, "xor.data"),
-	   {ok, N} = fannerl:read_train_from_file(Filename),
-	   {ok, NewTrain} = fannerl:subset_train_data(N, 2, 1),
+	   N = fannerl:read_train_from_file(Filename),
+	   NewTrain = fannerl:subset_train_data(N, 2, 1),
 	   ?assert(N /= NewTrain)
        end).
 
 fannerl_run(_) ->
     ?_test(
        begin
-	   {ok, R} = fannerl:create({4,3,2}),
+	   R = fannerl:create({4,3,2}),
 	   {_X, _Y} = fannerl:run(R, {1,1,1,1}),
 	   ?_assert(ok == fannerl:destroy(R))
        end).
@@ -234,7 +232,7 @@ fannerl_run(_) ->
 fannerl_test(_) ->
     ?_test(
        begin
-	   {ok, R} = fannerl:create({4,3,2}),
+	   R = fannerl:create({4,3,2}),
 	   {_X, _Y} = fannerl:test(R, {1,1,1,1}, {1,1}),
 	   ?_assert(ok == fannerl:destroy(R))
        end).

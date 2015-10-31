@@ -7,6 +7,8 @@
 
 -module(fannerl).
 
+-type network_layers() :: tuple().
+-type network_ref() :: reference().
 
 -export([start/0,
 	 start_instance/0,
@@ -44,12 +46,36 @@
 
 -export([run/2]).
 
+%% --------------------------------------------------------------------- %%
+%% @doc Start an instance of the port driver that can be used for
+%%      creating artificial neural networks using fann. Will return a pid
+%%      that could be used for monitoring. The pid will be registered with
+%%      the name {@module}.
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec start() -> pid().
 start() ->
     proc_lib:start_link(?MODULE, init, [module]).
 
+%% --------------------------------------------------------------------- %%
+%% @doc Start an instance of the port driver that can be used for
+%%      creating artificial neural networks using fann. Will return a pid
+%%      that is needed for all operations. The pid will not be registered
+%%      in the name service.
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec start_instance() -> pid().
 start_instance() ->
     proc_lib:start_link(?MODULE, init, [pid]).
 
+%% --------------------------------------------------------------------- %%
+%% @doc This will stop the process interfacing the FANN library. Any
+%%      networks or training datas created that have not been saved
+%%      will be lost.
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec stop() -> ok | {error, fannerl_not_started} |
+		{error, {instance_exit_abnormal, {reason, term()}}}.
 stop() ->
     case whereis(?MODULE) of
 	undefined ->
@@ -65,7 +91,13 @@ stop() ->
 	    end
     end.
 
-
+%% --------------------------------------------------------------------- %%
+%% @doc This will stop this instance's process interfacing the FANN
+%%      library . Any networks or training datas created that have not
+%%      been saved will be lost.
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec stop_instance(Instance :: network_ref()) -> ok | {error, {instance_exit_abnormal, {reason, term()}}}.
 stop_instance(Instance) when is_pid(Instance) ->
     MonRef = erlang:monitor(process, Instance),
     Instance ! stop,
@@ -76,10 +108,24 @@ stop_instance(Instance) when is_pid(Instance) ->
 	    {error, {instance_exit_abnormal, {reason, Reason}}}
     end.
     
-
+%% --------------------------------------------------------------------- %%
+%% @doc Creates an artificial neural network with any number of layers. 
+%% The Layers tuple size describe the number of layers while each position
+%% sets the size of the layer. See the FANN documentation of create_standard:
+%% [http://libfann.github.io/fann/docs/files/fann-h.html#fann_create_standard]
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec create(Layers :: network_layers()) -> network_ref();
+	    (FileName :: string()) -> network_ref().
 create(Network) when is_tuple(Network) ->
     create(?MODULE, Network, default_options());
 
+%% --------------------------------------------------------------------- %%
+%% @doc Creates an artificial neural network from a previously save file. 
+%% See the FANN documentation of create_standard:
+%% [http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file]
+%% @end
+%% --------------------------------------------------------------------- %%
 create(FileName) when is_list(FileName) ->
     create_from_file(?MODULE, FileName).
 
@@ -442,21 +488,21 @@ call_port_with_msg(Port, State, Caller, Msg, Ref) ->
 
 handle_return_val({subset_train_data, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Ref = make_ref(),
-    Caller ! {fannerl_res, {ok, Ref}},
+    Caller ! {fannerl_res, Ref},
     State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};
 handle_return_val({read_train_from_file, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Ref = make_ref(),
-    Caller ! {fannerl_res, {ok, Ref}},
+    Caller ! {fannerl_res, Ref},
     State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};
 handle_return_val({create_standard, _}, {ok, Ptr}, Caller, State, _Ref) ->
     %% Hide the ptr by giving a ref to the user instead
     Ref = make_ref(),
-    Caller ! {fannerl_res, {ok, Ref}},
+    Caller ! {fannerl_res, Ref},
     State#{networks := dict:store(Ref, Ptr, maps:get(networks, State))};
 handle_return_val({create_from_file, _}, {ok, Ptr}, Caller, State, _Ref) ->
     %% Hide the ptr by giving a ref to the user instead
     Ref = make_ref(),
-    Caller ! {fannerl_res, {ok, Ref}},
+    Caller ! {fannerl_res, Ref},
     State#{networks := dict:store(Ref, Ptr, maps:get(networks, State))};
 handle_return_val({destroy, _}, ok, Caller, State, Ref) ->
     Caller ! {fannerl_res, ok},
