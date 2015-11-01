@@ -8,7 +8,9 @@
 -module(fannerl).
 
 -type network_layers() :: tuple().
--type network_ref() :: reference().
+-type network_ref()    :: reference().
+-type train_ref()      :: reference().
+-type options()        :: map().
 
 -export([start/0,
 	 start_instance/0,
@@ -18,14 +20,18 @@
 
 -export([create/1,
 	 create/2,
-	 create/3,
+	 create_on/2,
+	 create_on/3,
+	 create_from_file/1,
+	 create_from_file/2,
 	 destroy/1,
-	 destroy/2,
+	 destroy_on/2,
 	 get_params/1,
 	 get_params/2
 	]).
 
--export([train/2,
+-export([train_epoch/2,
+	 train_epoch_on/3,
 	 train/3,
 	 train/4,
 	 train_on_file/4,
@@ -109,45 +115,45 @@ stop_instance(Instance) when is_pid(Instance) ->
     end.
     
 %% --------------------------------------------------------------------- %%
+%% @equiv create_on({@module}, Layers, default_options())
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec create(Layers :: network_layers()) -> network_ref().
+create(Layers) when is_tuple(Layers) ->
+    create_on(?MODULE, Layers, default_options()).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv create_on({@module}, Layers, Options)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec create(Layers::tuple(), Options::options()) -> network_ref().
+create(Layers, Options)
+  when is_tuple(Layers),
+       is_map(Options) ->
+    create_on(?MODULE, Layers, Options).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv create_on(Instance, Layers, default_options())
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec create_on(Instance::pid(), Layers::tuple()) -> network_ref().
+create_on(Instance, Layers)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_tuple(Layers) ->
+    create_on(Instance, Layers, default_options()).
+
+%% --------------------------------------------------------------------- %%
 %% @doc Creates an artificial neural network with any number of layers. 
 %% The Layers tuple size describe the number of layers while each position
 %% sets the size of the layer. See the FANN documentation of create_standard:
 %% [http://libfann.github.io/fann/docs/files/fann-h.html#fann_create_standard]
 %% @end
 %% --------------------------------------------------------------------- %%
--spec create(Layers :: network_layers()) -> network_ref();
-	    (FileName :: string()) -> network_ref().
-create(Network) when is_tuple(Network) ->
-    create(?MODULE, Network, default_options());
-
-%% --------------------------------------------------------------------- %%
-%% @doc Creates an artificial neural network from a previously save file. 
-%% See the FANN documentation of create_standard:
-%% [http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file]
-%% @end
-%% --------------------------------------------------------------------- %%
-create(FileName) when is_list(FileName) ->
-    create_from_file(?MODULE, FileName).
-
-
-create(Network, Options)
-  when is_tuple(Network),
-       is_map(Options) ->
-    create(?MODULE, Network, Options);
-
-create(Instance, Network)
+-spec create_on(Instance::pid(), Layers::tuple(), Options::options()) ->
+		       network_ref().
+create_on(Instance, Layers, Options) 
   when Instance == ?MODULE; is_pid(Instance),
-       is_tuple(Network) ->
-    create(Instance, Network, default_options());
-
-create(Instance, FileName)
-  when Instance == ?MODULE; is_pid(Instance),
-       is_list(FileName) ->
-    create_from_file(Instance, FileName).
-
-create(Instance, Network, Options) 
-  when Instance == ?MODULE; is_pid(Instance),
-      is_tuple(Network),
+      is_tuple(Layers),
       is_map(Options) ->
     {Type, OptionsWithoutType} = 
 	case maps:is_key(type, Options) of
@@ -168,33 +174,71 @@ create(Instance, Network, Options)
 		{undefined, OptionsWithoutType}
 	end,
     call_port(Instance, {create_standard,
-			 {Network, Type,
+			 {Layers, Type,
 			  ConnRate, OptionsWithoutConnRateAndType}}).
 
+%% --------------------------------------------------------------------- %%
+%% @equiv create_from_file({@module}, FileName)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec create_from_file(FileName :: string()) -> network_ref().
+create_from_file(FileName) when is_list(FileName) ->
+    create_from_file(?MODULE, FileName).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Creates an artificial neural network from a previously saved file. 
+%% See the FANN documentation of create_standard:
+%% [http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file]
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec create_from_file(Instance::pid(), FileName :: string()) -> network_ref().
 create_from_file(Instance, FileName)
   when Instance == ?MODULE; is_pid(Instance),
        is_list(FileName) ->
     call_port(Instance, {create_from_file, FileName}).
 
-destroy(Ref) when is_reference(Ref) ->
-    destroy(?MODULE, Ref).
+%% --------------------------------------------------------------------- %%
+%% @equiv destroy_on({@module}, Network)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec destroy(Network::network_ref) -> ok.
+destroy(Network) when is_reference(Network) ->
+    destroy_on(?MODULE, Network).
 
-destroy(Instance, Ref)
+%% --------------------------------------------------------------------- %%
+%% @doc This will destroy all references to the neural network and free
+%%      up all associated memory, see 
+%%      [http://libfann.github.io/fann/docs/files/fann-h.html#fann_destroy]
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec destroy_on(Instance::pid(), Network::network_ref) -> ok.
+destroy_on(Instance, Network)
   when is_pid(Instance); Instance == ?MODULE,
-       is_reference(Ref) ->
-    call_port(Instance, {destroy, Ref, {}}).
+       is_reference(Network) ->
+    call_port(Instance, {destroy, Network, {}}).
 
-train(Ref, TrainRef)
-  when is_reference(Ref),
-       is_reference(TrainRef) ->
-    train(?MODULE, Ref, TrainRef).
+%% --------------------------------------------------------------------- %%
+%% @equiv train_epoch_on({@module}, Network, Train)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec train_epoch(Network::network_ref(), Train::train_ref()) -> ok.
+train_epoch(Network, Train)
+  when is_reference(Network),
+       is_reference(Train) ->
+    train_epoch_on(?MODULE, Network, Train).
 
-train(Instance, Ref, TrainRef)
+%% --------------------------------------------------------------------- %%
+%% @doc This will train your neural network for one epoch with the given
+%%      training data. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_epoch]
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec train_epoch_on(Instance::pid, Network::network_ref(),
+		     Train::train_ref()) -> ok.
+train_epoch_on(Instance, Network, Train)
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(Ref),
-       is_reference(TrainRef) ->
-    call_port(Instance, {train_epoch, {Ref, TrainRef}, {}});
-
+       is_reference(Network),
+       is_reference(Train) ->
+    call_port(Instance, {train_epoch, {Network, Train}, {}}).
 
 train(Ref, Input, DesiredOutput) 
   when is_reference(Ref),
@@ -382,6 +426,7 @@ init(Type) ->
     end.
 
 %% @private
+%% TODO: remove all networks and trains if process is to be shut down.
 loop(Port, State) ->
     receive
 	{call, Caller, Msg} ->

@@ -50,9 +50,9 @@ tc_create_and_destroy(_Config) ->
     %% create instance and destroy
     P = fannerl:start_instance(),
     true = is_pid(P),
-    Ref2 = fannerl:create(P, {2,2,1}),
+    Ref2 = fannerl:create_on(P, {2,2,1}),
     true = is_reference(Ref2),
-    ok = fannerl:destroy(P, Ref2),
+    ok = fannerl:destroy_on(P, Ref2),
     fannerl:stop_instance(P).
 
 tc_multiple_create_and_destroy(_Config) ->
@@ -231,7 +231,7 @@ tc_read_train_from_file_and_train_one_epoch(_Config) ->
 		       activation_func_output => fann_sigmoid_symmetric}),
     Map = fannerl:get_params(Ref),
     ct:pal("Params run 1: ~p", [maps:to_list(Map)]),
-    ok = fannerl:train(Ref, TrainRef),
+    ok = fannerl:train_epoch(Ref, TrainRef),
     Map2 = fannerl:get_params(Ref),
     ct:pal("Params run 2: ~p", [maps:to_list(Map2)]),
     {ok, Mse} = fannerl:test(Ref, TrainRef),

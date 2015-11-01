@@ -129,7 +129,7 @@ fannerl_multiple_create(#{instances := Pids}) ->
 	   Fanns =
 	       lists:map(
 		 fun(_) ->
-			 R = fannerl:create({random:uniform(100),
+			 _R = fannerl:create({random:uniform(100),
 					     random:uniform(100),
 					     random:uniform(100)})
 		 end, lists:seq(1,50)),
@@ -140,7 +140,7 @@ fannerl_multiple_create(#{instances := Pids}) ->
 			 LocalFanns =
 			     lists:map(
 			       fun(_) ->
-				       R = fannerl:create(
+				       _R = fannerl:create_on(
 						   Pid,
 						   {random:uniform(100),
 						    random:uniform(100),
@@ -158,7 +158,7 @@ fannerl_multiple_create(#{instances := Pids}) ->
 	     fun({Pid, LocalFanns}) ->
 		     lists:foreach(
 		       fun(Ref) ->
-			       ?_assert(ok == fannerl:destroy(Pid, Ref))
+			       ?_assert(ok == fannerl:destroy_on(Pid, Ref))
 		       end, LocalFanns)
 	     end, OtherFanns)
        end).
@@ -189,7 +189,7 @@ fannerl_create_save_create(#{net:=R, filename:=FileName}) ->
 	   ?assert(false == check_file_exists(FileName)),
 	   ?assert(ok == fannerl:save(R, FileName)),
 	   ?assert(true == check_file_exists(FileName)),
-	   R2 = fannerl:create(FileName),
+	   R2 = fannerl:create_from_file(FileName),
 	   ?assert(ok == fannerl:destroy(R2))
        end).
 
