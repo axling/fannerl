@@ -40,7 +40,11 @@ fannerl_train_test_() ->
      [
       fun fannerl_train_create/1,
       fun fannerl_train_shuffle/1,
-      fun fannerl_train_subset/1
+      fun fannerl_train_subset/1,
+      fun fannerl_train_epoch/1,
+      fun fannerl_train_on_data/1,
+      fun fannerl_train/1,
+      fun fannerl_train_on_file/1
      ]
     }.
 
@@ -50,7 +54,8 @@ fannerl_run_and_test_test_() ->
      fun cleanup/1,
      [
       fun fannerl_run/1,
-      fun fannerl_test/1
+      fun fannerl_test/1,
+      fun fannerl_test_data/1
      ]
     }.
 
@@ -221,6 +226,46 @@ fannerl_train_subset(_) ->
 	   ?assert(N /= NewTrain)
        end).
 
+fannerl_train_epoch(_) ->
+    ?_test(
+       begin
+	   R = fannerl:create({2,2,1}),
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   N = fannerl:read_train_from_file(Filename),
+	   ok = fannerl:train_epoch(R, N),
+	   ?assert(ok == fannerl:destroy(R))
+       end).
+
+fannerl_train_on_data(_) ->
+    ?_test(
+       begin
+	   R = fannerl:create({2,2,1}),
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   N = fannerl:read_train_from_file(Filename),
+	   ok = fannerl:train_on_data(R, N, 5, 0.1),
+	   ?assert(ok == fannerl:destroy(R))
+       end).
+
+fannerl_train(_) ->
+    ?_test(
+       begin
+	   R = fannerl:create({2,2,1}),
+	   ok = fannerl:train(R, {1,1}, {0}),
+	   ?assert(ok == fannerl:destroy(R))
+       end).
+
+fannerl_train_on_file(_) ->
+    ?_test(
+       begin
+	   R = fannerl:create({2,2,1}),
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   ok = fannerl:train_on_file(R, Filename, 5, 0.1),
+	   ?assert(ok == fannerl:destroy(R))
+       end).
+
 fannerl_run(_) ->
     ?_test(
        begin
@@ -235,4 +280,15 @@ fannerl_test(_) ->
 	   R = fannerl:create({4,3,2}),
 	   {_X, _Y} = fannerl:test(R, {1,1,1,1}, {1,1}),
 	   ?_assert(ok == fannerl:destroy(R))
+       end).
+
+fannerl_test_data(_) ->
+    ?_test(
+       begin
+	   R = fannerl:create({2,2,1}),
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   N = fannerl:read_train_from_file(Filename),
+	   {ok, _} = fannerl:test_data(R, N),
+	   ?assert(ok == fannerl:destroy(R))
        end).

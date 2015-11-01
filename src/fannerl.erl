@@ -33,9 +33,11 @@
 -export([train_epoch/2,
 	 train_epoch_on/3,
 	 train/3,
-	 train/4,
+	 train_on/4,
+	 train_on_data/4,
+	 train_on_data_on/5,
 	 train_on_file/4,
-	 train_on_file/5,
+	 train_on_file_on/5,
 	 read_train_from_file/1,
 	 read_train_from_file/2,
 	 shuffle_train/1,
@@ -43,9 +45,11 @@
 	 subset_train_data/3,
 	 subset_train_data/4]).
 
--export([test/2,
-	 test/3,
-	 test/4]).
+-export([test/3,
+	 test/4,
+	 test_data/2,
+	 test_data_on/3
+	]).
 
 -export([save/2,
 	 save/3]).
@@ -240,61 +244,114 @@ train_epoch_on(Instance, Network, Train)
        is_reference(Train) ->
     call_port(Instance, {train_epoch, {Network, Train}, {}}).
 
-train(Ref, Input, DesiredOutput) 
-  when is_reference(Ref),
+%% --------------------------------------------------------------------- %%
+%% @equiv train_on({@module}, Network, Input, DesiredOutput)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec train(Network::network_ref(), Input::tuple(), DesiredOutput::tuple()) ->
+		   ok.
+train(Network, Input, DesiredOutput) 
+  when is_reference(Network),
        is_tuple(Input),
        is_tuple(DesiredOutput) ->
-    train(?MODULE, Ref, Input, DesiredOutput).
+    train_on(?MODULE, Network, Input, DesiredOutput).
 
-train(Instance, Ref, Input, DesiredOutput)
+%% --------------------------------------------------------------------- %%
+%% @doc Train one iteration with a set of inputs, and a set of desired outputs.
+%% This training is always incremental training (see fann_train_enum),
+%% since only one pattern is presented. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec train_on(Instance::pid(),Network::network_ref(), Input::tuple(),
+	       DesiredOutput::tuple()) -> ok.
+train_on(Instance, Network, Input, DesiredOutput)
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(Ref),
+       is_reference(Network),
        is_tuple(Input),
        is_tuple(DesiredOutput) ->
-    call_port(Instance, {train, Ref, {Input, DesiredOutput}});
+    call_port(Instance, {train, Network, {Input, DesiredOutput}}).
 
-train(Ref, TrainRef, MaxEpochs, DesiredError)
-  when is_reference(Ref),
-       is_reference(TrainRef),
+%% --------------------------------------------------------------------- %%
+%% @equiv train_on_data_on({@module}, Network, Train, MaxEpochs, DesiredError)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec train_on_data(Network::network_ref(), Train::train_ref(),
+		    MaxEpochs::non_neg_integer(), DesiredError::number()) ->
+			   ok.
+train_on_data(Network, Train, MaxEpochs, DesiredError)
+  when is_reference(Network),
+       is_reference(Train),
        is_integer(MaxEpochs),
        is_number(DesiredError) ->
-    train(?MODULE, Ref, TrainRef, MaxEpochs, DesiredError).
+    train_on_data_on(?MODULE, Network, Train, MaxEpochs, DesiredError).
 
-train(Instance, Ref, TrainRef, MaxEpochs, DesiredError)
+%% --------------------------------------------------------------------- %%
+%% @doc Trains on an entire dataset, for a chosen period of time. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_on_data].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec train_on_data_on(Instance::pid(), Network::network_ref(),
+		       Train:: train_ref(), MaxEpochs::non_neg_integer(),
+		       DesiredError::number()) -> ok.
+train_on_data_on(Instance, Network, Train, MaxEpochs, DesiredError)
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(Ref),
-       is_reference(TrainRef),
+       is_reference(Network),
+       is_reference(Train),
        is_integer(MaxEpochs),
        is_number(DesiredError) ->
-    call_port(?MODULE, {train_on_data, {Ref, TrainRef},
+    call_port(?MODULE, {train_on_data, {Network, Train},
 			{MaxEpochs, DesiredError}}).
 
-train_on_file(Ref, FileName, MaxEpochs, DesiredError) 
-  when is_reference(Ref),
+%% --------------------------------------------------------------------- %%
+%% @equiv train_on_file_on({@module}, Network, FileName, MaxEpochs,
+%%  DesiredError)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec train_on_file(Network::network_ref(), FileName::string(),
+		    MaxEpochs::non_neg_integer(), DesiredError:: number()) ->
+			   ok.
+train_on_file(Network, FileName, MaxEpochs, DesiredError) 
+  when is_reference(Network),
        is_list(FileName),
        is_integer(MaxEpochs), MaxEpochs > 0,
        is_float(DesiredError) ->
-    train_on_file(?MODULE, Ref, FileName, MaxEpochs, DesiredError).
+    train_on_file_on(?MODULE, Network, FileName, MaxEpochs, DesiredError).
 
-train_on_file(Instance, Ref, FileName, MaxEpochs, DesiredError) 
+%% --------------------------------------------------------------------- %%
+%% @doc Does the same as train_on_data_on/5, but reads the training data directly from a file. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_on_file].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec train_on_file_on(
+	Instance::pid(), Network::network_ref(), FileName::string(),
+	MaxEpochs::non_neg_integer(), DesiredError:: number()) ->
+			      ok.
+train_on_file_on(Instance, Network, FileName, MaxEpochs, DesiredError) 
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(Ref),
+       is_reference(Network),
        is_list(FileName),
        is_integer(MaxEpochs), MaxEpochs > 0,
        is_float(DesiredError) ->
     call_port(Instance, 
-	      {train_on_file, Ref, {FileName, MaxEpochs, DesiredError}}).
+	      {train_on_file, Network, {FileName, MaxEpochs, DesiredError}}).
 
-test(Ref, TrainRef)
-  when is_reference(Ref),
-       is_reference(TrainRef) ->
-    test(?MODULE, Ref, TrainRef).
+%% --------------------------------------------------------------------- %%
+%% @equiv test_data({@module}, Network, Train)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec test_data(Network::network_ref(), Train::train_ref()) -> ok.
+test_data(Network, Train)
+  when is_reference(Network),
+       is_reference(Train) ->
+    test_data_on(?MODULE, Network, Train).
 
-test(Instance, Ref, TrainRef)
+%% --------------------------------------------------------------------- %%
+%% @doc Test a set of training data and calculates the MSE for the training data. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_test_data].
+%% @end
+%% --------------------------------------------------------------------- %%
+test_data_on(Instance, Ref, TrainRef)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Ref),
        is_reference(TrainRef) ->
-    call_port(Instance, {test_data, {Ref, TrainRef}, {}});
+    call_port(Instance, {test_data, {Ref, TrainRef}, {}}).
 
 
 test(Ref, Input, DesiredOutput)
