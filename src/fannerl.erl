@@ -27,7 +27,7 @@
 	 destroy/1,
 	 destroy_on/2,
 	 get_params/1,
-	 get_params/2
+	 get_params_on/2
 	]).
 
 -export([train_epoch/2,
@@ -39,22 +39,23 @@
 	 train_on_file/4,
 	 train_on_file_on/5,
 	 read_train_from_file/1,
-	 read_train_from_file/2,
+	 read_train_from_file_on/2,
 	 shuffle_train/1,
-	 shuffle_train/2,
+	 shuffle_train_on/2,
 	 subset_train_data/3,
-	 subset_train_data/4]).
+	 subset_train_data_on/4]).
 
 -export([test/3,
-	 test/4,
+	 test_on/4,
 	 test_data/2,
 	 test_data_on/3
 	]).
 
 -export([save/2,
-	 save/3]).
+	 save_on/3]).
 
--export([run/2]).
+-export([run/2,
+	 run_on/3]).
 
 %% --------------------------------------------------------------------- %%
 %% @doc Start an instance of the port driver that can be used for
@@ -337,7 +338,8 @@ train_on_file_on(Instance, Network, FileName, MaxEpochs, DesiredError)
 %% @equiv test_data({@module}, Network, Train)
 %% @end
 %% --------------------------------------------------------------------- %%
--spec test_data(Network::network_ref(), Train::train_ref()) -> ok.
+-spec test_data(Network::network_ref(), Train::train_ref()) ->
+		       {ok, MeanSquareError::number()}.
 test_data(Network, Train)
   when is_reference(Network),
        is_reference(Train) ->
@@ -347,85 +349,169 @@ test_data(Network, Train)
 %% @doc Test a set of training data and calculates the MSE for the training data. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_test_data].
 %% @end
 %% --------------------------------------------------------------------- %%
-test_data_on(Instance, Ref, TrainRef)
+-spec test_data_on(Instance::pid(), Network::network_ref(),
+		   Train::train_ref()) ->
+			  {ok, MeanSquareError::number()}.
+test_data_on(Instance, Network, Train)
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(Ref),
-       is_reference(TrainRef) ->
-    call_port(Instance, {test_data, {Ref, TrainRef}, {}}).
+       is_reference(Network),
+       is_reference(Train) ->
+    call_port(Instance, {test_data, {Network, Train}, {}}).
 
-
-test(Ref, Input, DesiredOutput)
-  when is_reference(Ref),
+%% --------------------------------------------------------------------- %%
+%% @equiv test_on({@module}, Network, Input, DesiredOutput)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec test(Network::network_ref(), Input::tuple(), DesiredOutput::tuple()) ->
+		  Output::tuple().
+test(Network, Input, DesiredOutput)
+  when is_reference(Network),
        is_tuple(Input),
        is_tuple(DesiredOutput) ->
-    test(?MODULE, Ref, Input, DesiredOutput).
+    test_on(?MODULE, Network, Input, DesiredOutput).
 
-test(Instance, Ref, Input, DesiredOutput)
+%% --------------------------------------------------------------------- %%
+%% @doc Test with a set of inputs, and a set of desired outputs.  This operation updates the mean square error, but does not change the network in any way. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_test].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec test_on(Instance::pid(), Network::network_ref(),
+	      Input::tuple(), DesiredOutput::tuple()) ->
+		  Output::tuple().
+test_on(Instance, Network, Input, DesiredOutput)
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(Ref),
+       is_reference(Network),
        is_tuple(Input),
        is_tuple(DesiredOutput) ->
-    call_port(Instance, {test, Ref, {Input, DesiredOutput}}).
-    
+    call_port(Instance, {test, Network, {Input, DesiredOutput}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv read_train_from_file_on({@module}, Filename)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec read_train_from_file(Filename::string()) -> train_ref().
 read_train_from_file(FileName)
   when is_list(FileName) ->
-    read_train_from_file(?MODULE, FileName).
+    read_train_from_file_on(?MODULE, FileName).
 
-read_train_from_file(Instance, FileName)
+%% --------------------------------------------------------------------- %%
+%% @doc Reads a file that stores training data. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_read_train_from_file].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec read_train_from_file_on(Instance::pid(), Filename::string()) ->
+				     train_ref().
+read_train_from_file_on(Instance, FileName)
   when Instance == ?MODULE; is_pid(Instance),
        is_list(FileName) ->
     call_port(Instance, {read_train_from_file, FileName}).
 
-shuffle_train(TrainRef)
-  when is_reference(TrainRef) ->
-    shuffle_train(?MODULE, TrainRef).
+%% --------------------------------------------------------------------- %%
+%% @equiv shuffle_train_on({@module}, Train)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec shuffle_train(Train::train_ref()) -> ok.
+shuffle_train(Train)
+  when is_reference(Train) ->
+    shuffle_train_on(?MODULE, Train).
 
-shuffle_train(Instance, TrainRef)
+%% --------------------------------------------------------------------- %%
+%% @doc Shuffles training data, randomizing the order.  This is recommended for incremental training, while it has no influence during batch training. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_shuffle_train_data].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec shuffle_train_on(Instance::pid(), Train::train_ref()) -> ok.
+shuffle_train_on(Instance, Train)
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(TrainRef) ->
-    call_port(Instance, {shuffle_train,{train, TrainRef}, {}}).
+       is_reference(Train) ->
+    call_port(Instance, {shuffle_train, {train, Train}, {}}).
 
-run(Ref, Input) 
-  when is_reference(Ref),
+%% --------------------------------------------------------------------- %%
+%% @equiv run_on({@module}, Network, Input)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec run(Network::network_ref(), Input::tuple()) -> tuple().
+run(Network, Input) 
+  when is_reference(Network),
        is_tuple(Input) ->
-    run(?MODULE, Ref, Input).
+    run_on(?MODULE, Network, Input).
 
-run(Instance, Ref, Input) 
+%% --------------------------------------------------------------------- %%
+%% @doc Will run input through the neural network, returning a tuple of outputs, the number of which being equal to the number of neurons in the output layer. See [http://libfann.github.io/fann/docs/files/fann-h.html#fann_run].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec run_on(Instance::pid(), Network::network_ref(), Input::tuple()) ->
+		    tuple().
+run_on(Instance, Network, Input) 
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(Ref),
+       is_reference(Network),
        is_tuple(Input) ->
-    call_port(Instance, {run, Ref, {Input}}).
+    call_port(Instance, {run, Network, {Input}}).
 
-save(Ref, FileName)
-  when is_reference(Ref),
+%% --------------------------------------------------------------------- %%
+%% @equiv save_on({@module}, FileName)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec save(Network::network_ref(), FileName::string()) -> ok.
+save(Network, FileName)
+  when is_reference(Network),
        is_list(FileName) ->
-    save(?MODULE, Ref, FileName).
+    save_on(?MODULE, Network, FileName).
 
-save(Instance, Ref, FileName)
+%% --------------------------------------------------------------------- %%
+%% @doc Save the entire network to a configuration file.
+%% See [http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_save].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec save_on(Instance::pid(), Network::network_ref(), FileName::string()) ->
+		     ok.
+save_on(Instance, Network, FileName)
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(Ref),
+       is_reference(Network),
        is_list(FileName) ->
-    call_port(Instance, {save_to_file, Ref, {FileName}}).
+    call_port(Instance, {save_to_file, Network, {FileName}}).
 
-subset_train_data(TrainRef, Pos, Length) ->
-    subset_train_data(?MODULE, TrainRef, Pos, Length).
+%% --------------------------------------------------------------------- %%
+%% @equiv subset_train_data_on({@module}, Train, Pos, Length)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec subset_train_data(Train::train_ref(), Pos::non_neg_integer(),
+		       Length::non_neg_integer()) -> train_ref().
+subset_train_data(Train, Pos, Length) ->
+    subset_train_data_on(?MODULE, Train, Pos, Length).
 
-subset_train_data(Instance, TrainRef, Pos, Length) 
+%% --------------------------------------------------------------------- %%
+%% @doc Returns an copy of a subset of the struct fann_train_data, starting
+%% at position pos and length elements forward.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_subset_train_data].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec subset_train_data_on(Instance::pid(), Train::train_ref(),
+			   Pos::non_neg_integer(),
+			   Length::non_neg_integer()) -> 
+				  train_ref().
+subset_train_data_on(Instance, Train, Pos, Length) 
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(TrainRef),
+       is_reference(Train),
        is_integer(Pos), Pos >= 0,
        is_integer(Length), Length >= 0 ->
-    call_port(Instance, {subset_train_data, {train, TrainRef}, {Pos, Length}}).
-    
+    call_port(Instance, {subset_train_data, {train, Train}, {Pos, Length}}).
 
-get_params(Ref) 
-  when is_reference(Ref) ->
-    get_params(?MODULE, Ref).
+%% --------------------------------------------------------------------- %%
+%% @equiv get_params_on({@module}, Network)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_params(Network::network_ref()) -> map().
+get_params(Network) 
+  when is_reference(Network) ->
+    get_params_on(?MODULE, Network).
 
-get_params(Instance, Ref)
+%% --------------------------------------------------------------------- %%
+%% @doc Fetch all the parameters associated with the neural network.
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_params_on(Instance::pid(), Network::network_ref()) -> map().
+get_params_on(Instance, Network)
   when Instance == ?MODULE; is_pid(Instance),
-       is_reference(Ref) ->
-    call_port(Instance, {get_params, Ref, {}}).
+       is_reference(Network) ->
+    call_port(Instance, {get_params, Network, {}}).
 
 %%****************************************************************%%       
 %% Private functions

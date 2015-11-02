@@ -19,7 +19,8 @@ fannerl_create_destroy_test_() ->
      [
       fun fannerl_create/1,
       fun fannerl_multiple_create/1,
-      fun fannerl_create_with_learning_rate/1
+      fun fannerl_create_with_learning_rate/1,
+      fun fannerl_create_from_file/1
      ]
     }.
 
@@ -177,8 +178,20 @@ fannerl_create_with_learning_rate(_Map) ->
 	   ok = fannerl:destroy(R),
 	   ?_assert(LearningRateAfter == LearningRate)
        end).
-    
-    
+
+fannerl_create_from_file(_Map) ->
+    File = "temp_network_xxr23d",
+    check_and_delete_file(File),
+    ?_test(
+       begin
+	   R= fannerl:create({2,2,1}),
+	   ok = fannerl:save(R, File),
+	   
+	   R2 = fannerl:create_from_file(File),
+	   ?assert(ok == fannerl:destroy(R)),
+	   ?assert(ok == fannerl:destroy(R2)),
+	   check_and_delete_file(File)
+       end).
     
 fannerl_save(#{net:=R, filename:=FileName}) ->
     ?_test(
