@@ -26,6 +26,7 @@ int write_exact(byte *buf, int len);
 
 int do_fann_create_standard(byte *buf, int * index, ei_x_buff * result);
 int do_fann_create_from_file(byte *buf, int * index, ei_x_buff * result);
+int do_fann_copy(byte *buf, int * index, ei_x_buff * result);
 int do_fann_destroy(byte *buf, int * index, ei_x_buff * result);
 int do_fann_train(byte *buf, int * index, ei_x_buff * result);
 int do_fann_run(byte *buf, int * index, ei_x_buff * result);
@@ -175,12 +176,14 @@ int main() {
     if(!strcmp("create_standard", command)) {
       
       if(do_fann_create_standard(buf, &index, &result) != 1) return 9;
-
       
     } else if(!strcmp("create_from_file", command)) {
       
       if(do_fann_create_from_file(buf, &index, &result) != 1) return 23;
-
+      
+    } else if(!strcmp("copy", command)) {
+      
+      if(do_fann_copy(buf, &index, &result) != 1) return 26;
       
     } else if(!strcmp("destroy", command)) {
 
@@ -437,6 +440,25 @@ int do_fann_create_from_file(byte *buf, int * index, ei_x_buff * result) {
 
   int hash_key = ann_ctr;
   add_ann(ann_ctr, network);
+  ann_ctr += 1;
+  if(ei_x_encode_atom(result, "ok") || ei_x_encode_long(result,
+							(long)hash_key))
+    return -1;
+  return 1;
+
+}
+
+int do_fann_copy(byte *buf, int * index, ei_x_buff * result) {
+  struct fann * oldNetwork = NULL;
+  struct fann * newNetwork = NULL;
+
+  if(get_fann_ptr(buf, index, &oldNetwork) != 1) return -1;
+    
+  newNetwork = fann_copy(oldNetwork);
+  if(newNetwork == NULL) return -1;
+
+  int hash_key = ann_ctr;
+  add_ann(ann_ctr, newNetwork);
   ann_ctr += 1;
   if(ei_x_encode_atom(result, "ok") || ei_x_encode_long(result,
 							(long)hash_key))

@@ -1,0 +1,136 @@
+CREATING/EXECUTION
+
+fann_create_standard       <- fannerl:create
+fann_create_standard_array <- fannerl:create
+fann_create_sparse         <- implicitly covered in fannerl:create
+fann_create_sparse_array   <- implicitly covered in fannerl:create
+fann_create_shortcut       <- implicitly covered in fannerl:create
+fann_create_shortcut_array <- implicitly covered in fannerl:create
+fann_destroy               <- fannerl:destroy
+fann_copy                  <- fannerl:copy
+fann_run                   <- fannerl:run
+fann_randomize_weights     <-
+fann_init_weights          <-
+fann_print_connections     <- Will not be directly covered, will implement own
+
+fann_print_parameters      <- Will not be directly covered, will implement own
+fann_get_num_input         <- fannerl:get_params
+fann_get_num_output        <- fannerl:get_params
+fann_get_total_neurons     <- fannerl:get_params
+fann_get_total_connections <- fannerl:get_params
+fann_get_network_type      <- fannerl:get_params
+fann_get_connection_rate   <- fannerl:get_params
+fann_get_num_layers        <- fannerl:get_params
+fann_get_layer_array       <- fannerl:get_params
+fann_get_bias_array        <- fannerl:get_params
+fann_get_connection_array  <- fannerl:get_params
+fann_set_weight_array      <- fannerl:set_param
+fann_set_weight            <- fannerl:set_param
+fann_get_weights           <- fannerl:get_params
+fann_set_weights           <- fannerl:set_param
+fann_set_user_data         <- Will not cover
+fann_get_user_data         <- Will not cover
+fann_disable_seed_rand     <- 
+fann_enable_seed_rand      <- 
+fann_get_decimal_point     <- If fixed point mode is supported
+fann_get_multiplier        <- If fixed point mode is supported
+
+TRAINING
+
+fann_train                        <- fannerl:train
+fann_test                         <- fannerl:test
+fann_get_MSE                      <-
+fann_get_bit_fail                 <-
+fann_reset_MSE                    <-
+
+fann_train_on_data                <- fannerl:train_on_data
+fann_train_on_file                <- fannerl_train_on_file
+fann_train_epoch                  <- fannerl:train_epoch
+fann_test_data                    <- fannerl:test_data
+
+fann_read_train_from_file         <- fannerl_read_train_from_file
+fann_create_train                 <-
+fann_create_train_pointer_array   <-
+fann_create_train_array           <- Will cover eventually
+fann_create_train_from_callback   <- Will not cover
+fann_destroy_train                <- Must implement
+fann_get_train_input              <- get_train_params
+fann_get_train_output             <- get_train_params
+fann_shuffle_train_data           <- fannerl:shuffle_train
+fann_get_min_train_input          <- get_train_params
+fann_get_max_train_input          <- get_train_params
+fann_get_min_train_output         <- get_train_params
+fann_get_max_train_output         <- get_train_params
+fann_scale_train                  <-
+fann_descale_train                <-
+fann_set_input_scaling_params     <- set_train_param
+fann_set_output_scaling_params    <- set_train_param
+fann_set_scaling_params           <- set_train_param
+fann_clear_scaling_params         <-
+fann_scale_input                  <-
+fann_scale_output                 <-
+fann_descale_input                <-
+fann_descale_output               <-
+fann_scale_input_train_data       <-
+fann_scale_output_train_data      <-
+fann_scale_train_data             <-
+fann_merge_train_data             <-
+fann_duplicate_train_data         <-
+fann_subset_train_data            <-
+fann_length_train_data            <- get_train_params
+fann_num_input_train_data         <- get_train_params
+fann_num_output_train_data        <- get_train_params
+fann_save_train                   <-
+fann_save_train_to_fixed          <-
+
+fann_get_training_algorithm       <- get_params
+fann_set_training_algorithm       <- set_param
+fann_get_learning_rate            <- get_params
+fann_set_learning_rate            <- set_param
+fann_get_learning_momentum        <- get_params
+fann_set_learning_momentum        <- Same for all below
+fann_get_activation_function
+fann_set_activation_function
+fann_set_activation_function_layer
+fann_set_activation_function_hidden
+fann_set_activation_function_output
+fann_get_activation_steepness
+fann_set_activation_steepness
+fann_set_activation_steepness_layer
+fann_set_activation_steepness_hidden
+fann_set_activation_steepness_output
+fann_get_train_error_function
+fann_set_train_error_function
+fann_get_train_stop_function
+fann_set_train_stop_function
+fann_get_bit_fail_limit
+fann_set_bit_fail_limit
+fann_set_callback
+fann_get_quickprop_decay
+fann_set_quickprop_decay
+fann_get_quickprop_mu
+fann_set_quickprop_mu
+fann_get_rprop_increase_factor
+fann_set_rprop_increase_factor
+fann_get_rprop_decrease_factor
+fann_set_rprop_decrease_factor
+fann_get_rprop_delta_min
+fann_set_rprop_delta_min
+fann_get_rprop_delta_max
+fann_set_rprop_delta_max
+fann_get_rprop_delta_zero
+fann_set_rprop_delta_zero
+fann_get_sarprop_weight_decay_shift
+fann_set_sarprop_weight_decay_shift
+fann_get_sarprop_step_error_threshold_factor
+fann_set_sarprop_step_error_threshold_factor
+fann_get_sarprop_step_error_shift
+fann_set_sarprop_step_error_shift
+fann_get_sarprop_temperature
+fann_set_sarprop_temperature
+
+fann_create_from_file            <- fannerl:create_from_file 
+fann_save                        <- fannerl:save
+fann_save_to_fixed               <- 
+
+All cascade training functions

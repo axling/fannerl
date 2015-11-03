@@ -24,6 +24,8 @@
 	 create_on/3,
 	 create_from_file/1,
 	 create_from_file/2,
+	 copy/1,
+	 copy_on/2,
 	 destroy/1,
 	 destroy_on/2,
 	 get_params/1,
@@ -192,8 +194,8 @@ create_from_file(FileName) when is_list(FileName) ->
 
 %% --------------------------------------------------------------------- %%
 %% @doc Creates an artificial neural network from a previously saved file. 
-%% See the FANN documentation of create_standard:
-%% [http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file]
+%% See
+%% [http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file].
 %% @end
 %% --------------------------------------------------------------------- %%
 -spec create_from_file(Instance::pid(), FileName :: string()) -> network_ref().
@@ -201,6 +203,25 @@ create_from_file(Instance, FileName)
   when Instance == ?MODULE; is_pid(Instance),
        is_list(FileName) ->
     call_port(Instance, {create_from_file, FileName}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv copy_on({@module}, Network)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec copy(Network::network_ref()) -> network_ref().
+copy(Network) when is_reference(Network) ->
+    copy_on(?MODULE, Network).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Creates a copy of a fann structure. See
+%% [http://libfann.github.io/fann/docs/files/fann-h.html#fann_copy].
+%% @end
+%% --------------------------------------------------------------------- %%
+copy_on(Instance, Network)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network) ->
+    call_port(Instance, {copy, Network, {}}).
+    
 
 %% --------------------------------------------------------------------- %%
 %% @equiv destroy_on({@module}, Network)
@@ -704,6 +725,11 @@ handle_return_val({create_from_file, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Ref = make_ref(),
     Caller ! {fannerl_res, Ref},
     State#{networks := dict:store(Ref, Ptr, maps:get(networks, State))};
+handle_return_val({copy, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
+    %% Hide the ptr by giving a ref to the user instead
+    NewRef = make_ref(),
+    Caller ! {fannerl_res, NewRef},
+    State#{networks := dict:store(NewRef, Ptr, maps:get(networks, State))};
 handle_return_val({destroy, _}, ok, Caller, State, Ref) ->
     Caller ! {fannerl_res, ok},
     dict:erase(Ref, State);

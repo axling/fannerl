@@ -20,7 +20,8 @@ fannerl_create_destroy_test_() ->
       fun fannerl_create/1,
       fun fannerl_multiple_create/1,
       fun fannerl_create_with_learning_rate/1,
-      fun fannerl_create_from_file/1
+      fun fannerl_create_from_file/1,
+      fun fannerl_copy/1
      ]
     }.
 
@@ -192,6 +193,20 @@ fannerl_create_from_file(_Map) ->
 	   ?assert(ok == fannerl:destroy(R2)),
 	   check_and_delete_file(File)
        end).
+
+fannerl_copy(_Map) ->
+    ?_test(
+       begin
+	   R = fannerl:create({2,2,1}),
+	   R2 = fannerl:copy(R),
+	   R3 = fannerl:copy(R2),
+	   ?assert(R /= R2),
+	   ?assert(R2 /= R3),
+	   ?assert(ok == fannerl:destroy(R)),
+	   ?assert(ok == fannerl:destroy(R2)),
+	   ?assert(ok == fannerl:destroy(R3))
+       end).
+
     
 fannerl_save(#{net:=R, filename:=FileName}) ->
     ?_test(
