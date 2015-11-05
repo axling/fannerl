@@ -40,6 +40,8 @@ int do_fann_test(byte*buf, int * index, ei_x_buff * result);
 int do_fann_save_to_file(byte*buf, int * index, ei_x_buff * result);
 int do_fann_shuffle_train(byte*buf, int * index, ei_x_buff * result);
 int do_fann_subset_train_data(byte*buf, int * index, ei_x_buff * result);
+int do_fann_randomize_weights(byte*buf, int * index, ei_x_buff * result);
+int do_fann_init_weights(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -237,6 +239,14 @@ int main() {
 
       if(do_fann_subset_train_data(buf, &index, &result) != 1) return 25;
 
+    } else if(!strcmp("randomize_weights", command)) {
+
+      if(do_fann_randomize_weights(buf, &index, &result) != 1) return 29;
+
+    } else if(!strcmp("init_weights", command)) {
+
+      if(do_fann_init_weights(buf, &index, &result) != 1) return 30;
+
     } else {
       if (ei_x_encode_atom(&result, "error") ||
 	  ei_x_encode_atom(&result, "unsupported_command")) 
@@ -394,28 +404,6 @@ int traverse_create_options(byte * buf, int * index, struct fann ** network){
       } else {
 	ei_skip_term((const char*)buf, index);
       }      
-    } else if(!strcmp("randomize_weights", key)) {
-      // Decode {MinWeight, MaxWeight}
-      double weights[2];
-      int tuple_size;
-      if(ei_decode_tuple_header((const char*)buf, index, &tuple_size))
-	return -1;
-      for(int i = 0; i < 2; ++i) {
-	if(ei_get_type((const char *)buf, index, &type, &type_size)) return -1;
-	if(type == ERL_FLOAT_EXT || type == NEW_FLOAT_EXT ) {
-	  if(ei_decode_double((const char *)buf, index, &weights[i]))
-	    return -1;
-	} else if(type == ERL_INTEGER_EXT || type == ERL_SMALL_INTEGER_EXT) {
-	  long num;
-	  if(ei_decode_long((const char *)buf, index, &num))
-	    return -1;
-	  weights[i] = (double)num;
-	} else {
-	  return -1;
-	}
-      }
-      fann_randomize_weights(*network, (fann_type)weights[0],
-			     (fann_type)weights[1]);
     } else {
       ei_skip_term((const char*)buf, index);
     }
@@ -814,6 +802,48 @@ int do_fann_subset_train_data(byte*buf, int * index, ei_x_buff * result) {
   if(ei_x_encode_atom(result, "ok") ||
      ei_x_encode_long(result, (long)copy))
     return -1;
+  return 1;
+}
+
+int do_fann_randomize_weights(byte*buf, int * index, ei_x_buff * result) {
+  fann_type min_weight, max_weight;
+  struct fann * network = 0;
+  int arity;
+    
+  // Decode Ptr, {MinWeight, MaxWeight}
+  // Decode network ptr
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+    
+  //Decode MinWeight
+  if(ei_decode_double((const char *)buf, index, &min_weight)) return -1;
+  if(ei_decode_double((const char *)buf, index, &max_weight)) return -1;
+  
+  fann_randomize_weights(network, min_weight, max_weight);
+    
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+
+  return 1;
+}
+
+int do_fann_init_weights(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network;
+  struct fann_train_data * train_data;
+  int arity;
+
+  // Decode {NetworkRef, TrainRef}, {}
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+
+  get_fann_ptr(buf, index, &network);
+  get_fann_train_ptr(buf, index, &train_data);
+  
+  fann_init_weights(network, train_data);
+    
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+
   return 1;
 }
 

@@ -57,7 +57,9 @@ fannerl_run_and_test_test_() ->
      [
       fun fannerl_run/1,
       fun fannerl_test/1,
-      fun fannerl_test_data/1
+      fun fannerl_test_data/1,
+      fun fannerl_randomize_weights/1,
+      fun fannerl_init_weights/1
      ]
     }.
 
@@ -318,5 +320,28 @@ fannerl_test_data(_) ->
 	   Filename = filename:join(PrivDir, "xor.data"),
 	   N = fannerl:read_train_from_file(Filename),
 	   {ok, _} = fannerl:test_data(R, N),
+	   ?assert(ok == fannerl:destroy(R))
+       end).
+
+
+fannerl_randomize_weights(_) ->
+    ?_test(
+       begin
+	   R = fannerl:create({2,2,1}),
+	   ok = fannerl:randomize_weights(R, -20.0, 20.0),
+	   ?assert(ok == fannerl:destroy(R))
+       end).
+
+fannerl_init_weights(_) ->
+    ?_test(
+       begin
+	   R = fannerl:create({2,2,1}),
+
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   N = fannerl:read_train_from_file(Filename),
+	   
+	   ok = fannerl:init_weights(R, N),
+	   
 	   ?assert(ok == fannerl:destroy(R))
        end).

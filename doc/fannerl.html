@@ -36,7 +36,10 @@
 
 
 <h2><a name="index">Function Index</a></h2>
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#create-1">create/1</a></td><td>Equivalent to <a href="#create_on-3"><tt>create_on(fannerl, Layers, default_options())</tt></a>.
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#copy-1">copy/1</a></td><td>Equivalent to <a href="#copy_on-2"><tt>copy_on(fannerl, Network)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#copy_on-2">copy_on/2</a></td><td>Creates a copy of a fann structure.</td></tr>
+<tr><td valign="top"><a href="#create-1">create/1</a></td><td>Equivalent to <a href="#create_on-3"><tt>create_on(fannerl, Layers, default_options())</tt></a>.
 </td></tr>
 <tr><td valign="top"><a href="#create-2">create/2</a></td><td>Equivalent to <a href="#create_on-3"><tt>create_on(fannerl, Layers, Options)</tt></a>.
 </td></tr>
@@ -54,6 +57,13 @@
 <tr><td valign="top"><a href="#get_params-1">get_params/1</a></td><td>Equivalent to <a href="#get_params_on-2"><tt>get_params_on(fannerl, Network)</tt></a>.
 </td></tr>
 <tr><td valign="top"><a href="#get_params_on-2">get_params_on/2</a></td><td>Fetch all the parameters associated with the neural network.</td></tr>
+<tr><td valign="top"><a href="#init_weights-2">init_weights/2</a></td><td>Equivalent to <a href="#init_weights_on-3"><tt>init_weights_on(fannerl, Network, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#init_weights_on-3">init_weights_on/3</a></td><td>Initialize the weights using Widrow + Nguyen’s algorithm.</td></tr>
+<tr><td valign="top"><a href="#randomize_weights-3">randomize_weights/3</a></td><td>Equivalent to <a href="#randomize_weights_on-4"><tt>randomize_weights_on(fannerl, Network, MinWeight,
+		     MaxWeight)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#randomize_weights_on-4">randomize_weights_on/4</a></td><td>Give each connection a random weight between min_weight and max_weight.</td></tr>
 <tr><td valign="top"><a href="#read_train_from_file-1">read_train_from_file/1</a></td><td>Equivalent to <a href="#read_train_from_file_on-2"><tt>read_train_from_file_on(fannerl, Filename)</tt></a>.
 </td></tr>
 <tr><td valign="top"><a href="#read_train_from_file_on-2">read_train_from_file_on/2</a></td><td>Reads a file that stores training data.</td></tr>
@@ -102,6 +112,18 @@
 
 <h2><a name="functions">Function Details</a></h2>
 
+<h3 class="function"><a name="copy-1">copy/1</a></h3>
+<div class="spec">
+<p><tt>copy(Network::<a href="#type-network_ref">network_ref()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#copy_on-2"><tt>copy_on(fannerl, Network)</tt></a>.</p>
+
+
+<h3 class="function"><a name="copy_on-2">copy_on/2</a></h3>
+<div class="spec">
+<p><tt>copy_on(Instance, Network) -&gt; any()</tt></p>
+</div><p>Creates a copy of a fann structure. See
+  <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_copy" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_copy</tt></a>.</p>
+
 <h3 class="function"><a name="create-1">create/1</a></h3>
 <div class="spec">
 <p><tt>create(Layers::<a href="#type-network_layers">network_layers()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
@@ -124,8 +146,8 @@
 <div class="spec">
 <p><tt>create_from_file(Instance::pid(), FileName::string()) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
 </div><p>Creates an artificial neural network from a previously saved file.
-  See the FANN documentation of create_standard:
-  <a href="http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file</tt></a></p>
+  See
+  <a href="http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file</tt></a>.</p>
 
 <h3 class="function"><a name="create_on-2">create_on/2</a></h3>
 <div class="spec">
@@ -164,6 +186,36 @@
 <div class="spec">
 <p><tt>get_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>) -&gt; #{}</tt><br></p>
 </div><p>Fetch all the parameters associated with the neural network.</p>
+
+<h3 class="function"><a name="init_weights-2">init_weights/2</a></h3>
+<div class="spec">
+<p><tt>init_weights(Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#init_weights_on-3"><tt>init_weights_on(fannerl, Network, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="init_weights_on-3">init_weights_on/3</a></h3>
+<div class="spec">
+<p><tt>init_weights_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p><p>Initialize the weights using Widrow + Nguyen’s algorithm.</p>
+ 
+  This function behaves similarly to fann_randomize_weights.  It will use
+  the algorithm developed by Derrick Nguyen and Bernard Widrow to set
+  the weights in such a way as to speed up training.
+  See <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_init_weights" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_init_weights</tt></a>.</p>
+
+<h3 class="function"><a name="randomize_weights-3">randomize_weights/3</a></h3>
+<div class="spec">
+<p><tt>randomize_weights(Network::<a href="#type-network_ref">network_ref()</a>, MinWeight::number(), MaxWeight::number()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#randomize_weights_on-4"><tt>randomize_weights_on(fannerl, Network, MinWeight,
+		     MaxWeight)</tt></a>.</p>
+
+
+<h3 class="function"><a name="randomize_weights_on-4">randomize_weights_on/4</a></h3>
+<div class="spec">
+<p><tt>randomize_weights_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, MinWeight::number(), MaxWeight::number()) -&gt; ok</tt><br></p>
+</div><p>Give each connection a random weight between min_weight and max_weight.
+  From the beginning the weights are random between -0.1 and 0.1.
+  See <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_randomize_weights" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_randomize_weights</tt></a>.</p>
 
 <h3 class="function"><a name="read_train_from_file-1">read_train_from_file/1</a></h3>
 <div class="spec">
@@ -326,6 +378,6 @@
 <hr>
 
 <div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<p><i>Generated by EDoc, Nov 2 2015, 22:13:33.</i></p>
+<p><i>Generated by EDoc, Nov 6 2015, 00:10:36.</i></p>
 </body>
 </html>

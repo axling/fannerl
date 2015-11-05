@@ -32,6 +32,11 @@
 	 get_params_on/2
 	]).
 
+-export([init_weights/2,
+	 init_weights_on/3,
+	 randomize_weights/3,
+	 randomize_weights_on/4]).
+
 -export([train_epoch/2,
 	 train_epoch_on/3,
 	 train/3,
@@ -533,6 +538,56 @@ get_params_on(Instance, Network)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network) ->
     call_port(Instance, {get_params, Network, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv randomize_weights_on({@module}, Network, MinWeight, MaxWeight)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec randomize_weights(Network::network_ref(),
+			MinWeight::number(), MaxWeight::number()) -> ok.
+randomize_weights(Network, MinWeight, MaxWeight)
+  when is_reference(Network), is_number(MinWeight), is_number(MaxWeight),
+       MinWeight =< MaxWeight ->
+    randomize_weights_on(?MODULE, Network, MinWeight, MaxWeight).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Give each connection a random weight between min_weight and max_weight.
+%% From the beginning the weights are random between -0.1 and 0.1.
+%% See [http://libfann.github.io/fann/docs/files/fann-h.html#fann_randomize_weights].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec randomize_weights_on(Instance::pid(), Network::network_ref(),
+			   MinWeight::number(), MaxWeight::number()) -> ok.
+randomize_weights_on(Instance, Network, MinWeight, MaxWeight) 
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network), is_number(MinWeight), is_number(MaxWeight),
+       MinWeight =< MaxWeight ->
+    call_port(Instance, {randomize_weights, Network, {MinWeight, MaxWeight}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv init_weights_on({@module}, Network, Train)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec init_weights(Network::network_ref(), Train::train_ref()) -> ok.
+init_weights(Network, Train)
+  when is_reference(Network), is_reference(Train) ->
+    init_weights_on(?MODULE, Network, Train).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Initialize the weights using Widrow + Nguyen’s algorithm.
+%%
+%% This function behaves similarly to fann_randomize_weights.  It will use
+%% the algorithm developed by Derrick Nguyen and Bernard Widrow to set
+%% the weights in such a way as to speed up training. 
+%% See [http://libfann.github.io/fann/docs/files/fann-h.html#fann_init_weights].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec init_weights_on(Instance::pid(), Network::network_ref(),
+		      Train::train_ref()) -> ok.
+init_weights_on(Instance, Network, Train)
+  when Instance == ?MODULE; is_pid(Instance), 
+       is_reference(Network), is_reference(Train) ->
+    call_port(Instance, {init_weights, {Network, Train}, {}}).
 
 %%****************************************************************%%       
 %% Private functions
