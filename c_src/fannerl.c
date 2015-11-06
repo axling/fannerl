@@ -45,6 +45,7 @@ int do_fann_init_weights(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
+double get_double(byte * buf, int * index);
 int get_fann_ptr(byte * buf, int * index, struct fann** fann);
 int get_fann_train_ptr(byte * buf, int * index, struct fann_train_data** fann);
 
@@ -817,8 +818,8 @@ int do_fann_randomize_weights(byte*buf, int * index, ei_x_buff * result) {
   if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
     
   //Decode MinWeight
-  if(ei_decode_double((const char *)buf, index, &min_weight)) return -1;
-  if(ei_decode_double((const char *)buf, index, &max_weight)) return -1;
+  min_weight = get_double(buf, index);
+  max_weight = get_double(buf, index);
   
   fann_randomize_weights(network, min_weight, max_weight);
     
@@ -855,25 +856,29 @@ int do_fann_init_weights(byte*buf, int * index, ei_x_buff * result) {
 int get_tuple_double_data(byte * buf, int * index, double * data,
 			  unsigned int size) {
   int arity;
-  int type, type_size;
-  double double_value;
-  long long_value;
+
   if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
   if(arity != size) return -1;
   
   for(int i = 0; i < arity; ++i) {
-    ei_get_type((const char *)buf, index, &type, &type_size);
-    if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
-      if(ei_decode_long((const char *)buf, index, &long_value)) return -1;
-      data[i] = (double)long_value;
-    } else if(type == ERL_FLOAT_EXT) {
-      if(ei_decode_double((const char *)buf, index, &double_value)) return -1;
-      data[i] = double_value;
-    } else {
-      return -1;
-    }
+    data[i] = get_double(buf, index);
   }
   return 1;
+}
+
+double get_double(byte*buf, int * index) {
+  int type, type_size;
+  double double_value;
+  long long_value;
+  ei_get_type((const char *)buf, index, &type, &type_size);
+    if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
+      if(ei_decode_long((const char *)buf, index, &long_value)) return -1;
+      return (double)long_value;
+    } else {
+      if(ei_decode_double((const char *)buf, index, &double_value)) return -1;
+      return double_value;
+    }
+    
 }
 
 int get_fann_ptr(byte * buf, int * index, struct fann ** fann) {

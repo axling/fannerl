@@ -328,7 +328,7 @@ fannerl_randomize_weights(_) ->
     ?_test(
        begin
 	   R = fannerl:create({2,2,1}),
-	   ok = fannerl:randomize_weights(R, -20.0, 20.0),
+	   ok = fannerl:randomize_weights(R, -20.0, 20),
 	   ?assert(ok == fannerl:destroy(R))
        end).
 
