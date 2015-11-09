@@ -59,7 +59,8 @@ fannerl_run_and_test_test_() ->
       fun fannerl_test/1,
       fun fannerl_test_data/1,
       fun fannerl_randomize_weights/1,
-      fun fannerl_init_weights/1
+      fun fannerl_init_weights/1,
+      fun fannerl_reset_mse/1
      ]
     }.
 
@@ -343,5 +344,15 @@ fannerl_init_weights(_) ->
 	   
 	   ok = fannerl:init_weights(R, N),
 	   
+	   ?assert(ok == fannerl:destroy(R))
+       end).
+
+fannerl_reset_mse(_) ->
+    ?_test(
+       begin
+	   R = fannerl:create({2,2,1}),
+	   %% TODO: test setting, resetting, then getting, no only test that
+	   %% nothing crashes
+	   ok = fannerl:reset_mse(R), 
 	   ?assert(ok == fannerl:destroy(R))
        end).

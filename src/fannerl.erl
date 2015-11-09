@@ -29,7 +29,9 @@
 	 destroy/1,
 	 destroy_on/2,
 	 get_params/1,
-	 get_params_on/2
+	 get_params_on/2,
+	 reset_mse/1,
+	 reset_mse_on/2
 	]).
 
 -export([init_weights/2,
@@ -588,6 +590,27 @@ init_weights_on(Instance, Network, Train)
   when Instance == ?MODULE; is_pid(Instance), 
        is_reference(Network), is_reference(Train) ->
     call_port(Instance, {init_weights, {Network, Train}, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv reset_mse_on({@module}, Network)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec reset_mse(Network::network_ref()) -> ok.
+reset_mse(Network)
+  when is_reference(Network) ->
+    reset_mse_on(?MODULE, Network).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Resets the mean square error from the network.
+%% This function also resets the number of bits that fail. 
+%% See http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_reset_MSE
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec reset_mse_on(Instance::pid(), Network::network_ref()) -> ok.
+reset_mse_on(Instance, Network)
+  when Instance == ?MODULE; is_pid(Instance), 
+       is_reference(Network) ->
+    call_port(Instance, {reset_mse, Network, {}}).
 
 %%****************************************************************%%       
 %% Private functions

@@ -42,6 +42,7 @@ int do_fann_shuffle_train(byte*buf, int * index, ei_x_buff * result);
 int do_fann_subset_train_data(byte*buf, int * index, ei_x_buff * result);
 int do_fann_randomize_weights(byte*buf, int * index, ei_x_buff * result);
 int do_fann_init_weights(byte*buf, int * index, ei_x_buff * result);
+int do_fann_reset_mse(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -247,6 +248,10 @@ int main() {
     } else if(!strcmp("init_weights", command)) {
 
       if(do_fann_init_weights(buf, &index, &result) != 1) return 30;
+
+    } else if(!strcmp("reset_mse", command)) {
+
+      if(do_fann_reset_mse(buf, &index, &result) != 1) return 31;
 
     } else {
       if (ei_x_encode_atom(&result, "error") ||
@@ -848,7 +853,19 @@ int do_fann_init_weights(byte*buf, int * index, ei_x_buff * result) {
   return 1;
 }
 
+int do_fann_reset_mse(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  //Decode Ptr, {}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  
+  fann_reset_MSE(network);
 
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+
+  return 1;
+}
 
 /*-----------------------------------------------------------------
  * Util functions
