@@ -1,4 +1,1 @@
-%% encoding: UTF-8
-{application,fannerl}.
-{packages,[]}.
-{modules,[fannerl]}.
+doc/edoc-info
