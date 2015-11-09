@@ -14,13 +14,13 @@ fann_init_weights          <- fannerl:init_weights
 fann_print_connections     <- Will not be directly covered, will implement own
 
 fann_print_parameters      <- Will not be directly covered, will implement own
-fann_get_num_input         <- fannerl:get_params
-fann_get_num_output        <- fannerl:get_params
-fann_get_total_neurons     <- fannerl:get_params
-fann_get_total_connections <- fannerl:get_params
-fann_get_network_type      <- fannerl:get_params
-fann_get_connection_rate   <- fannerl:get_params
-fann_get_num_layers        <- fannerl:get_params
+fann_get_num_input         <- fannerl:get_params :: DONE
+fann_get_num_output        <- fannerl:get_params :: DONE
+fann_get_total_neurons     <- fannerl:get_params :: DONE
+fann_get_total_connections <- fannerl:get_params :: DONE
+fann_get_network_type      <- fannerl:get_params :: DONE
+fann_get_connection_rate   <- fannerl:get_params :: DONE
+fann_get_num_layers        <- fannerl:get_params :: DONE
 fann_get_layer_array       <- fannerl:get_params
 fann_get_bias_array        <- fannerl:get_params
 fann_get_connection_array  <- fannerl:get_params
@@ -39,9 +39,9 @@ TRAINING
 
 fann_train                        <- fannerl:train
 fann_test                         <- fannerl:test
-fann_get_MSE                      <- fannerl:get_params
-fann_get_bit_fail                 <- fannerl:get_params
-fann_reset_MSE                    <- 
+fann_get_MSE                      <- fannerl:get_params :: DONE
+fann_get_bit_fail                 <- fannerl:get_params :: DONE
+fann_reset_MSE                    <- fannerl:reset_mse
 
 fann_train_on_data                <- fannerl:train_on_data
 fann_train_on_file                <- fannerl_train_on_file
@@ -49,9 +49,9 @@ fann_train_epoch                  <- fannerl:train_epoch
 fann_test_data                    <- fannerl:test_data
 
 fann_read_train_from_file         <- fannerl_read_train_from_file
-fann_create_train                 <-
-fann_create_train_pointer_array   <-
-fann_create_train_array           <- Will cover eventually
+fann_create_train                 <- Will not cover
+fann_create_train_pointer_array   <- Will not cover
+fann_create_train_array           <- Will cover eventually (2.3.0)
 fann_create_train_from_callback   <- Will not cover
 fann_destroy_train                <- Must implement
 fann_get_train_input              <- get_train_params
@@ -83,11 +83,11 @@ fann_num_output_train_data        <- get_train_params
 fann_save_train                   <-
 fann_save_train_to_fixed          <-
 
-fann_get_training_algorithm       <- get_params
+fann_get_training_algorithm       <- get_params :: DONE
 fann_set_training_algorithm       <- set_param
-fann_get_learning_rate            <- get_params
+fann_get_learning_rate            <- get_params :: DONE
 fann_set_learning_rate            <- set_param
-fann_get_learning_momentum        <- get_params
+fann_get_learning_momentum        <- get_params :: DONE
 fann_set_learning_momentum        <- Same for all below
 fann_get_activation_function
 fann_set_activation_function
@@ -99,7 +99,7 @@ fann_set_activation_steepness
 fann_set_activation_steepness_layer
 fann_set_activation_steepness_hidden
 fann_set_activation_steepness_output
-fann_get_train_error_function
+fann_get_train_error_function :: DONE
 fann_set_train_error_function
 fann_get_train_stop_function
 fann_set_train_stop_function

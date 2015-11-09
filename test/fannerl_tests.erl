@@ -178,7 +178,8 @@ fannerl_create_with_learning_rate(_Map) ->
        begin
 	   LearningRate = 0.2,
 	   R = fannerl:create({5,7,3}, #{learning_rate => LearningRate}),
-	   #{learning_rate := LearningRateAfter} = fannerl:get_params(R),
+	   Map = fannerl:get_params(R),
+	   #{learning_rate := LearningRateAfter} = Map,
 	   ok = fannerl:destroy(R),
 	   ?_assert(LearningRateAfter == LearningRate)
        end).

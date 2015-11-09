@@ -567,10 +567,15 @@ int do_fann_run(byte *buf, int * index, ei_x_buff * result) {
 
 int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
   struct fann * network = 0;
-  float learning_rate, learning_momentum, mse;
+  float learning_rate, learning_momentum, mse, connection_rate;
   enum fann_train_enum train_alg;
   enum fann_errorfunc_enum error_func;
+  enum fann_nettype_enum network_type;
   unsigned int bit_fail;
+  unsigned int num_input, num_output, total_neurons;
+  unsigned int total_connections;
+  unsigned int num_layers;
+  
   //Decode Ptr, {}
   // Decode network ptr first
   if(get_fann_ptr(buf, index, &network) != 1) return -1;
@@ -583,10 +588,20 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
   mse = fann_get_MSE(network);
   bit_fail = fann_get_bit_fail(network);
   error_func = fann_get_train_error_function(network);
+  network_type = fann_get_network_type(network);
+
+  num_input = fann_get_num_input(network);
+  num_output = fann_get_num_output(network);
+  total_neurons = fann_get_total_neurons(network);
+  total_connections = fann_get_total_connections(network);
+
+  connection_rate = fann_get_connection_rate(network);
+
+  num_layers = fann_get_num_layers(network);
 
   // encode to map
   if(ei_x_new_with_version(result)) return -1;
-  ei_x_encode_map_header(result, 6);
+  ei_x_encode_map_header(result, 10);
   ei_x_encode_atom(result, "learning_rate");
   ei_x_encode_double(result, (double)learning_rate);
   ei_x_encode_atom(result, "learning_momentum");
@@ -616,6 +631,29 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
   } else {
     ei_x_encode_atom(result, "unknown_error_function");
   }
+  
+  ei_x_encode_atom(result, "num_input");
+  ei_x_encode_ulong(result, (unsigned long)num_input);
+  ei_x_encode_atom(result, "num_output");
+  ei_x_encode_ulong(result, (unsigned long)num_output);
+  ei_x_encode_atom(result, "total_neurons");
+  ei_x_encode_ulong(result, (unsigned long)total_neurons);
+  ei_x_encode_atom(result, "total_connections");
+  ei_x_encode_ulong(result, (unsigned long)total_connections);
+
+  ei_x_encode_atom(result, "network_type");
+  if(error_func == FANN_NETTYPE_LAYER) {
+    ei_x_encode_atom(result, "fann_nettype_layer");
+  } else if(error_func == FANN_NETTYPE_SHORTCUT) {
+    ei_x_encode_atom(result, "fann_nettype_shortcut");
+  } else {
+    ei_x_encode_atom(result, "unknown_network_type");
+  }
+  ei_x_encode_atom(result, "connection_rate");
+  ei_x_encode_double(result, (double)connection_rate);
+  
+  ei_x_encode_atom(result, "num_layers");
+  ei_x_encode_ulong(result, (unsigned int)num_layers);
   return 1;
 }
 
