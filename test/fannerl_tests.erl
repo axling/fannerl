@@ -46,6 +46,7 @@ fannerl_train_test_() ->
       fun fannerl_train_shuffle/1,
       fun fannerl_train_subset/1,
       fun fannerl_train_merge/1,
+      fun fannerl_train_duplicate/1,
       fun fannerl_train_epoch/1,
       fun fannerl_train_on_data/1,
       fun fannerl_train/1,
@@ -324,6 +325,18 @@ fannerl_train_merge(_) ->
 	   Filename = filename:join(PrivDir, "xor.data"),
 	   N = fannerl:read_train_from_file(Filename),
 	   NewTrain = fannerl:merge_train_data(N, N),
+	   ?assert(N /= NewTrain),
+	   ok = fannerl:destroy_train(N),
+	   ok = fannerl:destroy_train(NewTrain)
+       end).
+
+fannerl_train_duplicate(_) ->
+    ?_test(
+       begin
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   N = fannerl:read_train_from_file(Filename),
+	   NewTrain = fannerl:duplicate_train_data(N),
 	   ?assert(N /= NewTrain),
 	   ok = fannerl:destroy_train(N),
 	   ok = fannerl:destroy_train(NewTrain)

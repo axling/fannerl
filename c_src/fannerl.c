@@ -51,6 +51,7 @@ int do_fann_reset_mse(byte*buf, int * index, ei_x_buff * result);
 int do_fann_set_weights(byte*buf, int * index, ei_x_buff * result);
 int do_fann_set_weight(byte*buf, int * index, ei_x_buff * result);
 int do_fann_merge_trains(byte*buf, int * index, ei_x_buff * result);
+int do_fann_duplicate_train(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -287,11 +288,15 @@ int main() {
 
     } else if(!strcmp("set_weight", command)) {
 
-      if(do_fann_set_weight(buf, &index, &result) != 1) return 36;
+      if(do_fann_set_weight(buf, &index, &result) != 1) return 37;
 
     } else if(!strcmp("merge_train", command)) {
 
-      if(do_fann_merge_trains(buf, &index, &result) != 1) return 36;
+      if(do_fann_merge_trains(buf, &index, &result) != 1) return 38;
+
+    } else if(!strcmp("duplicate_train", command)) {
+
+      if(do_fann_duplicate_train(buf, &index, &result) != 1) return 39;
 
     } else {
       if (ei_x_encode_atom(&result, "error") ||
@@ -1157,7 +1162,7 @@ int do_fann_merge_trains(byte*buf, int * index, ei_x_buff * result) {
   if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
   if(get_fann_train_ptr(buf, index, &train1) != 1) return -1;
   if(get_fann_train_ptr(buf, index, &train2) != 1) return -1;
-    // Skip the {} part
+  // Skip the {} part
   ei_skip_term((const char*)buf, index);
 
   new_train = fann_merge_train_data(train1, train2);
@@ -1169,7 +1174,24 @@ int do_fann_merge_trains(byte*buf, int * index, ei_x_buff * result) {
     return -1;
   return 1;
 }
+
+int do_fann_duplicate_train(byte*buf, int * index, ei_x_buff * result) {
+  struct fann_train_data * train;
+  struct fann_train_data * new_train;
+  //Decode Train, {}
+  if(get_fann_train_ptr(buf, index, &train) != 1) return -1;
+  // Skip the {} part
+  ei_skip_term((const char*)buf, index);
+  new_train = fann_duplicate_train_data(train);
   
+  if(ei_x_new_with_version(result)) return -1;
+  if(ei_x_encode_tuple_header(result, 2)) return -1;
+  if(ei_x_encode_atom(result, "ok") ||
+     ei_x_encode_long(result, (long)new_train))
+    return -1;
+  return 1;
+}
+
 /*-----------------------------------------------------------------
  * Util functions
  *----------------------------------------------------------------*/

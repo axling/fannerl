@@ -52,6 +52,8 @@
 	 read_train_from_file_on/2,
 	 merge_train_data/2,
 	 merge_train_data_on/3,
+	 duplicate_train_data/1,
+	 duplicate_train_data_on/2,
 	 destroy_train/1,
 	 destroy_train_on/2,
 	 shuffle_train/1,
@@ -472,6 +474,27 @@ merge_train_data_on(Instance, Train1, Train2)
        is_reference(Train1),
        is_reference(Train2) ->
     call_port(Instance, {merge_train, {trains, Train1, Train2}, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv duplicate_train_data_on({@module}, Train)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec duplicate_train_data(Train::train_ref()) -> train_ref().
+duplicate_train_data(Train)
+  when is_reference(Train) ->
+    duplicate_train_data_on(?MODULE, Train).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Returns an exact copy of the training data.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_duplicate_train_data].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec duplicate_train_data_on(Instance::pid(), Train::train_ref())
+			     -> train_ref().
+duplicate_train_data_on(Instance, Train)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Train) ->
+    call_port(Instance, {duplicate_train, {train, Train}, {}}).
 
 %% --------------------------------------------------------------------- %%
 %% @equiv shuffle_train_on({@module}, Train)
@@ -1028,6 +1051,10 @@ handle_return_val({read_train_from_file, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Caller ! {fannerl_res, Ref},
     State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};
 handle_return_val({merge_train, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
+    Ref = make_ref(),
+    Caller ! {fannerl_res, Ref},
+    State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};
+handle_return_val({duplicate_train, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Ref = make_ref(),
     Caller ! {fannerl_res, Ref},
     State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};

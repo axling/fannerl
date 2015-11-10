@@ -84,7 +84,7 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_scale_output_train_data| -                    | -               | Use scale_train instead   |
 | fann_scale_train_data       | -                    | -               | Use scale_train instead   |
 | fann_merge_train_data       | fannerl:merge_train_data| 1.0.0        |    |
-| fann_duplicate_train_data   | JTBD                 | 1.0.0           |    |
+| fann_duplicate_train_data   | fannerl:duplicate_train_data | 1.0.0   |    |
 | fann_subset_train_data      | fannerl:subset_train_data | 1.0.0      |    |
 | fann_length_train_data      | JTBD                 | 1.0.0           |    |
 | fann_num_input_train_data   | JTBD                 | 1.0.0           |    |
