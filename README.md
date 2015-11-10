@@ -136,6 +136,9 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_set_sarprop_step_error_shift | JTBD                        | 1.0.0           |    |
 | fann_get_sarprop_temperature      | JTBD - fannerl:get_params   | 1.0.0           |    |
 | fann_set_sarprop_temperature      | JTBD                        | 1.0.0           |    |
+
+## File Input/Output
+| fann function                     | supported by                | fannerl verson  | Comment  |
 | fann_create_from_file             | fannerl:create_from_file    | 1.0.0           |    |
 | fann_save                         | fannerl:save                | 1.0.0           |    |
 | fann_save_to_fixed                | -                           | 1.X.0           | Will be supported in later release |
