@@ -21,13 +21,13 @@ fann_get_total_connections <- fannerl:get_params :: DONE
 fann_get_network_type      <- fannerl:get_params :: DONE
 fann_get_connection_rate   <- fannerl:get_params :: DONE
 fann_get_num_layers        <- fannerl:get_params :: DONE
-fann_get_layer_array       <- fannerl:get_params
-fann_get_bias_array        <- fannerl:get_params
-fann_get_connection_array  <- fannerl:get_params
-fann_set_weight_array      <- fannerl:set_param
+fann_get_layer_array       <- fannerl:get_params :: DONE
+fann_get_bias_array        <- fannerl:get_params :: DONE
+fann_get_connection_array  <- fannerl:get_params :: DONE
+fann_set_weight_array      <- Will be covered by set_param and set_params
 fann_set_weight            <- fannerl:set_param
-fann_get_weights           <- fannerl:get_params
-fann_set_weights           <- fannerl:set_param
+fann_get_weights           <- Not supported in fann yet, covered by above
+fann_set_weights           <- Not supported in fann yet, covered by above
 fann_set_user_data         <- Will not cover
 fann_get_user_data         <- Will not cover
 fann_disable_seed_rand     <- Come with 2.3.0

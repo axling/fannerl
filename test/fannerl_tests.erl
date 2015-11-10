@@ -21,7 +21,8 @@ fannerl_create_destroy_test_() ->
       fun fannerl_multiple_create/1,
       fun fannerl_create_with_learning_rate/1,
       fun fannerl_create_from_file/1,
-      fun fannerl_copy/1
+      fun fannerl_copy/1,
+      fun fannerl_create_and_get_params/1
      ]
     }.
 
@@ -182,6 +183,40 @@ fannerl_create_with_learning_rate(_Map) ->
 	   #{learning_rate := LearningRateAfter} = Map,
 	   ok = fannerl:destroy(R),
 	   ?_assert(LearningRateAfter == LearningRate)
+       end).
+
+fannerl_create_and_get_params(_Map) ->
+    ?_test(
+       begin
+	   NumInput = 5,
+	   NumOutput = 3,
+	   Hidden = 7,
+	   Net = {NumInput, Hidden, NumOutput},
+	   R = fannerl:create(Net),
+	   Map = fannerl:get_params(R),
+	   _TotalNeurons = NumInput + NumOutput + Hidden,
+	   _TotalConnections = NumInput * Hidden + Hidden*NumOutput,
+	   NumLayers = tuple_size(Net),
+	   #{learning_rate := _LearningRate,
+	     learning_momentum := _LearningMomentum,
+	     training_algorithm := _TrainingAlgorithm,
+	     mean_square_error := _MeanSquareError,
+	     bit_fail := _BitFail,
+	     train_error_function := _TrainErrorFunc,
+	     network_type := _NetType,
+	     num_output := NumOutput,
+	     num_input := NumInput,
+	     total_neurons := _TotalNeuronsPlusBias,
+	     total_connections := _TotalConnectionsPlusBiasConns,
+	     connection_rate := 1.0,
+	     num_layers := NumLayers,
+	     layers := Net,
+	     bias := _Bias,
+	     connections := Connections
+	     } = Map,
+	   ?assert(is_map(Connections)),
+	   _Val = maps:get({0,Hidden-1}, Connections),
+	   ok = fannerl:destroy(R)
        end).
 
 fannerl_create_from_file(_Map) ->

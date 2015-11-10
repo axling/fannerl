@@ -575,6 +575,9 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
   unsigned int num_input, num_output, total_neurons;
   unsigned int total_connections;
   unsigned int num_layers;
+  unsigned int * layers;
+  unsigned int * bias;
+  struct fann_connection * connections;
   
   //Decode Ptr, {}
   // Decode network ptr first
@@ -601,7 +604,7 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
 
   // encode to map
   if(ei_x_new_with_version(result)) return -1;
-  ei_x_encode_map_header(result, 10);
+  ei_x_encode_map_header(result, 16);
   ei_x_encode_atom(result, "learning_rate");
   ei_x_encode_double(result, (double)learning_rate);
   ei_x_encode_atom(result, "learning_momentum");
@@ -654,6 +657,41 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
   
   ei_x_encode_atom(result, "num_layers");
   ei_x_encode_ulong(result, (unsigned int)num_layers);
+
+  // Handle arrays, turn into tuples
+  // layers array
+  layers = (unsigned int * )malloc(sizeof(unsigned int)*num_layers);
+  fann_get_layer_array(network, layers);
+  ei_x_encode_atom(result, "layers");
+  ei_x_encode_tuple_header(result, num_layers);
+  for(int i = 0; i < num_layers; ++i) {
+    ei_x_encode_ulong(result, (unsigned int)layers[i]);
+  }
+  free(layers);
+  // bias array
+  bias = (unsigned int * )malloc(sizeof(unsigned int)*num_layers);
+  fann_get_bias_array(network, bias);
+  ei_x_encode_atom(result, "bias");
+  ei_x_encode_tuple_header(result, num_layers);
+  for(int i = 0; i < num_layers; ++i) {
+    ei_x_encode_ulong(result, (unsigned int)bias[i]);
+  }
+  free(bias);
+
+  // connections, encode into map where {From, To} is the key
+  connections = (struct fann_connection *)malloc(sizeof(struct fann_connection)*
+						 total_connections);
+  fann_get_connection_array(network, connections);
+  ei_x_encode_atom(result, "connections");
+  ei_x_encode_map_header(result, total_connections);
+  for(int i = 0; i < total_connections; ++i) {
+    ei_x_encode_tuple_header(result, 2); // size will be 2 as {From, To}
+    ei_x_encode_ulong(result, connections[i].from_neuron);
+    ei_x_encode_ulong(result, connections[i].to_neuron);
+    ei_x_encode_double(result, connections[i].weight);
+  }
+  free(connections);
+  // The key will be a tuple
   return 1;
 }
 
