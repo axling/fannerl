@@ -33,6 +33,7 @@ int do_fann_run(byte *buf, int * index, ei_x_buff * result);
 int do_fann_train_on_file(byte *buf, int * index, ei_x_buff * result);
 int do_fann_get_params(byte*buf, int * index, ei_x_buff * result);
 int do_fann_read_train_from_file(byte*buf, int * index, ei_x_buff * result);
+int do_fann_destroy_train(byte *buf, int * index, ei_x_buff * result);
 int do_fann_train_on_data(byte*buf, int * index, ei_x_buff * result);
 int do_fann_train_epoch(byte*buf, int * index, ei_x_buff * result);
 int do_fann_test_data(byte*buf, int * index, ei_x_buff * result);
@@ -212,6 +213,10 @@ int main() {
     } else if(!strcmp("read_train_from_file", command)) {
 
       if(do_fann_read_train_from_file(buf, &index, &result) != 1) return 17;
+
+    } else if(!strcmp("destroy_train", command)) {
+
+      if(do_fann_destroy_train(buf, &index, &result) != 1) return 17;
 
     } else if(!strcmp("train_on_data", command)) {
 
@@ -884,6 +889,20 @@ int do_fann_subset_train_data(byte*buf, int * index, ei_x_buff * result) {
   if(ei_x_encode_atom(result, "ok") ||
      ei_x_encode_long(result, (long)copy))
     return -1;
+  return 1;
+}
+
+int do_fann_destroy_train(byte*buf, int * index, ei_x_buff * result) {
+  struct fann_train_data * train;
+
+  // Decode trainPtr, {}
+  if(get_fann_train_ptr(buf, index, &train) != 1) return -1;
+
+  fann_destroy_train(train);
+
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+
   return 1;
 }
 

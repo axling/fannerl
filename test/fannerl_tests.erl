@@ -130,6 +130,7 @@ fannerl_stop_on_unstarted_error() ->
 
 fannerl_create(_Map) ->
     R = fannerl:create({2,2,1}),
+    _A = ?_assertError(invalid_network, fannerl:destroy(make_ref())),
     ?_assert(ok == fannerl:destroy(R)).
     
 
@@ -141,10 +142,10 @@ fannerl_multiple_create(#{instances := Pids}) ->
 	       lists:map(
 		 fun(_) ->
 			 _R = fannerl:create({random:uniform(100),
-					     random:uniform(100),
-					     random:uniform(100)})
+					      random:uniform(100),
+					      random:uniform(100)})
 		 end, lists:seq(1,50)),
-
+	   
 	   OtherFanns = 
 	       lists:map(
 		 fun(Pid) ->
@@ -271,7 +272,10 @@ fannerl_train_create(_) ->
        begin
 	   PrivDir = code:priv_dir(fannerl),
 	   Filename = filename:join(PrivDir, "xor.data"),
-	   _N = fannerl:read_train_from_file(Filename)
+	   N = fannerl:read_train_from_file(Filename),
+	   ok = fannerl:destroy_train(N),
+	   ?assertError(invalid_training_data,
+			fannerl:destroy_train(make_ref()))
        end).
 
 fannerl_train_shuffle(_) ->
@@ -280,7 +284,8 @@ fannerl_train_shuffle(_) ->
 	   PrivDir = code:priv_dir(fannerl),
 	   Filename = filename:join(PrivDir, "xor.data"),
 	   N = fannerl:read_train_from_file(Filename),
-	   ?assert(ok == fannerl:shuffle_train(N))
+	   ?assert(ok == fannerl:shuffle_train(N)),
+	   ok = fannerl:destroy_train(N)
        end).
 
 fannerl_train_subset(_) ->
@@ -290,7 +295,9 @@ fannerl_train_subset(_) ->
 	   Filename = filename:join(PrivDir, "xor.data"),
 	   N = fannerl:read_train_from_file(Filename),
 	   NewTrain = fannerl:subset_train_data(N, 2, 1),
-	   ?assert(N /= NewTrain)
+	   ?assert(N /= NewTrain),
+	   ok = fannerl:destroy_train(N),
+	   ok = fannerl:destroy_train(NewTrain)
        end).
 
 fannerl_train_epoch(_) ->
@@ -301,7 +308,8 @@ fannerl_train_epoch(_) ->
 	   Filename = filename:join(PrivDir, "xor.data"),
 	   N = fannerl:read_train_from_file(Filename),
 	   ok = fannerl:train_epoch(R, N),
-	   ?assert(ok == fannerl:destroy(R))
+	   ?assert(ok == fannerl:destroy(R)),
+	   ok = fannerl:destroy_train(N)
        end).
 
 fannerl_train_on_data(_) ->
@@ -312,7 +320,8 @@ fannerl_train_on_data(_) ->
 	   Filename = filename:join(PrivDir, "xor.data"),
 	   N = fannerl:read_train_from_file(Filename),
 	   ok = fannerl:train_on_data(R, N, 5, 0.1),
-	   ?assert(ok == fannerl:destroy(R))
+	   ?assert(ok == fannerl:destroy(R)),
+	   ok = fannerl:destroy_train(N)
        end).
 
 fannerl_train(_) ->
@@ -357,7 +366,8 @@ fannerl_test_data(_) ->
 	   Filename = filename:join(PrivDir, "xor.data"),
 	   N = fannerl:read_train_from_file(Filename),
 	   {ok, _} = fannerl:test_data(R, N),
-	   ?assert(ok == fannerl:destroy(R))
+	   ?assert(ok == fannerl:destroy(R)),
+	   ok = fannerl:destroy_train(N)
        end).
 
 
@@ -380,7 +390,8 @@ fannerl_init_weights(_) ->
 	   
 	   ok = fannerl:init_weights(R, N),
 	   
-	   ?assert(ok == fannerl:destroy(R))
+	   ?assert(ok == fannerl:destroy(R)),
+	   ok = fannerl:destroy_train(N)
        end).
 
 fannerl_reset_mse(_) ->

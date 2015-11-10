@@ -49,6 +49,8 @@
 	 train_on_file_on/5,
 	 read_train_from_file/1,
 	 read_train_from_file_on/2,
+	 destroy_train/1,
+	 destroy_train_on/2,
 	 shuffle_train/1,
 	 shuffle_train_on/2,
 	 subset_train_data/3,
@@ -612,6 +614,27 @@ reset_mse_on(Instance, Network)
        is_reference(Network) ->
     call_port(Instance, {reset_mse, Network, {}}).
 
+%% --------------------------------------------------------------------- %%
+%% @equiv destroy_train_on({@module}, Train)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec destroy_train(Train::train_ref()) -> ok.
+destroy_train(Train)
+  when is_reference(Train) ->
+    destroy_train_on(?MODULE, Train).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Destructs the training data and properly deallocates all of the
+%% associated data.
+%% See http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_destroy_train
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec destroy_train_on(Instance::pid(), Train::train_ref()) -> ok.
+destroy_train_on(Instance, Train)
+  when Instance == ?MODULE; is_pid(Instance), 
+       is_reference(Train) ->
+    call_port(Instance, {destroy_train, {train, Train}, {}}).
+
 %%****************************************************************%%       
 %% Private functions
 %%****************************************************************%%       
@@ -621,14 +644,14 @@ call_port(?MODULE, Msg) ->
 	Pid when is_pid(Pid) ->
 	    call(?MODULE, Msg);
 	_ ->
-	    {error, not_valid_instance}
+	    erlang:error(not_valid_instance)
     end;
 call_port(Instance, Msg) when is_pid(Instance) ->
     case is_process_alive(Instance) of
 	true ->
 	    call(Instance, Msg);
 	false ->
-	    {error, process_not_alive}
+	    erlang:error(process_not_alive)
     end.
 
 %% @private
@@ -636,7 +659,9 @@ call(Instance, Msg) ->
     Instance ! {call, self(), Msg},
     receive
 	{fannerl_res, Result} ->
-	    Result
+	    Result;
+	{fannerl_exception, Reason} ->
+	    erlang:error(Reason)
     end.
 
 %% @private
@@ -731,7 +756,7 @@ handle_port_call(Port, State, Caller, {_Cmd, {train, TrainRef}, _}=Msg) ->
 	false ->
 	    io:format("The passed training data ref ~p is not valid~n",
 		      [{train,TrainRef}]),
-	    Caller ! {fannerl_res, {error, invalid_training_data}},
+	    Caller ! {fannerl_exception, invalid_training_data},
 	    loop(Port, State)
     end;
 handle_port_call(Port, State, Caller, {_Cmd, {Ref, TrainRef}, _}=Msg) ->
@@ -746,12 +771,11 @@ handle_port_call(Port, State, Caller, {_Cmd, {Ref, TrainRef}, _}=Msg) ->
 		false ->
 		    io:format("The passed training data ref ~p is not valid~n",
 			      [{train,Ref}]),
-		    Caller ! {fannerl_res, {error, invalid_training_data}},
+		    Caller ! {fannerl_exception, invalid_training_data},
 		    loop(Port, State)
 	    end;
 	false ->
-	    io:format("The passed network ref ~p is not valid~n", [Ref]),
-	    Caller ! {fannerl_res, {error, invalid_network}},
+	    Caller ! {fannerl_exception, invalid_network},
 	    loop(Port, State)
     end;
 handle_port_call(Port, State, Caller, Msg) ->
@@ -761,8 +785,7 @@ handle_port_call(Port, State, Caller, Msg) ->
 	    NewMsg = convert_message(Msg, NetworkPtr),
 	    call_port_with_msg(Port, State, Caller, NewMsg, Ref);
 	false ->
-	    io:format("The passed network ref ~p is not valid~n", [Ref]),
-	    Caller ! {fannerl_res, {error, invalid_network}},
+	    Caller ! {fannerl_exception, invalid_network},
 	    loop(Port, State)
     end.
 
@@ -810,7 +833,10 @@ handle_return_val({copy, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
     State#{networks := dict:store(NewRef, Ptr, maps:get(networks, State))};
 handle_return_val({destroy, _}, ok, Caller, State, Ref) ->
     Caller ! {fannerl_res, ok},
-    dict:erase(Ref, State);
+    State#{networks := dict:erase(Ref, State)};
+handle_return_val({destroy_train, _}, ok, Caller, State, Ref) ->
+    Caller ! {fannerl_res, ok},
+    State#{trains := dict:erase(Ref, State)};
 handle_return_val(_Msg, Return, Caller, State, _Ref) ->
     Caller ! {fannerl_res, Return},
     State.
