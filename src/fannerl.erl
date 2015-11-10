@@ -54,7 +54,16 @@
 	 shuffle_train/1,
 	 shuffle_train_on/2,
 	 subset_train_data/3,
-	 subset_train_data_on/4]).
+	 subset_train_data_on/4,
+	 scale_train/2,
+	 scale_train_on/3,
+	 descale_train/2,
+	 descale_train_on/3,
+	 set_scaling_params/6,
+	 set_scaling_params_on/7,
+	 clear_scaling_params/1,
+	 clear_scaling_params_on/2
+	]).
 
 -export([test/3,
 	 test_on/4,
@@ -634,6 +643,105 @@ destroy_train_on(Instance, Train)
   when Instance == ?MODULE; is_pid(Instance), 
        is_reference(Train) ->
     call_port(Instance, {destroy_train, {train, Train}, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv scale_train_on({@module}, Network, Train)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec scale_train(Network::network_ref(), Train::train_ref()) -> ok.
+scale_train(Network, Train)
+  when is_reference(Network), is_reference(Train) ->
+    scale_train_on(?MODULE, Network, Train).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Scale input and output data based on previously calculated parameters. 
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_scale_train].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec scale_train_on(Instance::pid(), Network::network_ref(),
+		     Train::train_ref()) -> ok.
+scale_train_on(Instance, Network, Train)
+  when Instance == ?MODULE; is_pid(Instance), 
+       is_reference(Network), is_reference(Train) ->
+    call_port(Instance, {scale_train, {Network, Train}, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv descale_train_on({@module}, Network, Train)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec descale_train(Network::network_ref(), Train::train_ref()) -> ok.
+descale_train(Network, Train)
+  when is_reference(Network), is_reference(Train) ->
+    descale_train_on(?MODULE, Network, Train).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Descale input and output data based on previously calculated parameters. 
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_descale_train].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec descale_train_on(Instance::pid(), Network::network_ref(),
+		       Train::train_ref()) -> ok.
+descale_train_on(Instance, Network, Train)
+  when Instance == ?MODULE; is_pid(Instance), 
+       is_reference(Network), is_reference(Train) ->
+    call_port(Instance, {descale_train, {Network, Train}, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_scaling_params_on({@module}, Network, Train,
+%%                           NewInputMin, NewInputMax,
+%%                           NewOutputMin, NewOutputMax)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_scaling_params(Network::network_ref(), Train::train_ref(),
+			 NewInputMin::number(), NewInputMax::number(),
+			 NewOutputMin::number(), NewOutputMax::number()) -> ok.
+set_scaling_params(Network, Train, NewInputMin, NewInputMax,
+		   NewOutputMin, NewOutputMax)
+  when is_reference(Network), is_reference(Train),
+       is_number(NewInputMin), is_number(NewInputMax),
+       is_number(NewOutputMin), is_number(NewOutputMax)->
+    set_scaling_params_on(?MODULE, Network, Train, NewInputMin, NewInputMax,
+			  NewOutputMin, NewOutputMax).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Calculate input and output scaling parameters for future use based on training data.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_set_scaling_params].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_scaling_params_on(
+	Instance::pid(), Network::network_ref(), Train::train_ref(),
+	NewInputMin::number(), NewInputMax::number(),
+	NewOutputMin::number(), NewOutputMax::number()) -> ok.
+set_scaling_params_on(Instance, Network, Train, NewInputMin, NewInputMax,
+		      NewOutputMin, NewOutputMax)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network), is_reference(Train),
+       is_number(NewInputMin), is_number(NewInputMax),
+       is_number(NewOutputMin), is_number(NewOutputMax)->
+    call_port(Instance, {set_scaling_params, {Network, Train}, 
+			 {NewInputMin, NewInputMax,
+			  NewOutputMin, NewOutputMax}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv clear_scaling_params({@module}, Network)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec clear_scaling_params(Network::network_ref()) -> ok.
+clear_scaling_params(Network)
+  when is_reference(Network) ->
+    clear_scaling_params_on(?MODULE, Network).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Clears scaling parameters.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_clear_scaling_params].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec clear_scaling_params_on(
+	Instance::pid(), Network::network_ref()) -> ok.
+clear_scaling_params_on(Instance, Network)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network) ->
+    call_port(Instance, {clear_scaling_params, Network, {}}).
 
 %%****************************************************************%%       
 %% Private functions

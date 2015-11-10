@@ -43,6 +43,10 @@ int do_fann_shuffle_train(byte*buf, int * index, ei_x_buff * result);
 int do_fann_subset_train_data(byte*buf, int * index, ei_x_buff * result);
 int do_fann_randomize_weights(byte*buf, int * index, ei_x_buff * result);
 int do_fann_init_weights(byte*buf, int * index, ei_x_buff * result);
+int do_fann_scale_train(byte*buf, int * index, ei_x_buff * result);
+int do_fann_descale_train(byte*buf, int * index, ei_x_buff * result);
+int do_fann_set_scaling_params(byte*buf, int * index, ei_x_buff * result);
+int do_fann_clear_scaling_params(byte*buf, int * index, ei_x_buff * result);
 int do_fann_reset_mse(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
@@ -254,9 +258,25 @@ int main() {
 
       if(do_fann_init_weights(buf, &index, &result) != 1) return 30;
 
+    } else if(!strcmp("scale_train", command)) {
+
+      if(do_fann_scale_train(buf, &index, &result) != 1) return 31;
+
+    } else if(!strcmp("descale_train", command)) {
+
+      if(do_fann_descale_train(buf, &index, &result) != 1) return 32;
+
+    } else if(!strcmp("set_scaling_params", command)) {
+
+      if(do_fann_set_scaling_params(buf, &index, &result) != 1) return 33;
+
+    } else if(!strcmp("clear_scaling_params", command)) {
+
+      if(do_fann_clear_scaling_params(buf, &index, &result) != 1) return 34;
+
     } else if(!strcmp("reset_mse", command)) {
 
-      if(do_fann_reset_mse(buf, &index, &result) != 1) return 31;
+      if(do_fann_reset_mse(buf, &index, &result) != 1) return 35;
 
     } else {
       if (ei_x_encode_atom(&result, "error") ||
@@ -941,6 +961,89 @@ int do_fann_init_weights(byte*buf, int * index, ei_x_buff * result) {
   get_fann_train_ptr(buf, index, &train_data);
   
   fann_init_weights(network, train_data);
+    
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+
+  return 1;
+}
+
+int do_fann_scale_train(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network;
+  struct fann_train_data * train_data;
+  int arity;
+
+  // Decode {NetworkRef, TrainRef}, {}
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+
+  get_fann_ptr(buf, index, &network);
+  get_fann_train_ptr(buf, index, &train_data);
+  
+  fann_scale_train(network, train_data);
+    
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+
+  return 1;
+}
+
+int do_fann_descale_train(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network;
+  struct fann_train_data * train_data;
+  int arity;
+
+  // Decode {NetworkRef, TrainRef}, {}
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+
+  get_fann_ptr(buf, index, &network);
+  get_fann_train_ptr(buf, index, &train_data);
+  
+  fann_descale_train(network, train_data);
+    
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+
+  return 1;
+}
+
+int do_fann_set_scaling_params(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network;
+  struct fann_train_data * train_data;
+  int arity, arity_data;
+  double input_min, input_max, output_min, output_max;
+
+  // Decode {NetworkRef, TrainRef},
+  // {NewInputMin, NewInputMax, NewOutputMin, NewOutputMax}
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+
+  get_fann_ptr(buf, index, &network);
+  get_fann_train_ptr(buf, index, &train_data);
+
+  if(ei_decode_tuple_header((const char *)buf, index, &arity_data)) return -1;
+  if(ei_decode_double((const char *)buf, index, &input_min)) return -1;
+  if(ei_decode_double((const char *)buf, index, &input_max)) return -1;
+  if(ei_decode_double((const char *)buf, index, &output_min)) return -1;
+  if(ei_decode_double((const char *)buf, index, &output_max)) return -1;
+  
+  
+  fann_set_scaling_params(network, train_data,
+			  input_min, input_max, output_min, output_max);
+    
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+
+  return 1;
+}
+
+int do_fann_clear_scaling_params(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+
+  //Decode Ptr, {}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  ei_skip_term((const char*)buf, index);
+
+  fann_clear_scaling_params(network);
     
   if(ei_x_new_with_version(result) ||
      ei_x_encode_atom_len(result, "ok", 2)) return -1;
