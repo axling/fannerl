@@ -21,8 +21,8 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_run                    | fannerl:run          | 1.0.0           |    |
 | fann_randomize_weights      | fannerl:randomize_weights  | 1.0.0     |    |
 | fann_init_weights           | fannerl:init_weights | 1.0.0           |    |
-| fann_print_connections      | -                    | 1.X.0           | Will be covered in future release |
-| fann_print_parameters       | -                    | 1.X.0           | Will be covered in future release |
+| fann_print_connections      | -                    | 1.2.0           | Will be covered in future release |
+| fann_print_parameters       | -                    | 1.2.0           | Will be covered in future release |
 | fann_get_num_input          | fannerl:get_params   | 1.0.0           |    |
 | fann_get_num_output         | fannerl:get_params   | 1.0.0           |    |	
 | fann_get_total_neurons      | fannerl:get_params   | 1.0.0           |    |
@@ -33,8 +33,8 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_get_layer_array        | fannerl:get_params   | 1.0.0           |    |
 | fann_get_bias_array         | fannerl:get_params   | 1.0.0           |    |
 | fann_get_connection_array   | fannerl:get_params   | 1.0.0           |    |
-| fann_set_weight_array       | JTBD                 | 1.0.0           |    |
-| fann_set_weight             | JTBD                 | 1.0.0           |    |
+| fann_set_weight_array       | fannerl:set_weights  | 1.0.0           |    |
+| fann_set_weight             | fannerl:set_weight   | 1.0.0           |    |
 | fann_get_weights            | -                    | -               | Will not cover    |
 | fann_set_weights            | -                    | -               | Will not cover    |
 | fann_set_user_data          | -                    | -               | Will not cover    |
@@ -145,4 +145,4 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_save_to_fixed                | -                           | 1.X.0           | Will be supported in later release |
 
 ## Cascade Training
-All cascade training functions  are planned for 1.2.0
+All cascade training functions  are planned for 1.3.0

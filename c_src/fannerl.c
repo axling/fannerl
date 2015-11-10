@@ -48,6 +48,8 @@ int do_fann_descale_train(byte*buf, int * index, ei_x_buff * result);
 int do_fann_set_scaling_params(byte*buf, int * index, ei_x_buff * result);
 int do_fann_clear_scaling_params(byte*buf, int * index, ei_x_buff * result);
 int do_fann_reset_mse(byte*buf, int * index, ei_x_buff * result);
+int do_fann_set_weights(byte*buf, int * index, ei_x_buff * result);
+int do_fann_set_weight(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -277,6 +279,14 @@ int main() {
     } else if(!strcmp("reset_mse", command)) {
 
       if(do_fann_reset_mse(buf, &index, &result) != 1) return 35;
+
+    } else if(!strcmp("set_weights", command)) {
+
+      if(do_fann_set_weights(buf, &index, &result) != 1) return 36;
+
+    } else if(!strcmp("set_weight", command)) {
+
+      if(do_fann_set_weight(buf, &index, &result) != 1) return 36;
 
     } else {
       if (ei_x_encode_atom(&result, "error") ||
@@ -1065,6 +1075,73 @@ int do_fann_reset_mse(byte*buf, int * index, ei_x_buff * result) {
   return 1;
 }
 
+int do_fann_set_weights(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  int arity, connections_to_set, key_arity;
+  struct fann_connection * connections;
+  int type, type_size, real_size = 0;
+  unsigned long from_neuron, to_neuron;
+  //Decode Ptr, {Connections}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+
+  // Decode header
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+  if(ei_decode_map_header((const char *)buf, index, &connections_to_set))
+    return -1;
+  if(connections_to_set > 0) { // If < 0 do nothing and return ok
+    // We now know length of connection array so alloc memory
+    connections = malloc(sizeof(struct fann_connection)*connections_to_set);
+  
+    // Expect maps to be defined like {FromNeuron, ToNeureon} => Weight
+    // if not, then ignore
+    for(int i = 0; i < connections_to_set; ++i) {
+      ei_get_type((const char *)buf, index, &type, &type_size);
+      if((type == ERL_SMALL_TUPLE_EXT || type == ERL_LARGE_TUPLE_EXT) &&
+	 type_size == 2) {
+	// We got a tuple with size 2, lets fetch the weight value
+	if(ei_decode_tuple_header((const char *)buf, index, &key_arity))
+	  return -1;
+	if(ei_decode_ulong((const char *)buf, index, &from_neuron)) return -1;
+	if(ei_decode_ulong((const char *)buf, index, &to_neuron)) return -1;
+	connections[i].weight = get_double(buf, index);
+	connections[i].from_neuron = from_neuron;
+	connections[i].to_neuron = to_neuron;
+	real_size += 1;
+      }
+    }
+    fann_set_weight_array(network, connections, real_size);
+    free(connections);
+  }
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+  
+  return 1;
+}
+
+
+int do_fann_set_weight(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  int arity;
+  unsigned long from_neuron, to_neuron;
+  fann_type weight;
+  //Decode Ptr, {FromNeuron, ToNeuron, Weight}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+
+  // Decode header
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+  if(ei_decode_ulong((const char *)buf, index, &from_neuron)) return -1;
+  if(ei_decode_ulong((const char *)buf, index, &to_neuron)) return -1;
+  weight = (fann_type)get_double(buf, index);
+  fann_set_weight(network, from_neuron, to_neuron, weight);
+
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+  
+  return 1;
+}
+  
 /*-----------------------------------------------------------------
  * Util functions
  *----------------------------------------------------------------*/

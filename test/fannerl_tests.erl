@@ -22,7 +22,8 @@ fannerl_create_destroy_test_() ->
       fun fannerl_create_with_learning_rate/1,
       fun fannerl_create_from_file/1,
       fun fannerl_copy/1,
-      fun fannerl_create_and_get_params/1
+      fun fannerl_create_and_get_params/1,
+      fun fannerl_create_and_set_weights/1
      ]
     }.
 
@@ -218,6 +219,20 @@ fannerl_create_and_get_params(_Map) ->
 	     } = Map,
 	   ?assert(is_map(Connections)),
 	   _Val = maps:get({0,Hidden-1}, Connections),
+	   ok = fannerl:destroy(R)
+       end).
+
+fannerl_create_and_set_weights(_) -> 
+    ?_test(
+       begin
+	   R = fannerl:create({5,7,3}),
+	   fannerl:set_weights(R, #{{0,6}=>0.3, {1,9} => 1}),
+	   fannerl:set_weight(R, 0, 7, -0.3),
+	   MapAfter = fannerl:get_params(R),
+	   #{connections := Connections} = MapAfter,
+	   #{{0,6} := 0.3,
+	     {1,9} := 1.0,
+	     {0,7} := -0.3} = Connections,
 	   ok = fannerl:destroy(R)
        end).
 

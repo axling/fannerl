@@ -11,6 +11,7 @@
 -type network_ref()    :: reference().
 -type train_ref()      :: reference().
 -type options()        :: map().
+-type connections()    :: map().
 
 -export([start/0,
 	 start_instance/0,
@@ -62,7 +63,11 @@
 	 set_scaling_params/6,
 	 set_scaling_params_on/7,
 	 clear_scaling_params/1,
-	 clear_scaling_params_on/2
+	 clear_scaling_params_on/2,
+	 set_weights/2,
+	 set_weights_on/3,
+	 set_weight/4,
+	 set_weight_on/5
 	]).
 
 -export([test/3,
@@ -251,8 +256,8 @@ destroy(Network) when is_reference(Network) ->
 
 %% --------------------------------------------------------------------- %%
 %% @doc This will destroy all references to the neural network and free
-%%      up all associated memory, see 
-%%      [http://libfann.github.io/fann/docs/files/fann-h.html#fann_destroy]
+%%      up all associated memory.
+%% See [http://libfann.github.io/fann/docs/files/fann-h.html#fann_destroy].
 %% @end
 %% --------------------------------------------------------------------- %%
 -spec destroy_on(Instance::pid(), Network::network_ref) -> ok.
@@ -742,6 +747,58 @@ clear_scaling_params_on(Instance, Network)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network) ->
     call_port(Instance, {clear_scaling_params, Network, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_weights_on({@module}, Network, Connections)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_weights(Network::network_ref(), Connections::connections()) -> ok.
+set_weights(Network, Connections)
+  when is_reference(Network),
+       is_map(Connections) ->
+    set_weights_on(?MODULE, Network, Connections).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Set connections in the network.
+%% See [http://libfann.github.io/fann/docs/files/fann-h.html#fann_set_weight_array].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_weights_on(Instance::pid(),
+		     Network::network_ref(), Connections::connections()) -> ok.
+set_weights_on(Instance, Network, Connections)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network),
+       is_map(Connections) ->
+    call_port(Instance, {set_weights, Network, {Connections}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_weight_on({@module}, Network, FromNeuron, ToNeuron, Weight)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_weight(Network::network_ref(), FromNeuron::non_neg_integer(),
+		 ToNeuron::non_neg_integer(), Weight::number()) -> ok.
+set_weight(Network, FromNeuron, ToNeuron, Weight)
+  when is_reference(Network),
+       is_integer(FromNeuron), FromNeuron >= 0,
+       is_integer(ToNeuron), ToNeuron >= 0,
+       is_number(Weight) ->
+    set_weight_on(?MODULE, Network, FromNeuron, ToNeuron, Weight).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Set a connection in the network.
+%% See [http://libfann.github.io/fann/docs/files/fann-h.html#fann_set_weight].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_weight_on(Instance::pid(),
+		    Network::network_ref(), FromNeuron::non_neg_integer(),
+		    ToNeuron::non_neg_integer(), Weight::number()) -> ok.
+set_weight_on(Instance, Network, FromNeuron, ToNeuron, Weight)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network),
+       is_integer(FromNeuron), FromNeuron >= 0,
+       is_integer(ToNeuron), ToNeuron >= 0,
+       is_number(Weight) ->
+    call_port(Instance, {set_weight, Network, {FromNeuron, ToNeuron, Weight}}).
 
 %%****************************************************************%%       
 %% Private functions
