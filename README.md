@@ -63,8 +63,8 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_create_train_array     | -                    | Later Release   | Supported in fann 2.3.0  |
 | fann_create_train_from_callback | -                | -               | Will not cover  
 | fann_destroy_train          | fannerl:destroy_train| 1.0.0           |          |
-| fann_get_train_input        | JTBD                 | 1.0.0           |          |
-| fann_get_train_output       | JTBD                 | 1.0.0           |          |
+| fann_get_train_input        | -                    | 1.1.0           |          |
+| fann_get_train_output       | -                    | 1.1.0           |          |
 | fann_shuffle_train_data     | fannerl:shuffle_train| 1.0.0           |          |
 | fann_get_min_train_input    | JTBD                 | 1.0.0           |          |
 | fann_get_max_train_input    | JTBD                 | 1.0.0           |          |
@@ -83,7 +83,7 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_scale_input_train_data | -                    | -               | Use scale_train instead   |
 | fann_scale_output_train_data| -                    | -               | Use scale_train instead   |
 | fann_scale_train_data       | -                    | -               | Use scale_train instead   |
-| fann_merge_train_data       | JTBD                 | 1.0.0           |    |
+| fann_merge_train_data       | fannerl:merge_train_data| 1.0.0        |    |
 | fann_duplicate_train_data   | JTBD                 | 1.0.0           |    |
 | fann_subset_train_data      | fannerl:subset_train_data | 1.0.0      |    |
 | fann_length_train_data      | JTBD                 | 1.0.0           |    |

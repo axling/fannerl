@@ -50,6 +50,8 @@
 	 train_on_file_on/5,
 	 read_train_from_file/1,
 	 read_train_from_file_on/2,
+	 merge_train_data/2,
+	 merge_train_data_on/3,
 	 destroy_train/1,
 	 destroy_train_on/2,
 	 shuffle_train/1,
@@ -449,6 +451,29 @@ read_train_from_file_on(Instance, FileName)
     call_port(Instance, {read_train_from_file, FileName}).
 
 %% --------------------------------------------------------------------- %%
+%% @equiv merge_train_data_on({@module}, Train1, Train2)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec merge_train_data(Train1::train_ref(), Train2::train_ref()) -> train_ref().
+merge_train_data(Train1, Train2)
+  when is_reference(Train1),
+       is_reference(Train2) ->
+    merge_train_data_on(?MODULE, Train1, Train2).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Merges the data from data1 and data2 into a new training data.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_merge_train_data].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec merge_train_data_on(Instance::pid(), Train1::train_ref(),
+			  Train2::train_ref()) -> train_ref().
+merge_train_data_on(Instance, Train1, Train2)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Train1),
+       is_reference(Train2) ->
+    call_port(Instance, {merge_train, {trains, Train1, Train2}, {}}).
+
+%% --------------------------------------------------------------------- %%
 %% @equiv shuffle_train_on({@module}, Train)
 %% @end
 %% --------------------------------------------------------------------- %%
@@ -823,6 +848,8 @@ call_port(Instance, Msg) when is_pid(Instance) ->
 call(Instance, Msg) ->
     Instance ! {call, self(), Msg},
     receive
+	{fannerl_res, {error, Reason}} ->
+	    erlang:error(Reason);
 	{fannerl_res, Result} ->
 	    Result;
 	{fannerl_exception, Reason} ->
@@ -913,14 +940,33 @@ handle_port_call(Port, State, Caller, {create_from_file, _}=Msg) ->
 handle_port_call(Port, State, Caller, {read_train_from_file, _}=Msg) ->
     call_port_with_msg(Port, State, Caller, Msg, undefined);
 handle_port_call(Port, State, Caller, {_Cmd, {train, TrainRef}, _}=Msg) ->
-    TrainRef = get_train_ref(Msg),
     case valid_train(TrainRef, State) of
 	{true, TrainPtr} ->
 	    NewMsg = convert_message(Msg, TrainPtr),
-	    call_port_with_msg(Port, State, Caller, NewMsg, TrainRef);
+	    call_port_with_msg(Port, State, Caller, NewMsg, TrainRef);	
 	false ->
 	    io:format("The passed training data ref ~p is not valid~n",
 		      [{train,TrainRef}]),
+	    Caller ! {fannerl_exception, invalid_training_data},
+	    loop(Port, State)
+    end;
+handle_port_call(Port, State, Caller,
+		 {merge_train, {trains, TrainRef1, TrainRef2}, _}) ->
+    case valid_train(TrainRef1, State) of
+	{true, TrainPtr1} ->
+	    case valid_train(TrainRef2, State) of
+		{true, TrainPtr2} ->
+		    NewMsg= {merge_train, {TrainPtr1, TrainPtr2}, {}},
+		    call_port_with_msg(Port, State, Caller, NewMsg, TrainRef1);
+		false ->
+		    io:format("The passed training data ref ~p is not valid~n",
+			      [{train,TrainRef2}]),
+		    Caller ! {fannerl_exception, invalid_training_data},
+		    loop(Port, State)
+	    end;
+	false ->
+	    io:format("The passed training data ref ~p is not valid~n",
+		      [{train,TrainRef1}]),
 	    Caller ! {fannerl_exception, invalid_training_data},
 	    loop(Port, State)
     end;
@@ -978,6 +1024,10 @@ handle_return_val({subset_train_data, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Caller ! {fannerl_res, Ref},
     State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};
 handle_return_val({read_train_from_file, _}, {ok, Ptr}, Caller, State, _Ref) ->
+    Ref = make_ref(),
+    Caller ! {fannerl_res, Ref},
+    State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};
+handle_return_val({merge_train, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
     Ref = make_ref(),
     Caller ! {fannerl_res, Ref},
     State#{trains := dict:store(Ref, Ptr, maps:get(trains, State))};
