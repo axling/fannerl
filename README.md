@@ -86,9 +86,9 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_merge_train_data       | fannerl:merge_train_data| 1.0.0        |    |
 | fann_duplicate_train_data   | fannerl:duplicate_train_data | 1.0.0   |    |
 | fann_subset_train_data      | fannerl:subset_train_data | 1.0.0      |    |
-| fann_length_train_data      | JTBD                 | 1.0.0           |    |
-| fann_num_input_train_data   | JTBD                 | 1.0.0           |    |
-| fann_num_output_train_data  | JTBD                 | 1.0.0           |    |
+| fann_length_train_data      | fannerl:get_train_params  | 1.0.0           |    |
+| fann_num_input_train_data   | fannerl:get_train_params  | 1.0.0           |    |
+| fann_num_output_train_data  | fannerl:get_train_params  | 1.0.0           |    |
 | fann_save_train             | fannerl:save_train   | 1.0.0           |    |
 | fann_save_train_to_fixed    | -                    | -               | Will be covered in future release |
 | fann_get_training_algorithm | fannerl:get_params   | 1.0.0           |    |

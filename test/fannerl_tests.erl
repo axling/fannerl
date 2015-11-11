@@ -51,7 +51,8 @@ fannerl_train_test_() ->
       fun fannerl_train_on_data/1,
       fun fannerl_train/1,
       fun fannerl_train_on_file/1,
-      fun fannerl_scale_and_descale_train/1
+      fun fannerl_scale_and_descale_train/1,
+      fun fannerl_train_get_params/1
      ]
     }.
 
@@ -416,6 +417,19 @@ fannerl_scale_and_descale_train(_) ->
 	   ok = fannerl:descale_train(R, N),
 	   ok = fannerl:clear_scaling_params(R),
 	   ?assert(ok == fannerl:destroy(R)),
+	   ok = fannerl:destroy_train(N)
+       end).
+
+fannerl_train_get_params(_) ->
+    ?_test(
+       begin
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   N = fannerl:read_train_from_file(Filename),
+	   Map = fannerl:get_train_params(N),
+	   #{length := _L,
+	     num_input := 2,
+	     num_output := 1} = Map,
 	   ok = fannerl:destroy_train(N)
        end).
 

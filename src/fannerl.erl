@@ -70,6 +70,8 @@
 	 set_scaling_params_on/7,
 	 clear_scaling_params/1,
 	 clear_scaling_params_on/2,
+	 get_train_params/1,
+	 get_train_params_on/2,
 	 set_weights/2,
 	 set_weights_on/3,
 	 set_weight/4,
@@ -818,6 +820,26 @@ clear_scaling_params_on(Instance, Network)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network) ->
     call_port(Instance, {clear_scaling_params, Network, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv get_train_params_on({@module}, Train)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_train_params(Train::train_ref()) -> ok.
+get_train_params(Train)
+  when is_reference(Train) ->
+    get_train_params_on(?MODULE, Train).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Fetches all the params associated with the training data.
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_train_params_on(
+	Instance::pid(), Train::train_ref()) -> map().
+get_train_params_on(Instance, Train)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Train) ->
+    call_port(Instance, {get_train_params, {train, Train}, {}}).
 
 %% --------------------------------------------------------------------- %%
 %% @equiv set_weights_on({@module}, Network, Connections)

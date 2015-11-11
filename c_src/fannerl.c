@@ -53,6 +53,7 @@ int do_fann_set_weight(byte*buf, int * index, ei_x_buff * result);
 int do_fann_merge_trains(byte*buf, int * index, ei_x_buff * result);
 int do_fann_duplicate_train(byte*buf, int * index, ei_x_buff * result);
 int do_fann_save_train(byte*buf, int * index, ei_x_buff * result);
+int do_fann_get_train_params(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -218,7 +219,7 @@ int main() {
     } else if(!strcmp("get_params", command)) {
 
       if(do_fann_get_params(buf, &index, &result) != 1) return 16;
-
+      
     } else if(!strcmp("read_train_from_file", command)) {
 
       if(do_fann_read_train_from_file(buf, &index, &result) != 1) return 17;
@@ -299,11 +300,15 @@ int main() {
 
       if(do_fann_duplicate_train(buf, &index, &result) != 1) return 39;
 
-    }else if(!strcmp("save_train", command)) {
+    } else if(!strcmp("save_train", command)) {
 
       if(do_fann_save_train(buf, &index, &result) != 1) return 40;
 
-    } else {
+    } else if(!strcmp("get_train_params", command)) {
+
+      if(do_fann_get_train_params(buf, &index, &result) != 1) return 41;
+
+    }  else {
       if (ei_x_encode_atom(&result, "error") ||
 	  ei_x_encode_atom(&result, "unsupported_command")) 
         return 99;
@@ -1223,6 +1228,34 @@ int do_fann_duplicate_train(byte*buf, int * index, ei_x_buff * result) {
   if(ei_x_encode_atom(result, "ok") ||
      ei_x_encode_long(result, (long)new_train))
     return -1;
+  return 1;
+}
+
+int do_fann_get_train_params(byte*buf, int * index, ei_x_buff * result)  {
+  struct fann_train_data * train;
+  unsigned int length, num_input, num_output;
+    
+  //Decode Train, {}
+  if(get_fann_train_ptr(buf, index, &train) != 1) return -1;
+  // Skip the {} part
+  ei_skip_term((const char*)buf, index);
+
+  // Fetch all params
+  length = fann_length_train_data(train);
+  num_input = fann_num_input_train_data(train);
+  num_output = fann_num_output_train_data(train);
+
+  if(ei_x_new_with_version(result)) return -1;
+  if(ei_x_encode_map_header(result, 3)) return -1;
+  
+  if(ei_x_encode_atom(result, "length")) return -1;
+  if(ei_x_encode_ulong(result, length)) return -1;
+  
+  if(ei_x_encode_atom(result, "num_input")) return -1;
+  if(ei_x_encode_ulong(result, num_input)) return -1;
+
+  if(ei_x_encode_atom(result, "num_output")) return -1;
+  if(ei_x_encode_ulong(result, num_output)) return -1;
   return 1;
 }
 
