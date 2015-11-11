@@ -89,7 +89,7 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_length_train_data      | JTBD                 | 1.0.0           |    |
 | fann_num_input_train_data   | JTBD                 | 1.0.0           |    |
 | fann_num_output_train_data  | JTBD                 | 1.0.0           |    |
-| fann_save_train             | JTBD                 | 1.0.0           |    |
+| fann_save_train             | fannerl:save_train   | 1.0.0           |    |
 | fann_save_train_to_fixed    | -                    | -               | Will be covered in future release |
 | fann_get_training_algorithm | fannerl:get_params   | 1.0.0           |    |
 | fann_set_training_algorithm | JTBD                 | 1.0.0           |    |

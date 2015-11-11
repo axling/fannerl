@@ -55,6 +55,15 @@ fannerl_train_test_() ->
      ]
     }.
 
+fannerl_train_save_test_() ->
+    {foreach,
+     fun setup_for_train_save/0,
+     fun cleanup_for_train_save/1,
+     [
+      fun fannerl_save_train_to_file/1
+     ]
+    }.
+
 fannerl_run_and_test_test_() ->
     {foreach,
      fun setup/0,
@@ -94,6 +103,17 @@ setup_for_save() ->
 
 cleanup_for_save(#{filename:=FileName, net:=R}) ->
     ok = fannerl:destroy(R),
+    ok = fannerl:stop(),
+    check_and_delete_file(FileName).
+
+setup_for_train_save() ->
+    FileName = "fannerl_test_saving_train.train",
+    _Pid = fannerl:start(),
+    %% Check if file already exists, if so we delete it
+    ok = check_and_delete_file(FileName),
+    #{filename=>FileName}.
+
+cleanup_for_train_save(#{filename:=FileName}) ->
     ok = fannerl:stop(),
     check_and_delete_file(FileName).
 
@@ -396,6 +416,18 @@ fannerl_scale_and_descale_train(_) ->
 	   ok = fannerl:descale_train(R, N),
 	   ok = fannerl:clear_scaling_params(R),
 	   ?assert(ok == fannerl:destroy(R)),
+	   ok = fannerl:destroy_train(N)
+       end).
+
+fannerl_save_train_to_file(#{filename := SavedFileName}=_Map) ->
+    ?_test(
+       begin
+	   PrivDir = code:priv_dir(fannerl),
+	   Filename = filename:join(PrivDir, "xor.data"),
+	   N = fannerl:read_train_from_file(Filename),
+	   ?assert(false == check_file_exists(SavedFileName)),
+	   ?assert(ok == fannerl:save_train(N, SavedFileName)),
+	   ?assert(true == check_file_exists(SavedFileName)),
 	   ok = fannerl:destroy_train(N)
        end).
 

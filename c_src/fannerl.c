@@ -52,6 +52,7 @@ int do_fann_set_weights(byte*buf, int * index, ei_x_buff * result);
 int do_fann_set_weight(byte*buf, int * index, ei_x_buff * result);
 int do_fann_merge_trains(byte*buf, int * index, ei_x_buff * result);
 int do_fann_duplicate_train(byte*buf, int * index, ei_x_buff * result);
+int do_fann_save_train(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -297,6 +298,10 @@ int main() {
     } else if(!strcmp("duplicate_train", command)) {
 
       if(do_fann_duplicate_train(buf, &index, &result) != 1) return 39;
+
+    }else if(!strcmp("save_train", command)) {
+
+      if(do_fann_save_train(buf, &index, &result) != 1) return 40;
 
     } else {
       if (ei_x_encode_atom(&result, "error") ||
@@ -881,6 +886,35 @@ int do_fann_save_to_file(byte*buf, int * index, ei_x_buff * result) {
   if(ei_decode_string((const char *)buf, index, filename)) return -1;
 
   if(fann_save(network, filename) == -1) {
+    free(filename);
+    return -1;
+  }
+
+  free(filename);
+    
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+
+  return 1;
+}
+
+int do_fann_save_train(byte*buf, int * index, ei_x_buff * result) {
+  int arity, type, size;
+  struct fann_train_data * train;
+  char * filename = NULL;
+  // Decode TrainPtr, {Filename}
+  // Decode train ptr
+  if(get_fann_train_ptr(buf, index, &train) != 1) return -1;
+  
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+  
+  if(ei_get_type((const char *)buf, index, &type, &size)) return -1;
+  if(type != ERL_STRING_EXT) return -1;
+  filename = malloc((size+1)*sizeof(char));
+  // Decode filename
+  if(ei_decode_string((const char *)buf, index, filename)) return -1;
+
+  if(fann_save_train(train, filename) == -1) {
     free(filename);
     return -1;
   }

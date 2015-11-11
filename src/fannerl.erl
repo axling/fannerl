@@ -56,6 +56,8 @@
 	 duplicate_train_data_on/2,
 	 destroy_train/1,
 	 destroy_train_on/2,
+	 save_train/2,
+	 save_train_on/3,
 	 shuffle_train/1,
 	 shuffle_train_on/2,
 	 subset_train_data/3,
@@ -696,6 +698,27 @@ destroy_train_on(Instance, Train)
   when Instance == ?MODULE; is_pid(Instance), 
        is_reference(Train) ->
     call_port(Instance, {destroy_train, {train, Train}, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv save_train_on({@module}, Train, FileName)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec save_train(Train::train_ref(), FileName::string()) -> ok.
+save_train(Train, FileName)
+  when is_reference(Train), is_list(FileName) ->
+    save_train_on(?MODULE, Train, FileName).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Save the training structure to a file, with the format as specified in fann_read_train_from_file
+%% See http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_save_train
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec save_train_on(Instance::pid(), Train::train_ref(), FileName::string())
+		   -> ok.
+save_train_on(Instance, Train, FileName)
+  when Instance == ?MODULE; is_pid(Instance), 
+       is_reference(Train), is_list(FileName) ->
+    call_port(Instance, {save_train, {train, Train}, {FileName}}).
 
 %% --------------------------------------------------------------------- %%
 %% @equiv scale_train_on({@module}, Network, Train)
