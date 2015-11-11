@@ -66,10 +66,10 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_get_train_input        | -                    | 1.1.0           |          |
 | fann_get_train_output       | -                    | 1.1.0           |          |
 | fann_shuffle_train_data     | fannerl:shuffle_train| 1.0.0           |          |
-| fann_get_min_train_input    | JTBD                 | 1.0.0           |          |
-| fann_get_max_train_input    | JTBD                 | 1.0.0           |          |
-| fann_get_min_train_output   | JTBD                 | 1.0.0           |          |
-| fann_get_max_train_output   | JTBD                 | 1.0.0           |          |
+| fann_get_min_train_input    |                      | 1.0.0           | Supported in fann 2.3.0  |
+| fann_get_max_train_input    |                      | 1.0.0           | Supported in fann 2.3.0  |
+| fann_get_min_train_output   |                      | 1.0.0           | Supported in fann 2.3.0  |
+| fann_get_max_train_output   |                      | 1.0.0           | Supported in fann 2.3.0  |
 | fann_scale_train            | fannerl:scale_train  | 1.0.0           |          |
 | fann_descale_train          | fannerl:descale_train| 1.0.0           |          |
 | fann_set_input_scaling_params| -                   | 1.0.0           | Will be covered by fannerl:set_scaling_params |
