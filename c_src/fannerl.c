@@ -633,6 +633,12 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
   unsigned int * layers;
   unsigned int * bias;
   struct fann_connection * connections;
+  enum fann_stopfunc_enum stop_func;
+  float quickprop_decay, quickprop_mu, rprop_increase_factor;
+  float rprop_decrease_factor, rprop_delta_min, rprop_delta_max;
+  float rprop_delta_zero, sarprop_weight_decay_shift;
+  float sarprop_step_error_threshold_factor;
+  float sarprop_step_error_shift, sarprop_temperature;
   
   //Decode Ptr, {}
   // Decode network ptr first
@@ -657,9 +663,25 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
 
   num_layers = fann_get_num_layers(network);
 
+  stop_func = fann_get_train_stop_function(network);
+   
+  quickprop_decay = fann_get_quickprop_decay(network);
+
+  quickprop_mu = fann_get_quickprop_mu(network);
+  rprop_increase_factor = fann_get_rprop_increase_factor(network);
+  rprop_decrease_factor = fann_get_rprop_decrease_factor(network);
+  rprop_delta_min = fann_get_rprop_delta_min(network);
+  rprop_delta_max = fann_get_rprop_delta_max(network);
+  rprop_delta_zero = fann_get_rprop_delta_zero(network);
+  sarprop_weight_decay_shift = fann_get_sarprop_weight_decay_shift(network);
+  sarprop_step_error_threshold_factor =
+    fann_get_sarprop_step_error_threshold_factor(network);
+  sarprop_step_error_shift = fann_get_sarprop_step_error_shift(network);
+  sarprop_temperature = fann_get_sarprop_temperature(network);
+
   // encode to map
   if(ei_x_new_with_version(result)) return -1;
-  ei_x_encode_map_header(result, 16);
+  ei_x_encode_map_header(result, 28);
   ei_x_encode_atom(result, "learning_rate");
   ei_x_encode_double(result, (double)learning_rate);
   ei_x_encode_atom(result, "learning_momentum");
@@ -700,9 +722,9 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
   ei_x_encode_ulong(result, (unsigned long)total_connections);
 
   ei_x_encode_atom(result, "network_type");
-  if(error_func == FANN_NETTYPE_LAYER) {
+  if(network_type == FANN_NETTYPE_LAYER) {
     ei_x_encode_atom(result, "fann_nettype_layer");
-  } else if(error_func == FANN_NETTYPE_SHORTCUT) {
+  } else if(network_type == FANN_NETTYPE_SHORTCUT) {
     ei_x_encode_atom(result, "fann_nettype_shortcut");
   } else {
     ei_x_encode_atom(result, "unknown_network_type");
@@ -712,6 +734,46 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
   
   ei_x_encode_atom(result, "num_layers");
   ei_x_encode_ulong(result, (unsigned int)num_layers);
+
+  ei_x_encode_atom(result, "train_stop_function");
+  if(stop_func == FANN_STOPFUNC_MSE) {
+    ei_x_encode_atom(result, "fann_stopfunc_mse");
+  } else {
+    ei_x_encode_atom(result, "fann_stopfunc_bit");
+  }
+
+  ei_x_encode_atom(result, "quickprop_decay");
+  ei_x_encode_double(result, (double)quickprop_decay);
+
+  ei_x_encode_atom(result, "quickprop_mu");
+  ei_x_encode_double(result, (double)quickprop_mu);
+
+  ei_x_encode_atom(result, "rprop_increase_factor");
+  ei_x_encode_double(result, (double)  rprop_increase_factor);
+  
+  ei_x_encode_atom(result, "rprop_decrease_factor");
+  ei_x_encode_double(result, (double)  rprop_decrease_factor);
+
+  ei_x_encode_atom(result, "rprop_delta_min");
+  ei_x_encode_double(result, (double)rprop_delta_min);
+
+  ei_x_encode_atom(result, "rprop_delta_max");
+  ei_x_encode_double(result, (double)rprop_delta_max);
+
+  ei_x_encode_atom(result, "rprop_delta_zero");
+  ei_x_encode_double(result, (double)rprop_delta_zero);
+
+  ei_x_encode_atom(result, "sarprop_weight_decay_shift");
+  ei_x_encode_double(result, (double)sarprop_weight_decay_shift);
+
+  ei_x_encode_atom(result, "sarprop_step_error_threshold_factor");
+  ei_x_encode_double(result, (double)sarprop_step_error_threshold_factor);
+
+  ei_x_encode_atom(result, "sarprop_step_error_shift");
+  ei_x_encode_double(result, (double)sarprop_step_error_shift);
+
+  ei_x_encode_atom(result, "sarprop_temperature");
+  ei_x_encode_double(result, (double)sarprop_temperature);
 
   // Handle arrays, turn into tuples
   // layers array

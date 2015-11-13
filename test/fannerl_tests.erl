@@ -238,8 +238,20 @@ fannerl_create_and_get_params(_Map) ->
 	     num_layers := NumLayers,
 	     layers := Net,
 	     bias := _Bias,
-	     connections := Connections
-	     } = Map,
+	     connections := Connections,
+	     train_stop_function := _StopFunc,
+	     quickprop_decay := _QuickpropDecay,
+	     quickprop_mu := _QuickpropMu,
+	     rprop_increase_factor := _RpropIncreaseFactor,
+	     rprop_decrease_factor := _RpropDecreaseFactor,
+	     rprop_delta_min := _RpropDeltaMin,
+	     rprop_delta_max := _RpropDeltaMax,
+	     rprop_delta_zero := _RpropDeltaZero,
+	     sarprop_weight_decay_shift := _SarpropWeightDecaysShift,
+	     sarprop_step_error_threshold_factor := _SarpropStepErrorThreshold,
+	     sarprop_step_error_shift := _SarpropStepErrorShift,
+	     sarprop_temperature := _SarpropTemperature
+	    } = Map,
 	   ?assert(is_map(Connections)),
 	   _Val = maps:get({0,Hidden-1}, Connections),
 	   ok = fannerl:destroy(R)
