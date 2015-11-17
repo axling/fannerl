@@ -256,6 +256,7 @@ fannerl_create_and_get_params(_Map) ->
 	   ?assert(is_map(Connections)),
 	   _Val = maps:get({0,Hidden-1}, Connections),
 	   _ActFunct = fannerl:get_activation_function(R, 1, 1),
+	   _Steepness = fannerl:get_activation_steepness(R, 1, 1),
 	   ok = fannerl:destroy(R)
        end).
 
@@ -285,6 +286,11 @@ fannerl_create_and_set_params(_) ->
 	   fannerl:set_activation_function_output(R, fann_sigmoid_symmetric),
 	   fannerl:set_activation_function_all(R, fann_sin),
 	   fannerl:set_activation_function_layer(R, fann_cos, 1),
+	   fannerl:set_activation_steepness(R, 1, 1, 0),
+	   fannerl:set_activation_steepness_hidden(R, 0.4),
+	   fannerl:set_activation_steepness_output(R, -0.2),
+	   fannerl:set_activation_steepness_all(R, 0.5),
+	   fannerl:set_activation_steepness_layer(R, 2, 1),
 	   Params1 = fannerl:get_params(R),
 	   #{learning_rate := 1.0,
 	     learning_momentum := 0.0

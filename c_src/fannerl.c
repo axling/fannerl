@@ -57,6 +57,8 @@ int do_fann_get_train_params(byte*buf, int * index, ei_x_buff * result);
 int do_fann_set_params(byte*buf, int * index, ei_x_buff * result);
 int do_fann_get_activation_function(byte*buf, int * index, ei_x_buff * result);
 int do_fann_set_activation_function(byte*buf, int * index, ei_x_buff * result);
+int do_fann_get_activation_steepness(byte*buf, int * index, ei_x_buff * result);
+int do_fann_set_activation_steepness(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -329,6 +331,14 @@ int main() {
       
       if(do_fann_set_activation_function(buf, &index, &result) != 1) return 44;
 
+    } else if(!strcmp("get_activation_steepness", command)) {
+      
+      if(do_fann_get_activation_steepness(buf, &index, &result) != 1) return 45;
+      
+    } else if(!strcmp("set_activation_steepness", command)) {
+      
+      if(do_fann_set_activation_steepness(buf, &index, &result) != 1) return 46;
+      
     } else {
       if (ei_x_encode_atom(&result, "error") ||
 	  ei_x_encode_atom(&result, "unsupported_command")) 
@@ -1466,6 +1476,100 @@ int do_fann_set_activation_function(byte*buf, int * index, ei_x_buff * result) {
   } else if(is_integer(buf, index)) {
     if(ei_decode_ulong((const char *)buf, index, &neuron)) return -1;
     fann_set_activation_function(network, act_func, layer, neuron);
+  } else {
+    return -1;
+  }
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+  return 1;
+}
+
+int do_fann_get_activation_steepness(byte*buf, int * index, ei_x_buff * result){
+  struct fann * network = 0;
+  int tuple_arity;
+  int type, type_size;
+  unsigned long layer, neuron;
+  fann_type steepness;
+  //Decode Ptr, {Layer, Neuron}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+
+  ei_get_type((const char *)buf, index, &type, &type_size);
+  if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
+    if(ei_decode_ulong((const char *)buf, index, &layer)) return -1;
+    
+    // ok get the neuron
+    ei_get_type((const char *)buf, index, &type, &type_size);
+    if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
+      if(ei_decode_ulong((const char *)buf, index, &neuron)) return -1;
+      // Ok we have both layer and neuron. get the activation steepness
+      steepness = fann_get_activation_steepness(network, layer, neuron);
+      
+      if(ei_x_new_with_version(result) ||
+	 ei_x_encode_double(result, steepness)) return -1;
+
+      return 1;
+    } else {
+      return -1;
+    }
+  } else {
+    return -1;
+  }
+}
+
+int do_fann_set_activation_steepness(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  int tuple_arity;
+ 
+  char layeratom[MAXATOMLEN];
+  char neuronatom[MAXATOMLEN];
+  unsigned long layer, neuron;
+  fann_type steepness;
+  //Decode Ptr, {Steepness, Layer, Neuron}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+  
+  steepness = (fann_type)get_double(buf, index);
+
+  // Layer can be all, hidden, output or positive integer > 0
+  if(is_atom(buf, index)) {
+    if(ei_decode_atom((const char *)buf, index, layeratom)) return -1;
+    if(!strcmp("hidden", layeratom)) {
+      fann_set_activation_steepness_hidden(network, steepness);
+    } else if(!strcmp("output", layeratom)) {
+      fann_set_activation_steepness_output(network, steepness);
+    } else if(!strcmp("all",layeratom)) {
+      fann_set_activation_steepness_hidden(network, steepness);
+      fann_set_activation_steepness_output(network, steepness);
+    } else {
+      return -1;
+    }
+    if(ei_x_new_with_version(result) ||
+       ei_x_encode_atom_len(result, "ok", 2)) return -1;
+    return 1;
+    
+  } else if(is_integer(buf, index)) {
+    if(ei_decode_ulong((const char *)buf, index, &layer)) return -1;
+  } else {
+    return -1;
+  }
+  
+  // get neuron, can be all or positive integer >= 0
+  if(is_atom(buf, index)) {
+    if(ei_decode_atom((const char *)buf, index, neuronatom)) return -1;
+    if(!strcmp("all", neuronatom)) {
+      fann_set_activation_steepness_layer(network, steepness, layer);
+    } else {
+      return -1;
+    }
+    if(ei_x_new_with_version(result) ||
+       ei_x_encode_atom_len(result, "ok", 2)) return -1;
+    return 1;
+  } else if(is_integer(buf, index)) {
+    if(ei_decode_ulong((const char *)buf, index, &neuron)) return -1;
+    fann_set_activation_steepness(network, steepness, layer, neuron);
   } else {
     return -1;
   }

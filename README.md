@@ -97,16 +97,16 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_set_learning_rate      | fannerl:set_params   | 1.0.0           |    |
 | fann_get_learning_momentum  | fannerl:get_params   | 1.0.0           |    |
 | fann_set_learning_momentum  | fannerl:set_params   | 1.0.0           |    |
-| fann_get_activation_function      | JTBD - fannerl:get_params   | 1.0.0           |    |
-| fann_set_activation_function      | JTBD                        | 1.0.0           |    |
-| fann_set_activation_function_layer| JTBD                        | 1.0.0           |    |
-| fann_set_activation_function_hidden| JTBD                        | 1.0.0           |    |
-| fann_set_activation_function_output| JTBD                        | 1.0.0           |    |
-| fann_get_activation_steepness      | JTBD - fannerl:get_params   | 1.0.0           |    |
-| fann_set_activation_steepness      | JTBD                        | 1.0.0           |    |
-| fann_set_activation_steepness_layer| JTBD                        | 1.0.0           |    |
-| fann_set_activation_steepness_hidden| JTBD                        | 1.0.0           |    |
-| fann_set_activation_steepness_output| JTBD                        | 1.0.0           |    |
+| fann_get_activation_function      | fannerl:get_activation_function  | 1.0.0           |    |
+| fann_set_activation_function      | fannerl:set_activation_function  | 1.0.0           |    |
+| fann_set_activation_function_layer| fannerl:set_activation_function_layer | 1.0.0           |    |
+| fann_set_activation_function_hidden| fannerl:set_activation_function_hidden | 1.0.0           |    |
+| fann_set_activation_function_output| fannerl:set_activation_function_output | 1.0.0           |    |
+| fann_get_activation_steepness      | fannerl:get_activation_steepness | 1.0.0           |    |
+| fann_set_activation_steepness      | fannerl:set_activation_steepness  | 1.0.0           |    |
+| fann_set_activation_steepness_layer| fannerl:set_activation_steepness_layer                        | 1.0.0           |    |
+| fann_set_activation_steepness_hidden| fannerl:set_activation_steepness_hidden                      | 1.0.0           |    |
+| fann_set_activation_steepness_output| fannerl:set_activation_steepness_output                        | 1.0.0           |    |
 | fann_get_train_error_function     | fannerl:get_params   | 1.0.0           |    |
 | fann_set_train_error_function     | fannerl:set_params   | 1.0.0           |    |
 | fann_get_train_stop_function      | fannerl:get_params   | 1.0.0           |    |

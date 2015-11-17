@@ -56,12 +56,14 @@
 	 set_activation_function_hidden/2,
 	 set_activation_function_output/2,
 	 set_activation_function_all/2,
-%%	 get_activation_steepness/3,
-%%	 get_activation_steepness_on/4,
-%%	 set_activation_steepness/3,
-%%	 set_activation_steepness_on/4,
-%%	 set_activation_steepness_layer/2,
-%%	 set_activation_steepness_layer_on/3,
+	 get_activation_steepness/3,
+	 get_activation_steepness_on/4,
+	 set_activation_steepness/4,
+	 set_activation_steepness_on/5,
+	 set_activation_steepness_layer/3,
+	 set_activation_steepness_hidden/2,
+	 set_activation_steepness_output/2,
+	 set_activation_steepness_all/2,
 	 set_param/3,
 	 set_param_on/4,
 	 set_params/2,
@@ -651,7 +653,7 @@ get_params_on(Instance, Network)
 -spec get_activation_function(Network::network_ref(),
 			      Layer::pos_integer(),
 			      Neuron::non_neg_integer())
-			     -> map() | atom().
+			     ->  atom().
 get_activation_function(Network, Layer, Neuron) 
   when is_reference(Network), is_integer(Layer), Layer > 0,
        is_integer(Neuron), Neuron >= 0 ->
@@ -666,7 +668,7 @@ get_activation_function(Network, Layer, Neuron)
 -spec get_activation_function_on(Instance::pid(), Network::network_ref(),
 				 Layer::pos_integer(),
 				 Neuron::non_neg_integer())
-				-> map() | atom().
+				-> atom().
 get_activation_function_on(Instance, Network, Layer, Neuron)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network), is_integer(Layer), Layer > 0,
@@ -781,6 +783,160 @@ set_activation_function_on(Instance, Network, ActivationFunction,
        ((is_integer(Neuron) and (Neuron >= 0)) or (Neuron==all)) ->
     call_port(Instance, {set_activation_function, Network,
 			 {ActivationFunction, Layer, Neuron}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv get_activation_steepness({@module}, Network, Layer, Neuron)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_activation_steepness(Network::network_ref(),
+			       Layer::pos_integer(),
+			       Neuron::non_neg_integer())
+			      ->  float().
+get_activation_steepness(Network, Layer, Neuron) 
+  when is_reference(Network), is_integer(Layer), Layer > 0,
+       is_integer(Neuron), Neuron >= 0 ->
+    get_activation_steepness_on(?MODULE, Network, Layer, Neuron).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Get the activation steepness for neuron number neuron in layer number
+%% layer, counting the input layer as layer 0. It is not possible to get
+%% activation steepness for the neurons in the input layer. The steepness
+%% of an activation function says something about how fast the activation
+%% function goes from the minimum to the maximum.  A high value for the
+%% activation function will also give a more aggressive training.
+%%
+%% When training neural networks where the output values should be at the
+%% extremes (usually 0 and 1, depending on the activation function),
+%%  a steep activation function can be used (e.g.  1.0).
+%% The default activation steepness is 0.5.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_steepness]
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_activation_steepness_on(Instance::pid(), Network::network_ref(),
+				  Layer::pos_integer(),
+				  Neuron::non_neg_integer())
+				 -> float().
+get_activation_steepness_on(Instance, Network, Layer, Neuron)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network), is_integer(Layer), Layer > 0,
+       is_integer(Neuron), Neuron >= 0 ->
+    call_port(Instance, {get_activation_steepness,
+			 Network, {Layer, Neuron}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_steepness_on({@module}, Network, ActivationSteepness,
+%%                                hidden, all)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_steepness_hidden(
+	Network::network_ref(),
+	ActivationSteepness::number()) -> ok.
+set_activation_steepness_hidden(Network, ActivationSteepness) 
+  when is_reference(Network),
+       is_number(ActivationSteepness) ->
+    set_activation_steepness_on(?MODULE, Network, ActivationSteepness,
+				hidden, all).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_steepness_on({@module}, Network, ActivationSteepness,
+%%                                    output, all)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_steepness_output(
+	Network::network_ref(),
+	ActivationSteepness::number()) -> ok.
+set_activation_steepness_output(Network, ActivationSteepness) 
+  when is_reference(Network),
+       is_number(ActivationSteepness) ->
+    set_activation_steepness_on(?MODULE, Network, ActivationSteepness,
+				output, all).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_steepness_layer({@module}, Network,
+%%                                       ActivationSteepness,
+%%                                       Layer, all)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_steepness_layer(
+	Network::network_ref(),
+	ActivationSteepness::number(),
+	Layer::pos_integer()) -> ok.
+set_activation_steepness_layer(Network, ActivationSteepness, Layer) 
+  when is_reference(Network),
+       is_number(ActivationSteepness),
+       is_integer(Layer), Layer > 0 ->
+    set_activation_steepness_on(?MODULE, Network, ActivationSteepness,
+				Layer, all).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_steepness_all({@module}, Network, ActivationSteepness,
+%%                                    all, all)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_steepness_all(
+	Network::network_ref(),
+	ActivationSteepness::number()) -> ok.
+set_activation_steepness_all(Network, ActivationSteepness) 
+  when is_reference(Network),
+       is_number(ActivationSteepness) ->
+    set_activation_steepness_on(?MODULE, Network, ActivationSteepness, 
+				all, all).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_steepness_on({@module}, Network, ActivationSteepness,
+%%                                    Layer, Neuron)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_steepness(Network::network_ref(),
+			       ActivationSteepness::number(),
+			       Layer::pos_integer() | hidden | output | all ,
+			       Neuron::non_neg_integer() | all) ->
+				      ok.
+set_activation_steepness(Network, ActivationSteepness, Layer, Neuron) 
+  when is_reference(Network),
+       is_number(ActivationSteepness),
+       ((is_integer(Layer) and (Layer > 0)) or
+	(Layer==hidden) or (Layer==output) or (Layer==all)),
+       ((is_integer(Neuron) and (Neuron >= 0)) or (Neuron==all)) ->
+    set_activation_steepness_on(?MODULE, Network, ActivationSteepness,
+				Layer, Neuron).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Set the activation steepness for neuron number neuron in layer
+%% number layer, counting the input layer as layer 0. It is not possible
+%% to set activation steepness for the neurons in the input layer.
+%% The steepness of an activation function says something about how fast
+%% the activation function goes from the minimum to the maximum.  A high
+%% value for the activation function will also give a more aggressive training.
+%%
+%% When training neural networks where the output values should be at the
+%% extremes (usually 0 and 1, depending on the activation function), a steep
+%% activation function can be used (e.g.  1.0).
+%% The default activation steepness is 0.5.
+%%
+%% If you specify Layer as hidden, output the activation function will be set
+%% for all neurons. If all is specified then the activation function will be 
+%% set for all possible layers.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_set_activation_steepness]
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_steepness_on(Instance::pid(),
+				  Network::network_ref(),
+				  ActivationSteepness::number(),
+				  Layer::pos_integer() | hidden | output | all ,
+				  Neuron::non_neg_integer() | all) ->
+					ok.
+set_activation_steepness_on(Instance, Network, ActivationSteepness,
+			    Layer, Neuron) 
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network),
+       is_number(ActivationSteepness),
+       ((is_integer(Layer) and (Layer > 0)) or
+	(Layer==hidden) or (Layer==output) or (Layer==all)),
+       ((is_integer(Neuron) and (Neuron >= 0)) or (Neuron==all)) ->
+    call_port(Instance, {set_activation_steepness, Network,
+			 {ActivationSteepness, Layer, Neuron}}).
+
 
 %% --------------------------------------------------------------------- %%
 %% @equiv randomize_weights_on({@module}, Network, MinWeight, MaxWeight)
