@@ -54,6 +54,9 @@ int do_fann_merge_trains(byte*buf, int * index, ei_x_buff * result);
 int do_fann_duplicate_train(byte*buf, int * index, ei_x_buff * result);
 int do_fann_save_train(byte*buf, int * index, ei_x_buff * result);
 int do_fann_get_train_params(byte*buf, int * index, ei_x_buff * result);
+int do_fann_set_params(byte*buf, int * index, ei_x_buff * result);
+int do_fann_get_activation_function(byte*buf, int * index, ei_x_buff * result);
+int do_fann_set_activation_function(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -63,7 +66,13 @@ int get_fann_train_ptr(byte * buf, int * index, struct fann_train_data** fann);
 
 int traverse_create_options(byte * buf, int * index, struct fann ** network);
 int get_activation_function(char * activation_function);
+void get_activation_function_atom(enum fann_activationfunc_enum activation_function, char * act_func);
 
+int set_param(byte * buf, int * index, struct fann * network, char * param);
+
+int is_atom(byte * buf, int * index);
+int is_integer(byte * buf, int * index);
+int is_string(byte * buf, int * index);
 
 struct ann_map {
   int key;
@@ -308,7 +317,19 @@ int main() {
 
       if(do_fann_get_train_params(buf, &index, &result) != 1) return 41;
 
-    }  else {
+    } else if(!strcmp("set_params", command)) {
+
+      if(do_fann_set_params(buf, &index, &result) != 1) return 42;
+
+    } else if(!strcmp("get_activation_function", command)) {
+      
+      if(do_fann_get_activation_function(buf, &index, &result) != 1) return 43;
+
+    } else if(!strcmp("set_activation_function", command)) {
+      
+      if(do_fann_set_activation_function(buf, &index, &result) != 1) return 44;
+
+    } else {
       if (ei_x_encode_atom(&result, "error") ||
 	  ei_x_encode_atom(&result, "unsupported_command")) 
         return 99;
@@ -1270,6 +1291,7 @@ int do_fann_merge_trains(byte*buf, int * index, ei_x_buff * result) {
   
   if(ei_x_new_with_version(result)) return -1;
   if(ei_x_encode_tuple_header(result, 2)) return -1;
+  
   if(ei_x_encode_atom(result, "ok") ||
      ei_x_encode_long(result, (long)new_train))
     return -1;
@@ -1321,6 +1343,137 @@ int do_fann_get_train_params(byte*buf, int * index, ei_x_buff * result)  {
   return 1;
 }
 
+int do_fann_set_params(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  int map_arity, tuple_arity;
+  char param[MAXATOMLEN];
+  int type, type_size;
+  //Decode Ptr, {ParamMap}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+
+  if(ei_decode_map_header((const char *)buf, index, &map_arity)) return -1;
+  for(int i = 0; i < map_arity; ++i) {
+    ei_get_type((const char *)buf, index, &type, &type_size);
+    if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
+       type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
+    
+      if(ei_decode_atom((const char *)buf, index, param)) return -1;
+      set_param(buf, index, network, param);
+    } else {
+      // Skip the two next ones
+      ei_skip_term((const char*)buf, index);
+      ei_skip_term((const char*)buf, index);
+    }
+  }
+  
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+  
+  return 1;
+}
+
+int do_fann_get_activation_function(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  int tuple_arity;
+  char * activation_function = 0;
+  int type, type_size;
+  unsigned long layer, neuron;
+  enum fann_activationfunc_enum act_func;
+  //Decode Ptr, {Layer, Neuron}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+
+  ei_get_type((const char *)buf, index, &type, &type_size);
+  if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
+    if(ei_decode_ulong((const char *)buf, index, &layer)) return -1;
+    
+    // ok get the neuron
+    ei_get_type((const char *)buf, index, &type, &type_size);
+    if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
+      if(ei_decode_ulong((const char *)buf, index, &neuron)) return -1;
+      // Ok we have both layer and neuron. get the activation function
+      act_func = fann_get_activation_function(network, layer, neuron);
+      
+      activation_function = malloc(MAXATOMLEN);
+      get_activation_function_atom(act_func, activation_function);
+      if(ei_x_new_with_version(result) ||
+	 ei_x_encode_atom_len(result, activation_function,
+			      strlen(activation_function))) return -1;
+      free(activation_function);
+      return 1;
+    } else {
+      return -1;
+    }
+  } else {
+    return -1;
+  }
+}
+
+int do_fann_set_activation_function(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  int tuple_arity;
+  char activation_function[MAXATOMLEN];
+  char layeratom[MAXATOMLEN];
+  char neuronatom[MAXATOMLEN];
+  unsigned long layer, neuron;
+  enum fann_activationfunc_enum act_func;
+  //Decode Ptr, {ActivationFunction, Layer, Neuron}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+  
+  if(ei_decode_atom((const char *)buf, index, activation_function)) return -1;
+  act_func = get_activation_function(activation_function);
+  
+  // Layer can be all, hidden, output or positive integer > 0
+  if(is_atom(buf, index)) {
+    if(ei_decode_atom((const char *)buf, index, layeratom)) return -1;
+    if(!strcmp("hidden", layeratom)) {
+      fann_set_activation_function_hidden(network, act_func);
+    } else if(!strcmp("output", layeratom)) {
+      fann_set_activation_function_output(network, act_func);
+    } else if(!strcmp("all",layeratom)) {
+      fann_set_activation_function_hidden(network, act_func);
+      fann_set_activation_function_output(network, act_func);
+    } else {
+      return -1;
+    }
+    if(ei_x_new_with_version(result) ||
+       ei_x_encode_atom_len(result, "ok", 2)) return -1;
+    return 1;
+    
+  } else if(is_integer(buf, index)) {
+    if(ei_decode_ulong((const char *)buf, index, &layer)) return -1;
+  } else {
+    return -1;
+  }
+  
+  // get neuron, can be all or positive integer >= 0
+  if(is_atom(buf, index)) {
+    if(ei_decode_atom((const char *)buf, index, neuronatom)) return -1;
+    if(!strcmp("all", neuronatom)) {
+      fann_set_activation_function_layer(network, act_func, layer);
+    } else {
+      return -1;
+    }
+    if(ei_x_new_with_version(result) ||
+       ei_x_encode_atom_len(result, "ok", 2)) return -1;
+    return 1;
+  } else if(is_integer(buf, index)) {
+    if(ei_decode_ulong((const char *)buf, index, &neuron)) return -1;
+    fann_set_activation_function(network, act_func, layer, neuron);
+  } else {
+    return -1;
+  }
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_atom_len(result, "ok", 2)) return -1;
+  return 1;
+}
+
 /*-----------------------------------------------------------------
  * Util functions
  *----------------------------------------------------------------*/
@@ -1367,6 +1520,25 @@ int get_fann_train_ptr(byte * buf, int * index,
   *fann_train_data = (struct fann_train_data *)ptr;
   return 1;
 }
+ 
+int is_atom(byte * buf, int * index) {
+  int type, type_size;
+  ei_get_type((const char *)buf, index, &type, &type_size);
+  return(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
+	 type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT);
+}
+
+int is_integer(byte * buf, int * index) {
+  int type, type_size;
+  ei_get_type((const char *)buf, index, &type, &type_size);
+  return(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT);
+}
+
+int is_string(byte * buf, int * index) {
+  int type, type_size;
+  ei_get_type((const char *)buf, index, &type, &type_size);
+  return(type == ERL_STRING_EXT);
+}
 
 int get_activation_function(char * activation_function) {
 
@@ -1406,6 +1578,161 @@ int get_activation_function(char * activation_function) {
     return -1;
   }
 }
+
+void get_activation_function_atom(enum fann_activationfunc_enum activation_function,
+				    char * act_func) {
+
+  if(activation_function == FANN_LINEAR) {
+    strcpy(act_func, "fann_linear");
+  } else if(activation_function == FANN_THRESHOLD) {
+    strcpy(act_func, "fann_threshold");
+  } else if(activation_function == FANN_THRESHOLD_SYMMETRIC) {
+    strcpy(act_func, "fann_threshold_symmetric");
+  } else if(activation_function == FANN_SIGMOID) {
+    strcpy(act_func, "fann_sigmoid");
+  } else if(activation_function == FANN_SIGMOID_SYMMETRIC) {
+    strcpy(act_func, "fann_sigmoid_symmetric");
+  } else if(activation_function == FANN_SIGMOID_STEPWISE) {
+    strcpy(act_func, "fann_sigmoid_stepwise");
+  } else if(activation_function == FANN_GAUSSIAN) {
+    strcpy(act_func, "fann_gaussian");
+  } else if(activation_function == FANN_GAUSSIAN_SYMMETRIC) {
+    strcpy(act_func, "fann_gaussian_symmetric");
+  } else if(activation_function == FANN_ELLIOT) {
+    strcpy(act_func, "fann_elliot");
+  } else if(activation_function == FANN_ELLIOT_SYMMETRIC) {
+    strcpy(act_func, "fann_elliot_symmetric");
+  } else if(activation_function == FANN_LINEAR_PIECE_SYMMETRIC) {
+    strcpy(act_func, "fann_linear_piece_symmetric");
+  } else if(activation_function == FANN_LINEAR_PIECE) {
+    strcpy(act_func, "fann_linear_piece");
+  } else if(activation_function == FANN_SIN_SYMMETRIC) {
+    strcpy(act_func, "fann_sin_symmetric");
+  } else if(activation_function == FANN_COS_SYMMETRIC) {
+    strcpy(act_func, "fann_cos_symmetric");
+  } else if(activation_function == FANN_COS) {
+    strcpy(act_func, "fann_cos");
+  } else if(activation_function == FANN_SIN) {
+    strcpy(act_func, "fann_sin");
+  } else {
+    strcpy(act_func, "unknown_activation_function");
+  }
+}
+
+int set_param(byte * buf, int * index, struct fann * network, char * param) {
+  double learning_rate, learning_momentum, quickprop_decay;
+  double quickprop_mu, rprop_increase_factor, rprop_decrease_factor;
+  double rprop_delta_min, rprop_delta_max, rprop_delta_zero;
+  double sarprop_weight_decay_shift, sarprop_step_error_threshold_factor;
+  double sarprop_step_error_shift, sarprop_temperature;
+  fann_type bit_fail_limit;
+  int type, type_size;
+  char train_error_func[MAXATOMLEN];
+  char train_stop_func[MAXATOMLEN];
+  char training_algorithm[MAXATOMLEN];
+  if(!strcmp("learning_rate", param)) {
+    learning_rate = get_double(buf, index);
+    fann_set_learning_rate(network, (float)learning_rate);
+  } else if (!strcmp("learning_momentum", param)) {
+    learning_momentum = get_double(buf, index);
+    fann_set_learning_momentum(network, (float)learning_momentum);
+  } else if (!strcmp("quickprop_decay", param)) {
+    quickprop_decay = get_double(buf, index);
+    fann_set_quickprop_decay(network, (float)quickprop_decay);
+  } else if (!strcmp("quickprop_mu", param)) {
+    quickprop_mu = get_double(buf, index);
+    fann_set_quickprop_mu(network, (float)quickprop_mu);
+  } else if (!strcmp("rprop_increase_factor", param)) {
+    rprop_increase_factor = get_double(buf, index);
+    fann_set_rprop_increase_factor(network, (float)rprop_increase_factor);
+  } else if (!strcmp("rprop_decrease_factor", param)) {
+    rprop_decrease_factor = get_double(buf, index);
+    fann_set_rprop_decrease_factor(network, (float)rprop_decrease_factor);
+  } else if (!strcmp("rprop_delta_min", param)) {
+    rprop_delta_min = get_double(buf, index);
+    fann_set_rprop_delta_min(network, (float)rprop_delta_min);
+  } else if (!strcmp("rprop_delta_max", param)) {
+    rprop_delta_max = get_double(buf, index);
+    fann_set_rprop_delta_max(network, (float)rprop_delta_max);
+  } else if (!strcmp("rprop_delta_zero", param)) {
+    rprop_delta_zero = get_double(buf, index);
+    fann_set_rprop_delta_zero(network, (float)rprop_delta_zero);
+  } else if (!strcmp("sarprop_weight_decay_shift", param)) {
+    sarprop_weight_decay_shift = get_double(buf, index);
+    fann_set_sarprop_weight_decay_shift(network,
+					(float)sarprop_weight_decay_shift);
+  } else if (!strcmp("sarprop_step_error_threshold_factor", param)) {
+    sarprop_step_error_threshold_factor = get_double(buf, index);
+    fann_set_sarprop_step_error_threshold_factor(network,
+						 (float)sarprop_step_error_threshold_factor);
+  } else if (!strcmp("sarprop_step_error_shift", param)) {
+    sarprop_step_error_shift = get_double(buf, index);
+    fann_set_sarprop_step_error_shift(network,
+				      (float)sarprop_step_error_shift);
+  } else if (!strcmp("sarprop_temperature", param)) {
+    sarprop_temperature = get_double(buf, index);
+    fann_set_sarprop_temperature(network,
+				 (float)sarprop_temperature);
+  } else if (!strcmp("bit_fail_limit", param)) {
+    bit_fail_limit = (fann_type)get_double(buf, index);
+    fann_set_bit_fail_limit(network,
+			    (float)bit_fail_limit);
+  } else if (!strcmp("train_error_func", param)) {
+    ei_get_type((const char *)buf, index, &type, &type_size);
+    if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
+       type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
+      
+      if(ei_decode_atom((const char *)buf, index, train_error_func)) return -1;
+      
+      if(!strcmp("fann_errorfunc_linear", train_error_func)) {
+	fann_set_train_error_function(network, FANN_ERRORFUNC_LINEAR);
+      } else if(!strcmp("fann_errorfunc_tanh", train_error_func)) {
+	fann_set_train_error_function(network, FANN_ERRORFUNC_TANH);
+      }
+    } else {
+      ei_skip_term((const char*)buf, index);
+    }
+  } else if (!strcmp("train_stop_func", param)) {
+    ei_get_type((const char *)buf, index, &type, &type_size);
+    if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
+       type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
+      
+      if(ei_decode_atom((const char *)buf, index, train_stop_func)) return -1;
+      
+      if(!strcmp("fann_stopfunc_mse", train_stop_func)) {
+	fann_set_train_stop_function(network, FANN_STOPFUNC_MSE);
+      } else if(!strcmp("fann_stopfunc_tanh", train_stop_func)) {
+	fann_set_train_stop_function(network, FANN_STOPFUNC_BIT);
+      }
+    } else {
+      ei_skip_term((const char*)buf, index);
+    }
+  } else if (!strcmp("training_algorithm", param)) {
+    ei_get_type((const char *)buf, index, &type, &type_size);
+    if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
+       type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
+      
+      if(ei_decode_atom((const char *)buf, index, training_algorithm))
+	return -1;
+      
+      if(!strcmp("fann_train_incremental", training_algorithm)) {
+	fann_set_training_algorithm(network, FANN_TRAIN_INCREMENTAL);
+      } else if(!strcmp("fann_train_batch", training_algorithm)) {
+	fann_set_training_algorithm(network, FANN_TRAIN_BATCH);
+      } else if(!strcmp("fann_train_rprop", training_algorithm)) {
+	fann_set_training_algorithm(network, FANN_TRAIN_RPROP);
+      } else if(!strcmp("fann_train_quickprop", training_algorithm)) {
+	fann_set_training_algorithm(network, FANN_TRAIN_QUICKPROP);
+      } else if(!strcmp("fann_train_sarprop", training_algorithm)) {
+	fann_set_training_algorithm(network, FANN_TRAIN_SARPROP);
+      }
+    } else {
+      ei_skip_term((const char*)buf, index);
+    }
+  }
+  return 1;
+}
+
 /*-----------------------------------------------------------------
  * Data marshalling functions
  *----------------------------------------------------------------*/

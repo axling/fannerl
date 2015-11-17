@@ -92,11 +92,11 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_save_train             | fannerl:save_train   | 1.0.0           |    |
 | fann_save_train_to_fixed    | -                    | -               | Will be covered in future release |
 | fann_get_training_algorithm | fannerl:get_params   | 1.0.0           |    |
-| fann_set_training_algorithm | JTBD                 | 1.0.0           |    |
+| fann_set_training_algorithm | fannerl:set_params   | 1.0.0           |    |
 | fann_get_learning_rate      | fannerl:get_params   | 1.0.0           |    |
-| fann_set_learning_rate      | JTBD                 | 1.0.0           |    |
+| fann_set_learning_rate      | fannerl:set_params   | 1.0.0           |    |
 | fann_get_learning_momentum  | fannerl:get_params   | 1.0.0           |    |
-| fann_set_learning_momentum  | JTBD                 | 1.0.0           |    |
+| fann_set_learning_momentum  | fannerl:set_params   | 1.0.0           |    |
 | fann_get_activation_function      | JTBD - fannerl:get_params   | 1.0.0           |    |
 | fann_set_activation_function      | JTBD                        | 1.0.0           |    |
 | fann_set_activation_function_layer| JTBD                        | 1.0.0           |    |
@@ -108,34 +108,34 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 | fann_set_activation_steepness_hidden| JTBD                        | 1.0.0           |    |
 | fann_set_activation_steepness_output| JTBD                        | 1.0.0           |    |
 | fann_get_train_error_function     | fannerl:get_params   | 1.0.0           |    |
-| fann_set_train_error_function     | JTBD                        | 1.0.0           |    |
+| fann_set_train_error_function     | fannerl:set_params   | 1.0.0           |    |
 | fann_get_train_stop_function      | fannerl:get_params   | 1.0.0           |    |
-| fann_set_train_stop_function      | JTBD                        | 1.0.0           |    |
+| fann_set_train_stop_function      | fannerl:set_params   | 1.0.0           |    |
 | fann_get_bit_fail_limit           | fannerl:get_params   | 1.0.0           |    |
-| fann_set_bit_fail_limit           | JTBD                        | 1.0.0           |    |
-| fann_set_callback                 | -                           | 1.0.0           | Will not be supported   |
+| fann_set_bit_fail_limit           | fannerl:set_params   | 1.0.0           |    |
+| fann_set_callback                 | -                    | 1.0.0           | Will not be supported   |
 | fann_get_quickprop_decay          | fannerl:get_params   | 1.0.0           |    |
-| fann_set_quickprop_decay          | JTBD                        | 1.0.0           |    |
+| fann_set_quickprop_decay          | fannerl:set_params   | 1.0.0           |    |
 | fann_get_quickprop_mu             | fannerl:get_params   | 1.0.0           |    |
-| fann_set_quickprop_mu             | JTBD                        | 1.0.0           |    |
+| fann_set_quickprop_mu             | fannerl:set_params   | 1.0.0           |    |
 | fann_get_rprop_increase_factor    | fannerl:get_params   | 1.0.0           |    |
-| fann_set_rprop_increase_factor    | JTBD                        | 1.0.0           |    |
+| fann_set_rprop_increase_factor    | fannerl:set_params   | 1.0.0           |    |
 | fann_get_rprop_decrease_factor    | fannerl:get_params   | 1.0.0           |    |
-| fann_set_rprop_decrease_factor    | JTBD                        | 1.0.0           |    |
+| fann_set_rprop_decrease_factor    | fannerl:set_params   | 1.0.0           |    |
 | fann_get_rprop_delta_min          | fannerl:get_params   | 1.0.0           |    |
-| fann_set_rprop_delta_min          | JTBD                        | 1.0.0           |    |
+| fann_set_rprop_delta_min          | fannerl:set_params   | 1.0.0           |    |
 | fann_get_rprop_delta_max          | fannerl:get_params   | 1.0.0           |    |
-| fann_set_rprop_delta_max          | JTBD                        | 1.0.0           |    |
+| fann_set_rprop_delta_max          | fannerl:set_params   | 1.0.0           |    |
 | fann_get_rprop_delta_zero         | fannerl:get_params   | 1.0.0           |    |
-| fann_set_rprop_delta_zero         | JTBD                        | 1.0.0           |    |
-| fann_get_sarprop_weight_decay_shift| fannerl:get_params   | 1.0.0           |    |
-| fann_set_sarprop_weight_decay_shift| JTBD                        | 1.0.0           |    |
+| fann_set_rprop_delta_zero         | fannerl:set_params   | 1.0.0           |    |
+| fann_get_sarprop_weight_decay_shift| fannerl:get_params  | 1.0.0           |    |
+| fann_set_sarprop_weight_decay_shift| fannerl:set_params  | 1.0.0           |    |
 | fann_get_sarprop_step_error_threshold_factor | fannerl:get_params   | 1.0.0           |    |
-| fann_set_sarprop_step_error_threshold_factor | JTBD                        | 1.0.0           |    |
+| fann_set_sarprop_step_error_threshold_factor | fannerl:set_params   | 1.0.0           |    |
 | fann_get_sarprop_step_error_shift | fannerl:get_params   | 1.0.0           |    |
-| fann_set_sarprop_step_error_shift | JTBD                        | 1.0.0           |    |
+| fann_set_sarprop_step_error_shift | fannerl:set_params   | 1.0.0           |    |
 | fann_get_sarprop_temperature      | fannerl:get_params   | 1.0.0           |    |
-| fann_set_sarprop_temperature      | JTBD                        | 1.0.0           |    |
+| fann_set_sarprop_temperature      | fannerl:set_params   | 1.0.0           |    |
 
 ## File Input/Output
 | fann function                     | supported by                | fannerl verson  | Comment  |

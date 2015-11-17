@@ -12,6 +12,23 @@
 -type train_ref()      :: reference().
 -type options()        :: map().
 -type connections()    :: map().
+-type activation_function() :: fann_linear              |
+			       fann_threshold           |
+			       fann_threshold_symmetric |
+			       fann_sigmoid             |
+			       fann_sigmoid_stepwise    |
+			       fann_sigmoid_symmetric   |
+			       fann_gaussian            |
+			       fann_gaussian_symmetric  |
+			       fann_elliot              |
+			       fann_elliot_symmetric    |
+			       fann_linear_piece        |
+			       fann_linear_piece_symmetric |
+			       fann_sin_symmetric       |
+			       fann_cos_symmetric       |
+			       fann_sin                 |
+			       fann_cos.
+
 
 -export([start/0,
 	 start_instance/0,
@@ -31,6 +48,24 @@
 	 destroy_on/2,
 	 get_params/1,
 	 get_params_on/2,
+	 get_activation_function/3,
+	 get_activation_function_on/4,
+	 set_activation_function/4,
+	 set_activation_function_on/5,
+	 set_activation_function_layer/3,
+	 set_activation_function_hidden/2,
+	 set_activation_function_output/2,
+	 set_activation_function_all/2,
+%%	 get_activation_steepness/3,
+%%	 get_activation_steepness_on/4,
+%%	 set_activation_steepness/3,
+%%	 set_activation_steepness_on/4,
+%%	 set_activation_steepness_layer/2,
+%%	 set_activation_steepness_layer_on/3,
+	 set_param/3,
+	 set_param_on/4,
+	 set_params/2,
+	 set_params_on/3,
 	 reset_mse/1,
 	 reset_mse_on/2
 	]).
@@ -610,6 +645,144 @@ get_params_on(Instance, Network)
     call_port(Instance, {get_params, Network, {}}).
 
 %% --------------------------------------------------------------------- %%
+%% @equiv get_activation_function({@module}, Network, Layer, Neuron)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_activation_function(Network::network_ref(),
+			      Layer::pos_integer(),
+			      Neuron::non_neg_integer())
+			     -> map() | atom().
+get_activation_function(Network, Layer, Neuron) 
+  when is_reference(Network), is_integer(Layer), Layer > 0,
+       is_integer(Neuron), Neuron >= 0 ->
+    get_activation_function_on(?MODULE, Network, Layer, Neuron).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Get the activation function for neuron number neuron in layer number layer, counting the input layer as layer 0.
+%% It is not possible to get activation functions for the neurons in the input layer.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_function]
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_activation_function_on(Instance::pid(), Network::network_ref(),
+				 Layer::pos_integer(),
+				 Neuron::non_neg_integer())
+				-> map() | atom().
+get_activation_function_on(Instance, Network, Layer, Neuron)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network), is_integer(Layer), Layer > 0,
+       is_integer(Neuron), Neuron >= 0 ->
+    call_port(Instance, {get_activation_function,
+			 Network, {Layer, Neuron}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_function_on({@module}, Network, ActivationFunction,
+%%                                hidden, all)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_function_hidden(
+	Network::network_ref(),
+	ActivationFunction::activation_function()) ->
+					    ok.
+set_activation_function_hidden(Network, ActivationFunction) 
+  when is_reference(Network),
+       is_atom(ActivationFunction) ->
+    set_activation_function_on(?MODULE, Network, ActivationFunction,
+			       hidden, all).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_function_on({@module}, Network, ActivationFunction,
+%%                                    output, all)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_function_output(
+	Network::network_ref(),
+	ActivationFunction::activation_function()) ->
+					    ok.
+set_activation_function_output(Network, ActivationFunction) 
+  when is_reference(Network),
+       is_atom(ActivationFunction) ->
+    set_activation_function_on(?MODULE, Network, ActivationFunction,
+			       output, all).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_function_layer({@module}, Network, ActivationFunction,
+%%                                    Layer, all)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_function_layer(
+	Network::network_ref(),
+	ActivationFunction::activation_function(),
+	Layer::pos_integer()) ->
+					    ok.
+set_activation_function_layer(Network, ActivationFunction, Layer) 
+  when is_reference(Network),
+       is_atom(ActivationFunction),
+       is_integer(Layer), Layer > 0 ->
+    set_activation_function_on(?MODULE, Network, ActivationFunction,
+			       Layer, all).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_function_all({@module}, Network, ActivationFunction,
+%%                                    all, all)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_function_all(
+	Network::network_ref(),
+	ActivationFunction::activation_function()) ->
+					 ok.
+set_activation_function_all(Network, ActivationFunction) 
+  when is_reference(Network),
+       is_atom(ActivationFunction) ->
+    set_activation_function_on(?MODULE, Network, ActivationFunction, 
+			       all, all).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_activation_function_on({@module}, Network, ActivationFunction,
+%%                                Layer, Neuron)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_function(Network::network_ref(),
+			      ActivationFunction::activation_function(),
+			      Layer::pos_integer() | hidden | output | all ,
+			      Neuron::non_neg_integer() | all) ->
+				     ok.
+set_activation_function(Network, ActivationFunction, Layer, Neuron) 
+  when is_reference(Network),
+       is_atom(ActivationFunction),
+       ((is_integer(Layer) and (Layer > 0)) or
+	(Layer==hidden) or (Layer==output) or (Layer==all)),
+       ((is_integer(Neuron) and (Neuron >= 0)) or (Neuron==all)) ->
+    set_activation_function_on(?MODULE, Network, ActivationFunction,
+			       Layer, Neuron).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Set the activation function for neuron number neuron in layer number
+%% layer, counting the input layer as layer 0.
+%% It is not possible to set activation functions for the neurons in the input layer.
+%% If you specify Layer as hidden, output the activation function will be set
+%% for all neurons. If all is specified then the activation function will be 
+%% set for all possible layers.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_function]
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_activation_function_on(Instance::pid(),
+				 Network::network_ref(),
+				 ActivationFunction::activation_function(),
+				 Layer::pos_integer() | hidden | output | all ,
+				 Neuron::non_neg_integer() | all) ->
+					ok.
+set_activation_function_on(Instance, Network, ActivationFunction,
+			   Layer, Neuron) 
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network),
+       is_atom(ActivationFunction),
+       ((is_integer(Layer) and (Layer > 0)) or
+	(Layer==hidden) or (Layer==output) or (Layer==all)),
+       ((is_integer(Neuron) and (Neuron >= 0)) or (Neuron==all)) ->
+    call_port(Instance, {set_activation_function, Network,
+			 {ActivationFunction, Layer, Neuron}}).
+
+%% --------------------------------------------------------------------- %%
 %% @equiv randomize_weights_on({@module}, Network, MinWeight, MaxWeight)
 %% @end
 %% --------------------------------------------------------------------- %%
@@ -892,6 +1065,52 @@ set_weight_on(Instance, Network, FromNeuron, ToNeuron, Weight)
        is_integer(ToNeuron), ToNeuron >= 0,
        is_number(Weight) ->
     call_port(Instance, {set_weight, Network, {FromNeuron, ToNeuron, Weight}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_param_on({@module}, Network, Param, Value)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_param(Network::network_ref(), Param::atom(), Value::term()) -> ok.
+set_param(Network, Param, Value)
+  when is_reference(Network),
+       is_atom(Param) ->
+    set_param_on(?MODULE, Network, Param, Value).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Sets one param on a given network. Equivalent to set_params_on/3
+%% with a map with one key and value.
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_param_on(Instance::pid(), Network::network_ref(),
+		   Param::atom(), Value::term()) -> ok.
+set_param_on(Instance, Network, Param, Value)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network),
+       is_atom(Param) ->
+    Map = maps:put(Param, Value, maps:new()),
+    set_params_on(Instance, Network, Map).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv set_params_on({@module}, Network, ParametersMap)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_params(Network::network_ref(), ParametersMap::map()) -> ok.
+set_params(Network, ParametersMap)
+  when is_reference(Network),
+       is_map(ParametersMap) ->
+    set_params_on(?MODULE, Network, ParametersMap).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Sets parameters on a given network. 
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec set_params_on(Instance::pid(), Network::network_ref(),
+		   ParamertersMap::map()) -> ok.
+set_params_on(Instance, Network, ParametersMap)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network),
+       is_map(ParametersMap) ->
+    call_port(Instance, {set_params, Network, {ParametersMap}}).
 
 %%****************************************************************%%       
 %% Private functions
