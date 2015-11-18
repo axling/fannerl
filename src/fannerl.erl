@@ -1,5 +1,21 @@
+%% Fannerl: Erlang Bindings to the Fast Artificial Neural Network Library (fann)
+%% Copyright (C) 2015 Erik Axling (erik.axling@gmail.com)
+
+%% This library is free software; you can redistribute it and/or
+%% modify it under the terms of the GNU Lesser General Public
+%% License as published by the Free Software Foundation; either
+%% version 2.1 of the License, or (at your option) any later version.
+
+%% This library is distributed in the hope that it will be useful,
+%% but WITHOUT ANY WARRANTY; without even the implied warranty of
+%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%% Lesser General Public License for more details.
+
+%% You should have received a copy of the GNU Lesser General Public
+%% License along with this library; if not, write to the Free Software
+%% Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 %%% @author Erik Axling <>
-%%% @copyright (C) 2014, Erik Axling
 %%% @doc
 %%%
 %%% @end
@@ -188,7 +204,7 @@ stop_instance(Instance) when is_pid(Instance) ->
 	{'DOWN', MonRef, process, Instance, Reason} ->
 	    {error, {instance_exit_abnormal, {reason, Reason}}}
     end.
-    
+
 %% --------------------------------------------------------------------- %%
 %% @equiv create_on({@module}, Layers, default_options())
 %% @end
@@ -228,8 +244,8 @@ create_on(Instance, Layers)
 		       network_ref().
 create_on(Instance, Layers, Options) 
   when Instance == ?MODULE; is_pid(Instance),
-      is_tuple(Layers),
-      is_map(Options) ->
+       is_tuple(Layers),
+       is_map(Options) ->
     {Type, OptionsWithoutType} = 
 	case maps:is_key(type, Options) of
 	    true ->
@@ -289,7 +305,7 @@ copy_on(Instance, Network)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network) ->
     call_port(Instance, {copy, Network, {}}).
-    
+
 
 %% --------------------------------------------------------------------- %%
 %% @equiv destroy_on({@module}, Network)
@@ -465,7 +481,7 @@ test(Network, Input, DesiredOutput)
 %% --------------------------------------------------------------------- %%
 -spec test_on(Instance::pid(), Network::network_ref(),
 	      Input::tuple(), DesiredOutput::tuple()) ->
-		  Output::tuple().
+		     Output::tuple().
 test_on(Instance, Network, Input, DesiredOutput)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network),
@@ -606,7 +622,7 @@ save_on(Instance, Network, FileName)
 %% @end
 %% --------------------------------------------------------------------- %%
 -spec subset_train_data(Train::train_ref(), Pos::non_neg_integer(),
-		       Length::non_neg_integer()) -> train_ref().
+			Length::non_neg_integer()) -> train_ref().
 subset_train_data(Train, Pos, Length) ->
     subset_train_data_on(?MODULE, Train, Pos, Length).
 
@@ -715,7 +731,7 @@ set_activation_function_output(Network, ActivationFunction)
 	Network::network_ref(),
 	ActivationFunction::activation_function(),
 	Layer::pos_integer()) ->
-					    ok.
+					   ok.
 set_activation_function_layer(Network, ActivationFunction, Layer) 
   when is_reference(Network),
        is_atom(ActivationFunction),
@@ -752,7 +768,7 @@ set_activation_function(Network, ActivationFunction, Layer, Neuron)
   when is_reference(Network),
        is_atom(ActivationFunction),
        ((is_integer(Layer) and (Layer > 0)) or
-	(Layer==hidden) or (Layer==output) or (Layer==all)),
+					      (Layer==hidden) or (Layer==output) or (Layer==all)),
        ((is_integer(Neuron) and (Neuron >= 0)) or (Neuron==all)) ->
     set_activation_function_on(?MODULE, Network, ActivationFunction,
 			       Layer, Neuron).
@@ -779,7 +795,7 @@ set_activation_function_on(Instance, Network, ActivationFunction,
        is_reference(Network),
        is_atom(ActivationFunction),
        ((is_integer(Layer) and (Layer > 0)) or
-	(Layer==hidden) or (Layer==output) or (Layer==all)),
+					      (Layer==hidden) or (Layer==output) or (Layer==all)),
        ((is_integer(Neuron) and (Neuron >= 0)) or (Neuron==all)) ->
     call_port(Instance, {set_activation_function, Network,
 			 {ActivationFunction, Layer, Neuron}}).
@@ -896,7 +912,7 @@ set_activation_steepness(Network, ActivationSteepness, Layer, Neuron)
   when is_reference(Network),
        is_number(ActivationSteepness),
        ((is_integer(Layer) and (Layer > 0)) or
-	(Layer==hidden) or (Layer==output) or (Layer==all)),
+					      (Layer==hidden) or (Layer==output) or (Layer==all)),
        ((is_integer(Neuron) and (Neuron >= 0)) or (Neuron==all)) ->
     set_activation_steepness_on(?MODULE, Network, ActivationSteepness,
 				Layer, Neuron).
@@ -925,14 +941,14 @@ set_activation_steepness(Network, ActivationSteepness, Layer, Neuron)
 				  ActivationSteepness::number(),
 				  Layer::pos_integer() | hidden | output | all ,
 				  Neuron::non_neg_integer() | all) ->
-					ok.
+					 ok.
 set_activation_steepness_on(Instance, Network, ActivationSteepness,
 			    Layer, Neuron) 
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network),
        is_number(ActivationSteepness),
        ((is_integer(Layer) and (Layer > 0)) or
-	(Layer==hidden) or (Layer==output) or (Layer==all)),
+					      (Layer==hidden) or (Layer==output) or (Layer==all)),
        ((is_integer(Neuron) and (Neuron >= 0)) or (Neuron==all)) ->
     call_port(Instance, {set_activation_steepness, Network,
 			 {ActivationSteepness, Layer, Neuron}}).
@@ -1261,7 +1277,7 @@ set_params(Network, ParametersMap)
 %% @end
 %% --------------------------------------------------------------------- %%
 -spec set_params_on(Instance::pid(), Network::network_ref(),
-		   ParamertersMap::map()) -> ok.
+		    ParamertersMap::map()) -> ok.
 set_params_on(Instance, Network, ParametersMap)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network),
@@ -1489,7 +1505,7 @@ call_port_with_msg(Port, State, Caller, Msg, Ref) ->
     NewState = handle_return_val(
 		 Msg, Ret, Caller, State, Ref),
     loop(Port, NewState).
-	
+
 do_port_call(Port, Msg) ->
     erlang:port_command(Port, term_to_binary(Msg)),
     receive
@@ -1548,7 +1564,7 @@ handle_return_val({destroy_train, _, _}, ok, Caller, State, Ref) ->
 handle_return_val(_Msg, Return, Caller, State, _Ref) ->
     Caller ! {fannerl_res, Return},
     State.
-    
+
 %% @private
 default_options() ->
     #{type=>standard}.
