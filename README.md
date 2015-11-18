@@ -6,11 +6,15 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 
 ## Left TODO
 
+* Do destroy of all networks and trains at termination <- Done
+
 * Add error handling
+
+* C code refactor <- Done
 
 * More tests in CT suite
 
-* Fix create function
+* Fix create function <- Done
 
 * Add examples
 

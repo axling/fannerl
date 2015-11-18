@@ -17,6 +17,13 @@
  
 #define BUF_SIZE 128 
  
+#define ERROR_WITH_LINE(RESULT, REASON)\
+  { \
+  char * _reason = "";\
+  sprintf(_reason, "fannerl.c:%i: %s", __LINE__, REASON);\
+  return error_with_reason(RESULT, _reason); \
+  }
+
 typedef unsigned char byte;
 
 int read_cmd(byte **buf, int *size);
@@ -70,11 +77,16 @@ int traverse_create_options(byte * buf, int * index, struct fann ** network);
 int get_activation_function(char * activation_function);
 void get_activation_function_atom(enum fann_activationfunc_enum activation_function, char * act_func);
 
+int set_params(byte * buf, int * index, struct fann * network);
 int set_param(byte * buf, int * index, struct fann * network, char * param);
 
 int is_atom(byte * buf, int * index);
 int is_integer(byte * buf, int * index);
 int is_string(byte * buf, int * index);
+int is_float(byte * buf, int * index);
+int get_strlen(byte * buf, int * index);
+
+int error_with_reason(ei_x_buff * result, char * reason);
 
 struct ann_map {
   int key;
@@ -376,7 +388,7 @@ int do_fann_create_standard(byte *buf, int * index, ei_x_buff * result) {
     ei_skip_term((const char*)buf, index);
   } else if(!strcmp("sparse", type)) {
     double temp_conn_rate;
-    if(ei_decode_double((const char *)buf, index, &temp_conn_rate)) return -1;
+    temp_conn_rate = get_double(buf, index);
     network = fann_create_sparse_array(temp_conn_rate, arity, layers);
   } else if(!strcmp("shortcut", type)) {
     network = fann_create_shortcut_array(arity, layers);
@@ -386,7 +398,7 @@ int do_fann_create_standard(byte *buf, int * index, ei_x_buff * result) {
     network = fann_create_standard_array(arity, layers);
     ei_skip_term((const char*)buf, index);
   }
-  if(traverse_create_options(buf, index, &network) != 1) return -1;
+  if(set_params(buf, index, network) != 1) return -1;
   int hash_key = ann_ctr;
   add_ann(ann_ctr, network);
   ann_ctr += 1;
@@ -407,9 +419,7 @@ int traverse_create_options(byte * buf, int * index, struct fann ** network){
   // Go through the map
   for(int i = 0; i < arity; ++i) {
     // keys should be atom
-    if(ei_get_type((const char *)buf, index, &type, &type_size)) return -1;
-    if(type != ERL_ATOM_EXT && type != ERL_SMALL_ATOM_EXT &&
-       type != ERL_ATOM_UTF8_EXT && type != ERL_SMALL_ATOM_UTF8_EXT) {
+    if(!is_atom(buf, index)) {
       ei_skip_term((const char*)buf, index);
       ei_skip_term((const char*)buf, index);
       continue;
@@ -418,13 +428,12 @@ int traverse_create_options(byte * buf, int * index, struct fann ** network){
     
     if(!strcmp("learning_rate", key)) {
       float learning_rate;
-      if(ei_get_type((const char *)buf, index, &type, &type_size)) return -1;
-      if(type == ERL_INTEGER_EXT) {
+      if(is_integer(buf, index)) {
 	long temp;
 	if(ei_decode_long((const char *)buf, index, &temp)) return -1;
 	learning_rate = (float)temp;
 	fann_set_learning_rate(*network, learning_rate);
-      } else if(type == ERL_FLOAT_EXT || type == NEW_FLOAT_EXT) {
+      } else if(is_float(buf, index)) {
 	double temp;
 	if(ei_decode_double((const char *)buf, index, &temp)) return -1;
 	learning_rate = (float)(temp);
@@ -506,25 +515,28 @@ int traverse_create_options(byte * buf, int * index, struct fann ** network){
 int do_fann_create_from_file(byte *buf, int * index, ei_x_buff * result) {
   struct fann * network = NULL;
   char * filename = NULL;
-  int size, type;
+  int size;
 
   // Decode Filename
-  if(ei_get_type((const char *)buf, index, &type, &size)) return -1;
-  if(type != ERL_STRING_EXT) return -1;
-  filename = malloc((size+1)*sizeof(char));
+  if(is_string(buf, index)) {
+    size = get_strlen(buf, index);
+    filename = malloc((size+1)*sizeof(char));
 
-  if(ei_decode_string((const char *)buf, index, filename)) return -1;
+    if(ei_decode_string((const char *)buf, index, filename)) return -1;
 
-  network = fann_create_from_file(filename);
-  if(network == NULL) return -1;
-
-  int hash_key = ann_ctr;
-  add_ann(ann_ctr, network);
-  ann_ctr += 1;
-  if(ei_x_encode_atom(result, "ok") || ei_x_encode_long(result,
-							(long)hash_key))
+    network = fann_create_from_file(filename);
+    if(network == NULL) return -1;
+    
+    int hash_key = ann_ctr;
+    add_ann(ann_ctr, network);
+    ann_ctr += 1;
+    if(ei_x_encode_atom(result, "ok") || ei_x_encode_long(result,
+							  (long)hash_key))
+      return -1;
+    return 1;
+  } else {
     return -1;
-  return 1;
+  }
 
 }
 
@@ -586,11 +598,12 @@ int do_fann_train(byte *buf, int * index, ei_x_buff * result) {
 }
 
 int do_fann_train_on_file(byte *buf, int * index, ei_x_buff * result) {
-  int arity, type, size;
+  int arity;
   struct fann * network = 0;
   char * filename = 0;
   unsigned long max_epochs = 0;
   double desired_error = 0.0;
+  int size;
 
   // Decode Ptr,( Filename, MaxEpochs, DesiredError}
   // Decode network ptr
@@ -598,27 +611,30 @@ int do_fann_train_on_file(byte *buf, int * index, ei_x_buff * result) {
   
   if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
   
-  if(ei_get_type((const char *)buf, index, &type, &size)) return -1;
-  if(type != ERL_STRING_EXT) return -1;
-  filename = malloc((size+1)*sizeof(char));
-  // Decode filename
-  if(ei_decode_string((const char *)buf, index, filename)) return -1;
-
-  //Decode MaxEpochs
-  if(ei_decode_ulong((const char *)buf, index, &max_epochs)) return -1;
+  if(is_string(buf, index)) {
+    size = get_strlen(buf, index);
+    filename = malloc((size+1)*sizeof(char));
+    // Decode filename
+    if(ei_decode_string((const char *)buf, index, filename)) return -1;
+    
+    //Decode MaxEpochs
+    if(ei_decode_ulong((const char *)buf, index, &max_epochs)) return -1;
   
-  //Decode DesiredError
-  if(ei_decode_double((const char *)buf, index, &desired_error)) return -1;
+    //Decode DesiredError
+    if(ei_decode_double((const char *)buf, index, &desired_error)) return -1;
 
-  //Call FANN API
-  fann_train_on_file(network, filename, (unsigned int)max_epochs, 0,
-		     (float)desired_error);
+    //Call FANN API
+    fann_train_on_file(network, filename, (unsigned int)max_epochs, 0,
+		       (float)desired_error);
 
-  free(filename);
+    free(filename);
 
-  if(ei_x_new_with_version(result) ||
-     ei_x_encode_atom_len(result, "ok", 2)) return -1;
-  return 1;
+    if(ei_x_new_with_version(result) ||
+       ei_x_encode_atom_len(result, "ok", 2)) return -1;
+    return 1;
+  } else {
+    return 1;
+  }
 }
 
 int do_fann_run(byte *buf, int * index, ei_x_buff * result) {
@@ -844,30 +860,32 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
 }
 
 int do_fann_read_train_from_file(byte*buf, int * index, ei_x_buff * result)  {
-  int type, size;
   char * filename = 0;
   struct fann_train_data * training_data;
-  if(ei_get_type((const char*)buf, index, &type, &size)) return -1;
-  if(type != ERL_STRING_EXT) return -1;
-  //Alloc memory for string
-  filename = malloc((size +1) * sizeof(char));
-  if(ei_decode_string((const char*)buf, index, filename)) return -1;
-  training_data = fann_read_train_from_file(filename);
-  free(filename);
-  if(ei_x_new_with_version(result)) return -1;
-  if(ei_x_encode_tuple_header(result, 2)) return -1;
-  if(ei_x_encode_atom(result, "ok") ||
-     ei_x_encode_long(result, (long)training_data))
+  int size;
+  if(is_string(buf, index)) {
+    size = get_strlen(buf, index);
+    //Alloc memory for string
+    filename = malloc((size +1) * sizeof(char));
+    if(ei_decode_string((const char*)buf, index, filename)) return -1;
+    training_data = fann_read_train_from_file(filename);
+    free(filename);
+    if(ei_x_new_with_version(result)) return -1;
+    if(ei_x_encode_tuple_header(result, 2)) return -1;
+    if(ei_x_encode_atom(result, "ok") ||
+       ei_x_encode_long(result, (long)training_data))
+      return -1;
+    return 1; 
+  } else {
     return -1;
-  return 1;
+  }
 }
 
 int do_fann_train_on_data(byte*buf, int * index, ei_x_buff * result) {
-  int arityRefs, arityArgs, type, type_size;
+  int arityRefs, arityArgs;
   struct fann * network;
   struct fann_train_data * train_data;
   unsigned long max_epochs;
-  long long_value;
   double desired_error;
   // Decode {NetworkRef, TrainRef}, {MaxEpochs, DesiredError}
   if(ei_decode_tuple_header((const char *)buf, index, &arityRefs)) return -1;
@@ -879,15 +897,8 @@ int do_fann_train_on_data(byte*buf, int * index, ei_x_buff * result) {
   
   if(ei_decode_ulong((const char*)buf, index, &max_epochs)) return -1;
   
-  ei_get_type((const char *)buf, index, &type, &type_size);
-  if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
-    if(ei_decode_long((const char *)buf, index, &long_value)) return -1;
-    desired_error = (double)long_value;
-  } else if(type == ERL_FLOAT_EXT) {
-    if(ei_decode_double((const char *)buf, index, &desired_error)) return -1;
-  } else {
-    return -1;
-  }
+  desired_error = get_double(buf, index);
+  
   fann_train_on_data(network, train_data, max_epochs, 0, desired_error);
   
   if(ei_x_new_with_version(result) ||
@@ -968,36 +979,40 @@ int do_fann_test(byte*buf, int * index, ei_x_buff * result) {
 }
 
 int do_fann_save_to_file(byte*buf, int * index, ei_x_buff * result) {
-  int arity, type, size;
+  int arity;
   struct fann * network;
   char * filename = NULL;
+  int size;
   // Decode Ptr, {Filename}
   // Decode network ptr
   if(get_fann_ptr(buf, index, &network) != 1) return -1;
   
   if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
   
-  if(ei_get_type((const char *)buf, index, &type, &size)) return -1;
-  if(type != ERL_STRING_EXT) return -1;
-  filename = malloc((size+1)*sizeof(char));
-  // Decode filename
-  if(ei_decode_string((const char *)buf, index, filename)) return -1;
+  if(is_string(buf, index)) {
+    size = get_strlen(buf, index);
+    filename = malloc((size+1)*sizeof(char));
+    // Decode filename
+    if(ei_decode_string((const char *)buf, index, filename)) return -1;
+    
+    if(fann_save(network, filename) == -1) {
+      free(filename);
+      return -1;
+    }
 
-  if(fann_save(network, filename) == -1) {
     free(filename);
+    
+    if(ei_x_new_with_version(result) ||
+       ei_x_encode_atom_len(result, "ok", 2)) return -1;
+    return 1;
+  } else {
     return -1;
   }
-
-  free(filename);
-    
-  if(ei_x_new_with_version(result) ||
-     ei_x_encode_atom_len(result, "ok", 2)) return -1;
-
-  return 1;
 }
 
 int do_fann_save_train(byte*buf, int * index, ei_x_buff * result) {
-  int arity, type, size;
+  int arity;
+  int size;
   struct fann_train_data * train;
   char * filename = NULL;
   // Decode TrainPtr, {Filename}
@@ -1006,23 +1021,26 @@ int do_fann_save_train(byte*buf, int * index, ei_x_buff * result) {
   
   if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
   
-  if(ei_get_type((const char *)buf, index, &type, &size)) return -1;
-  if(type != ERL_STRING_EXT) return -1;
-  filename = malloc((size+1)*sizeof(char));
-  // Decode filename
-  if(ei_decode_string((const char *)buf, index, filename)) return -1;
+  if(is_string(buf, index)) {
+    size = get_strlen(buf, index);
 
-  if(fann_save_train(train, filename) == -1) {
+    filename = malloc((size+1)*sizeof(char));
+    // Decode filename
+    if(ei_decode_string((const char *)buf, index, filename)) return -1;
+    
+    if(fann_save_train(train, filename) == -1) {
+      free(filename);
+      return -1;
+    }
+
     free(filename);
+    
+    if(ei_x_new_with_version(result) ||
+       ei_x_encode_atom_len(result, "ok", 2)) return -1;
+    return 1;
+  } else {
     return -1;
   }
-
-  free(filename);
-    
-  if(ei_x_new_with_version(result) ||
-     ei_x_encode_atom_len(result, "ok", 2)) return -1;
-
-  return 1;
 }
 
 int do_fann_shuffle_train(byte*buf, int * index, ei_x_buff * result) {
@@ -1126,7 +1144,8 @@ int do_fann_scale_train(byte*buf, int * index, ei_x_buff * result) {
   int arity;
 
   // Decode {NetworkRef, TrainRef}, {}
-  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) 
+    ERROR_WITH_LINE(result, "Error decoding tuple");
 
   get_fann_ptr(buf, index, &network);
   get_fann_train_ptr(buf, index, &train_data);
@@ -1355,30 +1374,16 @@ int do_fann_get_train_params(byte*buf, int * index, ei_x_buff * result)  {
 
 int do_fann_set_params(byte*buf, int * index, ei_x_buff * result) {
   struct fann * network = 0;
-  int map_arity, tuple_arity;
-  char param[MAXATOMLEN];
-  int type, type_size;
+  int tuple_arity;
+
   //Decode Ptr, {ParamMap}
   // Decode network ptr first
   if(get_fann_ptr(buf, index, &network) != 1) return -1;
 
   if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
-
-  if(ei_decode_map_header((const char *)buf, index, &map_arity)) return -1;
-  for(int i = 0; i < map_arity; ++i) {
-    ei_get_type((const char *)buf, index, &type, &type_size);
-    if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
-       type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
-    
-      if(ei_decode_atom((const char *)buf, index, param)) return -1;
-      set_param(buf, index, network, param);
-    } else {
-      // Skip the two next ones
-      ei_skip_term((const char*)buf, index);
-      ei_skip_term((const char*)buf, index);
-    }
-  }
   
+  if(set_params(buf, index, network) != 1) return -1 ;
+    
   if(ei_x_new_with_version(result) ||
      ei_x_encode_atom_len(result, "ok", 2)) return -1;
   
@@ -1389,7 +1394,7 @@ int do_fann_get_activation_function(byte*buf, int * index, ei_x_buff * result) {
   struct fann * network = 0;
   int tuple_arity;
   char * activation_function = 0;
-  int type, type_size;
+
   unsigned long layer, neuron;
   enum fann_activationfunc_enum act_func;
   //Decode Ptr, {Layer, Neuron}
@@ -1397,13 +1402,11 @@ int do_fann_get_activation_function(byte*buf, int * index, ei_x_buff * result) {
   if(get_fann_ptr(buf, index, &network) != 1) return -1;
   if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
 
-  ei_get_type((const char *)buf, index, &type, &type_size);
-  if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
+  if(is_integer(buf, index)) {
     if(ei_decode_ulong((const char *)buf, index, &layer)) return -1;
     
     // ok get the neuron
-    ei_get_type((const char *)buf, index, &type, &type_size);
-    if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
+    if(is_integer(buf, index)) {
       if(ei_decode_ulong((const char *)buf, index, &neuron)) return -1;
       // Ok we have both layer and neuron. get the activation function
       act_func = fann_get_activation_function(network, layer, neuron);
@@ -1487,7 +1490,7 @@ int do_fann_set_activation_function(byte*buf, int * index, ei_x_buff * result) {
 int do_fann_get_activation_steepness(byte*buf, int * index, ei_x_buff * result){
   struct fann * network = 0;
   int tuple_arity;
-  int type, type_size;
+
   unsigned long layer, neuron;
   fann_type steepness;
   //Decode Ptr, {Layer, Neuron}
@@ -1495,13 +1498,12 @@ int do_fann_get_activation_steepness(byte*buf, int * index, ei_x_buff * result){
   if(get_fann_ptr(buf, index, &network) != 1) return -1;
   if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
 
-  ei_get_type((const char *)buf, index, &type, &type_size);
-  if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
+
+  if(is_integer(buf, index)) {
     if(ei_decode_ulong((const char *)buf, index, &layer)) return -1;
     
     // ok get the neuron
-    ei_get_type((const char *)buf, index, &type, &type_size);
-    if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
+    if(is_integer(buf, index)) {
       if(ei_decode_ulong((const char *)buf, index, &neuron)) return -1;
       // Ok we have both layer and neuron. get the activation steepness
       steepness = fann_get_activation_steepness(network, layer, neuron);
@@ -1595,17 +1597,15 @@ int get_tuple_double_data(byte * buf, int * index, double * data,
 }
 
 double get_double(byte*buf, int * index) {
-  int type, type_size;
   double double_value;
   long long_value;
-  ei_get_type((const char *)buf, index, &type, &type_size);
-    if(type == ERL_SMALL_INTEGER_EXT || type == ERL_INTEGER_EXT) {
-      if(ei_decode_long((const char *)buf, index, &long_value)) return -1;
-      return (double)long_value;
-    } else {
-      if(ei_decode_double((const char *)buf, index, &double_value)) return -1;
-      return double_value;
-    }
+  if(is_integer(buf, index)) {
+    ei_decode_long((const char *)buf, index, &long_value);
+    return (double)long_value;
+  } else {
+    ei_decode_double((const char *)buf, index, &double_value);
+    return double_value;
+  }
     
 }
 
@@ -1642,6 +1642,32 @@ int is_string(byte * buf, int * index) {
   int type, type_size;
   ei_get_type((const char *)buf, index, &type, &type_size);
   return(type == ERL_STRING_EXT);
+}
+
+int is_float(byte * buf, int * index) {
+  int type, type_size;
+  ei_get_type((const char *)buf, index, &type, &type_size);
+  return(type == ERL_FLOAT_EXT || type == NEW_FLOAT_EXT);
+}
+
+int get_strlen(byte * buf, int * index) {
+  int type, type_size;
+  ei_get_type((const char *)buf, index, &type, &type_size);
+  if(type == ERL_STRING_EXT) {
+    return type_size;
+  } else {
+    return -1;
+  }
+}
+
+int error_with_reason(ei_x_buff * result, char * reason) {
+  int length = strlen(reason);
+  if (ei_x_new_with_version(result) || ei_x_encode_tuple_header(result, 2)) 
+    return -1;
+  if (ei_x_encode_atom(result, "error") ||
+      ei_x_encode_atom_len(result, reason, length))
+    return -1;
+  return 1;
 }
 
 int get_activation_function(char * activation_function) {
@@ -1721,6 +1747,23 @@ void get_activation_function_atom(enum fann_activationfunc_enum activation_funct
   } else {
     strcpy(act_func, "unknown_activation_function");
   }
+}
+
+int set_params(byte * buf, int * index, struct fann * network) {
+  char param[MAXATOMLEN];
+  int map_arity;
+  if(ei_decode_map_header((const char *)buf, index, &map_arity)) return -1;
+  for(int i = 0; i < map_arity; ++i) {
+    if(is_atom(buf, index))  {
+      if(ei_decode_atom((const char *)buf, index, param)) return -1;
+      set_param(buf, index, network, param);
+    } else {
+      // Skip the two next ones
+      ei_skip_term((const char*)buf, index);
+      ei_skip_term((const char*)buf, index);
+    }
+  }
+  return 1;
 }
 
 int set_param(byte * buf, int * index, struct fann * network, char * param) {
