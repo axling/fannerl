@@ -4,6 +4,18 @@ This is an attempt to write erlang bindings to the [FANN](http://leenissen.dk/),
 
 You can watch the documentation at <http://axling.github.io/fannerl/>.
 
+## Left TODO
+
+* Do destroy of all networks and trains at termination
+
+* Add error handling
+
+* More tests in CT suite
+
+* Fix create function
+
+* Add examples
+
 # Plan of FANN support
 
 ## Creation/Execution
