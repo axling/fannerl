@@ -1334,6 +1334,7 @@ loop(Port, State) ->
 	{call, Caller, Msg} ->
 	    handle_port_call(Port, State, Caller, Msg);
 	stop ->
+	    destroy_all(Port, State),
 	    erlang:port_close(Port),
 	    exit(normal)
     end.
@@ -1355,6 +1356,42 @@ valid_train(Ref, State) ->
 	false ->
 	    false
     end.
+
+%% @private
+destroy_all(Port, State) ->
+    Networks = maps:get(networks, State),
+    Trains = maps:get(trains, State),
+    ok = destroy_networks(Port, dict:to_list(Networks)),
+    ok = destroy_trains(Port, dict:to_list(Trains)).
+
+%% @private
+destroy_networks(_Port, []) ->
+    ok;
+destroy_networks(Port, [{_Key, Network} | Networks]) ->
+    Msg = {destroy, Network, {}},
+    case do_port_call(Port, Msg) of
+	ok ->
+	    destroy_networks(Port, Networks);
+	{error, Reason} ->
+	    io:format("FANNERL: exit when destroying network with reason ~p~n",
+		      [Reason]),
+	    destroy_networks(Port, Networks)
+    end.
+
+%% @private
+destroy_trains(_Port, []) ->
+    ok;
+destroy_trains(Port, [{_Key, Train} | Trains]) ->
+    Msg = {destroy_train, {train, Train}, {}},
+    case do_port_call(Port, Msg) of
+	ok ->
+	    destroy_trains(Port, Trains);
+	{error, Reason} ->
+	    io:format("FANNERL: exit when destroying train with reason ~p~n",
+		      [Reason]),
+	    destroy_trains(Port, Trains)
+    end.
+
 
 %% @private
 convert_message({Cmd, {train, _Ref}, Rest}, TrainPtr) ->
@@ -1443,14 +1480,20 @@ handle_port_call(Port, State, Caller, Msg) ->
 	    loop(Port, State)
     end.
 
+
+
 %% @private
 call_port_with_msg(Port, State, Caller, Msg, Ref) ->
+    Ret =  do_port_call(Port, Msg),
+    NewState = handle_return_val(
+		 Msg, Ret, Caller, State, Ref),
+    loop(Port, NewState).
+	
+do_port_call(Port, Msg) ->
     erlang:port_command(Port, term_to_binary(Msg)),
     receive
 	{Port, {data, Data}} ->
-	    NewState = handle_return_val(
-			    Msg, binary_to_term(Data), Caller, State, Ref),
-	    loop(Port, NewState);
+	    binary_to_term(Data);
 	{Port, {exit_status, Status}} when Status > 128 ->
 	    io:format("Port terminated with signal: ~p~n",[Status-128]),
 	    exit({port_terminated, Status});
@@ -1459,7 +1502,7 @@ call_port_with_msg(Port, State, Caller, Msg, Ref) ->
 	    exit({port_terminated, Status});
 	{'EXIT', Port, Reason} ->
 	    exit(Reason)
-    end.    
+    end.
 
 %% @private
 handle_return_val({subset_train_data, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
@@ -1493,12 +1536,14 @@ handle_return_val({copy, _, _}, {ok, Ptr}, Caller, State, _Ref) ->
     NewRef = make_ref(),
     Caller ! {fannerl_res, NewRef},
     State#{networks := dict:store(NewRef, Ptr, maps:get(networks, State))};
-handle_return_val({destroy, _}, ok, Caller, State, Ref) ->
+handle_return_val({destroy, _, _}, ok, Caller, State, Ref) ->
     Caller ! {fannerl_res, ok},
-    State#{networks := dict:erase(Ref, State)};
-handle_return_val({destroy_train, _}, ok, Caller, State, Ref) ->
+    Networks = maps:get(networks, State),
+    State#{networks := dict:erase(Ref, Networks)};
+handle_return_val({destroy_train, _, _}, ok, Caller, State, Ref) ->
     Caller ! {fannerl_res, ok},
-    State#{trains := dict:erase(Ref, State)};
+    Trains = maps:get(trains, State),
+    State#{trains := dict:erase(Ref, Trains)};
 handle_return_val(_Msg, Return, Caller, State, _Ref) ->
     Caller ! {fannerl_res, Return},
     State.

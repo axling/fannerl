@@ -6,8 +6,6 @@ You can watch the documentation at <http://axling.github.io/fannerl/>.
 
 ## Left TODO
 
-* Do destroy of all networks and trains at termination
-
 * Add error handling
 
 * More tests in CT suite
