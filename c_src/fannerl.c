@@ -1,5 +1,5 @@
 /*
-  Erlang Bindings to the Fast Artificial Neural Network Library (fann)
+  Fannerl: Erlang Bindings to the Fast Artificial Neural Network Library (fann)
   Copyright (C) 2015 Erik Axling (erik.axling@gmail.com)
 
   This library is free software; you can redistribute it and/or
@@ -105,6 +105,11 @@ int is_float(byte * buf, int * index);
 int get_strlen(byte * buf, int * index);
 
 int error_with_reason(ei_x_buff * result, char * reason);
+
+int FANN_API test_callback(struct fann *ann, struct fann_train_data *train,
+                           unsigned int max_epochs,
+			   unsigned int epochs_between_reports,
+                           float desired_error, unsigned int epochs);
 
 struct ann_map {
   int key;
@@ -620,10 +625,11 @@ int do_fann_train_on_file(byte *buf, int * index, ei_x_buff * result) {
   struct fann * network = 0;
   char * filename = 0;
   unsigned long max_epochs = 0;
+  unsigned long epochs_between_report = 0;
   double desired_error = 0.0;
   int size;
 
-  // Decode Ptr,( Filename, MaxEpochs, DesiredError}
+  // Decode Ptr,( Filename, MaxEpochs, EpochBetweenReports, DesiredError}
   // Decode network ptr
   if(get_fann_ptr(buf, index, &network) != 1) return -1;
   
@@ -637,16 +643,22 @@ int do_fann_train_on_file(byte *buf, int * index, ei_x_buff * result) {
     
     //Decode MaxEpochs
     if(ei_decode_ulong((const char *)buf, index, &max_epochs)) return -1;
+    
+    //Decode EpochBetweenReports
+    if(ei_decode_ulong((const char *)buf, index, &epochs_between_report))
+      return -1;
   
     //Decode DesiredError
     if(ei_decode_double((const char *)buf, index, &desired_error)) return -1;
 
+    fann_set_callback(network, test_callback);
     //Call FANN API
-    fann_train_on_file(network, filename, (unsigned int)max_epochs, 0,
+    fann_train_on_file(network, filename, (unsigned int)max_epochs,
+		       epochs_between_report,
 		       (float)desired_error);
-
+    
     free(filename);
-
+    fann_set_callback(network, NULL);
     if(ei_x_new_with_version(result) ||
        ei_x_encode_atom_len(result, "ok", 2)) return -1;
     return 1;
@@ -903,9 +915,10 @@ int do_fann_train_on_data(byte*buf, int * index, ei_x_buff * result) {
   int arityRefs, arityArgs;
   struct fann * network;
   struct fann_train_data * train_data;
-  unsigned long max_epochs;
+  unsigned long max_epochs = 0;
+  unsigned long epochs_between_report = 0;
   double desired_error;
-  // Decode {NetworkRef, TrainRef}, {MaxEpochs, DesiredError}
+  // Decode {NetworkRef, TrainRef}, {MaxEpochs, EpochBetweenReports, DesiredError}
   if(ei_decode_tuple_header((const char *)buf, index, &arityRefs)) return -1;
 
   get_fann_ptr(buf, index, &network);
@@ -914,10 +927,15 @@ int do_fann_train_on_data(byte*buf, int * index, ei_x_buff * result) {
   if(ei_decode_tuple_header((const char *)buf, index, &arityArgs)) return -1;
   
   if(ei_decode_ulong((const char*)buf, index, &max_epochs)) return -1;
+
+  if(ei_decode_ulong((const char*)buf, index, &epochs_between_report))
+    return -1;
   
   desired_error = get_double(buf, index);
-  
-  fann_train_on_data(network, train_data, max_epochs, 0, desired_error);
+  fann_set_callback(network, test_callback);
+  fann_train_on_data(network, train_data, max_epochs,
+		     epochs_between_report, desired_error);
+  fann_set_callback(network, NULL);
   
   if(ei_x_new_with_version(result) ||
      ei_x_encode_atom_len(result, "ok", 2)) return -1;  
@@ -1896,6 +1914,15 @@ int set_param(byte * buf, int * index, struct fann * network, char * param) {
     }
   }
   return 1;
+}
+
+int FANN_API test_callback(struct fann *ann, struct fann_train_data *train,
+                           unsigned int max_epochs,
+			   unsigned int epochs_between_reports,
+                           float desired_error, unsigned int epochs)
+{
+   printf("Epochs     %8d. MSE: %.5f. Desired-MSE: %.5f\r\n", epochs, fann_get_MSE(ann), desired_error);
+   return 0;
 }
 
 /*-----------------------------------------------------------------

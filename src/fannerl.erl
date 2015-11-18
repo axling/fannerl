@@ -97,10 +97,10 @@
 	 train_epoch_on/3,
 	 train/3,
 	 train_on/4,
-	 train_on_data/4,
-	 train_on_data_on/5,
-	 train_on_file/4,
-	 train_on_file_on/5,
+	 train_on_data/5,
+	 train_on_data_on/6,
+	 train_on_file/5,
+	 train_on_file_on/6,
 	 read_train_from_file/1,
 	 read_train_from_file_on/2,
 	 merge_train_data/2,
@@ -378,18 +378,23 @@ train_on(Instance, Network, Input, DesiredOutput)
     call_port(Instance, {train, Network, {Input, DesiredOutput}}).
 
 %% --------------------------------------------------------------------- %%
-%% @equiv train_on_data_on({@module}, Network, Train, MaxEpochs, DesiredError)
+%% @equiv train_on_data_on({@module}, Network, Train, MaxEpochs,
+%%                         EpochBetweenReports,
+%%                         DesiredError)
 %% @end
 %% --------------------------------------------------------------------- %%
 -spec train_on_data(Network::network_ref(), Train::train_ref(),
+		    EpochBetweenReports::non_neg_integer(),
 		    MaxEpochs::non_neg_integer(), DesiredError::number()) ->
 			   ok.
-train_on_data(Network, Train, MaxEpochs, DesiredError)
+train_on_data(Network, Train, MaxEpochs, EpochBetweenReports, DesiredError)
   when is_reference(Network),
        is_reference(Train),
-       is_integer(MaxEpochs),
+       is_integer(MaxEpochs), MaxEpochs > 0,
+       is_integer(EpochBetweenReports), EpochBetweenReports >= 0,
        is_number(DesiredError) ->
-    train_on_data_on(?MODULE, Network, Train, MaxEpochs, DesiredError).
+    train_on_data_on(?MODULE, Network, Train, MaxEpochs,
+		     EpochBetweenReports, DesiredError).
 
 %% --------------------------------------------------------------------- %%
 %% @doc Trains on an entire dataset, for a chosen period of time. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_on_data].
@@ -397,30 +402,37 @@ train_on_data(Network, Train, MaxEpochs, DesiredError)
 %% --------------------------------------------------------------------- %%
 -spec train_on_data_on(Instance::pid(), Network::network_ref(),
 		       Train:: train_ref(), MaxEpochs::non_neg_integer(),
+		       EpochBetweenReports::non_neg_integer(),
 		       DesiredError::number()) -> ok.
-train_on_data_on(Instance, Network, Train, MaxEpochs, DesiredError)
+train_on_data_on(Instance, Network, Train, MaxEpochs, EpochBetweenReports,
+		 DesiredError)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network),
        is_reference(Train),
-       is_integer(MaxEpochs),
+       is_integer(MaxEpochs), MaxEpochs > 0,
+       is_integer(EpochBetweenReports), EpochBetweenReports >= 0,
        is_number(DesiredError) ->
     call_port(?MODULE, {train_on_data, {Network, Train},
-			{MaxEpochs, DesiredError}}).
+			{MaxEpochs, EpochBetweenReports, DesiredError}}).
 
 %% --------------------------------------------------------------------- %%
 %% @equiv train_on_file_on({@module}, Network, FileName, MaxEpochs,
-%%  DesiredError)
+%%  EpochBetweenReports, DesiredError)
 %% @end
 %% --------------------------------------------------------------------- %%
 -spec train_on_file(Network::network_ref(), FileName::string(),
-		    MaxEpochs::non_neg_integer(), DesiredError:: number()) ->
+		    MaxEpochs::non_neg_integer(),
+		    EpochBetweenReports::non_neg_integer(),
+		    DesiredError:: number()) ->
 			   ok.
-train_on_file(Network, FileName, MaxEpochs, DesiredError) 
+train_on_file(Network, FileName, MaxEpochs, EpochBetweenReports, DesiredError) 
   when is_reference(Network),
        is_list(FileName),
        is_integer(MaxEpochs), MaxEpochs > 0,
+       is_integer(EpochBetweenReports), EpochBetweenReports >= 0,
        is_float(DesiredError) ->
-    train_on_file_on(?MODULE, Network, FileName, MaxEpochs, DesiredError).
+    train_on_file_on(?MODULE, Network, FileName, MaxEpochs, EpochBetweenReports,
+		     DesiredError).
 
 %% --------------------------------------------------------------------- %%
 %% @doc Does the same as train_on_data_on/5, but reads the training data directly from a file. See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_on_file].
@@ -428,16 +440,20 @@ train_on_file(Network, FileName, MaxEpochs, DesiredError)
 %% --------------------------------------------------------------------- %%
 -spec train_on_file_on(
 	Instance::pid(), Network::network_ref(), FileName::string(),
-	MaxEpochs::non_neg_integer(), DesiredError:: number()) ->
+	MaxEpochs::non_neg_integer(),
+	EpochBetweenReports::non_neg_integer(), DesiredError:: number()) ->
 			      ok.
-train_on_file_on(Instance, Network, FileName, MaxEpochs, DesiredError) 
+train_on_file_on(Instance, Network, FileName, MaxEpochs,
+		 EpochBetweenReports, DesiredError) 
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network),
        is_list(FileName),
        is_integer(MaxEpochs), MaxEpochs > 0,
+       is_integer(EpochBetweenReports), EpochBetweenReports >= 0,
        is_float(DesiredError) ->
     call_port(Instance, 
-	      {train_on_file, Network, {FileName, MaxEpochs, DesiredError}}).
+	      {train_on_file, Network, {FileName, MaxEpochs,
+					EpochBetweenReports, DesiredError}}).
 
 %% --------------------------------------------------------------------- %%
 %% @equiv test_data({@module}, Network, Train)
@@ -1337,7 +1353,7 @@ init(Type) ->
 	true ->
 	    process_flag(trap_exit, true),
 	    Port = open_port({spawn, Program},
-			     [{packet, 2}, nouse_stdio,  binary, exit_status]),
+			     [{packet, 2}, nouse_stdio, binary, exit_status]),
 	    proc_lib:init_ack(self()),
 	    loop(Port, #{networks => dict:new(),
 			 trains   => dict:new()})

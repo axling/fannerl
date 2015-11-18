@@ -158,13 +158,14 @@ tc_train_and_run(_Config) ->
     ok.
 	      
 tc_train_on_file(_Config) ->
+    Lr = 0.1,
     Ref = fannerl:create(
 	    {2,3,1}, 
-	    #{learning_rate => 0.1}),
+	    #{learning_rate => Lr}),
     fannerl:set_activation_function_all(Ref, fann_sigmoid_symmetric),
     PrivDir = code:priv_dir(fannerl),
     Filename = filename:join(PrivDir, "xor.data"),
-    ok = fannerl:train_on_file(Ref, Filename, 100000, 0.001),
+    ok = fannerl:train_on_file(Ref, Filename, 100000, 1000, 0.001),
     Map = fannerl:get_params(Ref),
     ct:pal("Params: ~p", [maps:to_list(Map)]),
     Output = fannerl:run(Ref, {-1.0,-1.0}),
@@ -177,7 +178,8 @@ tc_train_on_file(_Config) ->
     io:format("Output after train is -1,1 -> ~p~n", [Output4]),
 
     #{mean_square_error := Mse,
-      learning_rate := 0.1} = Map,
+      learning_rate := Lr2} = Map,
+    Lr =:= Lr2,
     case Mse > 0.01 of
 	true ->
 	    %% MSe is just too large, fail
@@ -194,7 +196,7 @@ tc_create_sparse_and_train(_Config) ->
     fannerl:set_activation_function_all(Ref, fann_sigmoid_symmetric),
     PrivDir = code:priv_dir(fannerl),
     Filename = filename:join(PrivDir, "xor.data"),
-    ok = fannerl:train_on_file(Ref, Filename, 500000, 0.001),
+    ok = fannerl:train_on_file(Ref, Filename, 500000, 100000, 0.001),
     Output = fannerl:run(Ref, {-1.0,-1.0}),
     io:format("Output after train is -1,-1 -> ~p~n", [Output]),
     Output2 = fannerl:run(Ref, {1.0,1.0}),
@@ -210,7 +212,7 @@ tc_create_shortcut_and_train(_Config) ->
     fannerl:set_activation_function_all(Ref, fann_sigmoid_symmetric),
     PrivDir = code:priv_dir(fannerl),
     Filename = filename:join(PrivDir, "xor.data"),
-    ok = fannerl:train_on_file(Ref, Filename, 500000, 0.001),
+    ok = fannerl:train_on_file(Ref, Filename, 500000, 100000, 0.001),
     Output = fannerl:run(Ref, {-1.0,-1.0}),
     io:format("Output after train is -1,-1 -> ~p~n", [Output]),
     Output2 = fannerl:run(Ref, {1.0,1.0}),
@@ -229,7 +231,7 @@ tc_read_train_from_file_and_train(_Config) ->
     fannerl:set_activation_function_all(Ref, fann_sigmoid_symmetric),
     Map = fannerl:get_params(Ref),
     ct:pal("Params run 1: ~p", [maps:to_list(Map)]),
-    ok = fannerl:train_on_data(Ref, TrainRef, 10000, 0.1),
+    ok = fannerl:train_on_data(Ref, TrainRef, 10000, 1000, 0.1),
     Map2 = fannerl:get_params(Ref),
     ct:pal("Params run 2: ~p", [maps:to_list(Map2)]).
 

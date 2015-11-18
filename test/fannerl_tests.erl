@@ -444,7 +444,7 @@ fannerl_train_on_data(_) ->
 	   PrivDir = code:priv_dir(fannerl),
 	   Filename = filename:join(PrivDir, "xor.data"),
 	   N = fannerl:read_train_from_file(Filename),
-	   ok = fannerl:train_on_data(R, N, 5, 0.1),
+	   ok = fannerl:train_on_data(R, N, 5, 0, 0.1),
 	   ?assert(ok == fannerl:destroy(R)),
 	   ok = fannerl:destroy_train(N)
        end).
@@ -463,7 +463,7 @@ fannerl_train_on_file(_) ->
 	   R = fannerl:create({2,2,1}),
 	   PrivDir = code:priv_dir(fannerl),
 	   Filename = filename:join(PrivDir, "xor.data"),
-	   ok = fannerl:train_on_file(R, Filename, 5, 0.1),
+	   ok = fannerl:train_on_file(R, Filename, 5, 0, 0.1),
 	   ?assert(ok == fannerl:destroy(R))
        end).
 
