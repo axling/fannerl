@@ -1361,6 +1361,7 @@ valid_train(Ref, State) ->
 destroy_all(Port, State) ->
     Networks = maps:get(networks, State),
     Trains = maps:get(trains, State),
+
     ok = destroy_networks(Port, dict:to_list(Networks)),
     ok = destroy_trains(Port, dict:to_list(Trains)).
 
@@ -1382,7 +1383,7 @@ destroy_networks(Port, [{_Key, Network} | Networks]) ->
 destroy_trains(_Port, []) ->
     ok;
 destroy_trains(Port, [{_Key, Train} | Trains]) ->
-    Msg = {destroy_train, {train, Train}, {}},
+    Msg = {destroy_train, Train, {}},
     case do_port_call(Port, Msg) of
 	ok ->
 	    destroy_trains(Port, Trains);
