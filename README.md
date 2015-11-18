@@ -4,19 +4,13 @@ This is an attempt to write erlang bindings to the [FANN](http://leenissen.dk/),
 
 You can watch the documentation at <http://axling.github.io/fannerl/>.
 
-## Left TODO
+# Introduction
+Fannerl is not a straight copy of FANN into erlang but alot looks the same. As the interface towards FANN is implemented as a port driver there are some special considerations that need to be taken. The user need to start an instance of fannerl which will handle all communication towards FANN. You are able to start multiple instances if need be. Note that if you start fannerl using `fannerl:start_instance/0` you will need to use the fannerl functions that end with the suffix _on. 
 
-* Do destroy of all networks and trains at termination <- Done
+When you create a neural network or read in training data from a file, it is important to realise that the return you get is an erlang reference created by `make_ref()`. The reference itself is of course immutable but you need to keep in mind that changes can of course occur to the neural network while the network is trained. 
 
-* Add error handling
+Fannerl uses maps so Erlang/OTP 17 or newer is required.
 
-* C code refactor <- Done
-
-* More tests in CT suite
-
-* Fix create function <- Done
-
-* Add examples
 
 # Plan of FANN support
 
