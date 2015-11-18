@@ -1,9 +1,0 @@
-Todo before going official
-
-* Add Training Data functions
-* Add general get/set of FANN parameter
-* Add error handling in C-file
-* Add documentation and specs in erl file
-* Increase test coverage in eunit part
-
-* Rename to fann from fannerl
