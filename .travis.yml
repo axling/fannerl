@@ -1,9 +1,10 @@
 language: erlang
+os: 
+  - linux
+  - osx
 otp_release:
   - 17.4
   - 17.3
-before_install:
-  - sudo apt-get install cmake
 
 install:
   - wget https://github.com/libfann/fann/archive/2.2.0.tar.gz
