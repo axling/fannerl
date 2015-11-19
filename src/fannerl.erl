@@ -74,6 +74,13 @@
 		 train_stop_function |
 		 training_algorithm.
 
+-type set_params() :: #{param() => term()}.
+
+-type create_options() :: #{type => standard | sparse | shortcut,
+			    conn_rate => number(),
+			    param() => term()
+			 }.
+
 -type connections()    :: #{{FromNeuron::integer(),
 			     ToNeuron::integer()} => Weight::number()}.
 
@@ -279,7 +286,7 @@ create(Layers) when is_tuple(Layers) ->
 %% @equiv create_on({@module}, Layers, Options)
 %% @end
 %% --------------------------------------------------------------------- %%
--spec create(Layers::tuple(), Options::options()) -> network_ref().
+-spec create(Layers::tuple(), Options::create_options()) -> network_ref().
 create(Layers, Options)
   when is_tuple(Layers),
        is_map(Options) ->
@@ -298,11 +305,24 @@ create_on(Instance, Layers)
 %% --------------------------------------------------------------------- %%
 %% @doc Creates an artificial neural network with any number of layers. 
 %% The Layers tuple size describe the number of layers while each position
-%% sets the size of the layer. See the FANN documentation of create_standard:
+%% sets the size of the layer. 
+%%
+%% In the options map you can specify which type of network you want to create.
+%% Set Options to `#{type=>sparse, conn_rate => 0.1}' to create a sparse type
+%% of ANN with the given connection rate. It is important to specify the 
+%% connection rate here as it will not be configurable later. 
+%%
+%% In the same way you can create a shortcut type of ANN by setting
+%% Options to `#{type=shortcut}'. 
+%%
+%% Other options you can set are the same as those possible to set by 
+%% set_params/2.
+%%
+%%See the FANN documentation of create_standard:
 %% [http://libfann.github.io/fann/docs/files/fann-h.html#fann_create_standard]
 %% @end
 %% --------------------------------------------------------------------- %%
--spec create_on(Instance::pid(), Layers::tuple(), Options::options()) ->
+-spec create_on(Instance::pid(), Layers::tuple(), Options::create_options()) ->
 		       network_ref().
 create_on(Instance, Layers, Options) 
   when Instance == ?MODULE; is_pid(Instance),
@@ -725,7 +745,7 @@ subset_train_data_on(Instance, Train, Pos, Length)
 %% @equiv get_params_on({@module}, Network)
 %% @end
 %% --------------------------------------------------------------------- %%
--spec get_params(Network::network_ref()) -> map().
+-spec get_params(Network::network_ref()) -> options().
 get_params(Network) 
   when is_reference(Network) ->
     get_params_on(?MODULE, Network).
@@ -734,7 +754,7 @@ get_params(Network)
 %% @doc Fetch all the parameters associated with the neural network.
 %% @end
 %% --------------------------------------------------------------------- %%
--spec get_params_on(Instance::pid(), Network::network_ref()) -> map().
+-spec get_params_on(Instance::pid(), Network::network_ref()) -> options().
 get_params_on(Instance, Network)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network) ->
@@ -1344,7 +1364,7 @@ set_param_on(Instance, Network, Param, Value)
 %% @equiv set_params_on({@module}, Network, ParametersMap)
 %% @end
 %% --------------------------------------------------------------------- %%
--spec set_params(Network::network_ref(), ParametersMap::options()) -> ok.
+-spec set_params(Network::network_ref(), ParametersMap::set_params()) -> ok.
 set_params(Network, ParametersMap)
   when is_reference(Network),
        is_map(ParametersMap) ->
@@ -1355,7 +1375,7 @@ set_params(Network, ParametersMap)
 %% @end
 %% --------------------------------------------------------------------- %%
 -spec set_params_on(Instance::pid(), Network::network_ref(),
-		    ParamertersMap::options()) -> ok.
+		    ParamertersMap::set_params()) -> ok.
 set_params_on(Instance, Network, ParametersMap)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network),
