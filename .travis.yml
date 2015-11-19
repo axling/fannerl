@@ -1,7 +1,14 @@
 language: erlang
 
+notifications:
+ email:
+   recipients:
+     - axling@gmail.com
+   on_success: never
+   on_failure: change
+
 otp_release:
-  - 17.4
+  - 18.0
   - 17.0
 
 before_install:
