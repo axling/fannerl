@@ -1,0 +1,16 @@
+** This is the overview.edoc file for the fannerl application **
+
+@author Erik Axling <axling@gmail.com>
+@title Fannerl - erlang bindings to FANN
+@doc
+Fannerl is not a straight copy of FANN into erlang but alot looks the
+same. As the interface towards FANN is implemented as a port driver
+there are some special considerations that need to be taken. The user
+need to start an instance of fannerl which will handle all
+communication towards FANN. You are able to start multiple instances
+if need be. Note that if you start fannerl using
+`fannerl:start_instance/0' you will need to use the fannerl functions
+that end with the suffix _on.
+
+
+@end
