@@ -31,10 +31,12 @@ run() ->
     SteepnessStep = 0.1,
     SteepnessEnd = 20,
 
+    DatasetDir = code:lib_dir(fannerl, priv),
+
     fannerl:start(),
 
     Network = fannerl:create({NumInput, NumNeuronsHidden, NumOutput}),
-    Train = fannerl:read_train_from_file("../priv/xor.data"),
+    Train = fannerl:read_train_from_file(filename:join(DatasetDir, "xor.data")),
     
     ok = fannerl:set_activation_function_all(Network, fann_sigmoid_symmetric),
     ok = fannerl:set_param(Network, training_algorithm, fann_train_quickprop),

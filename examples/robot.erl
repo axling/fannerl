@@ -28,7 +28,8 @@ run() ->
     DesiredError = 0.001,
     
     io:format("Reading train from file~n", []),
-    Train = fannerl:read_train_from_file("../datasets/robot.train"),
+    DatasetDir = code:lib_dir(fannerl, datasets),
+    Train = fannerl:read_train_from_file(filename:join(DatasetDir, "robot.train")),
     TrainParams = fannerl:get_train_params(Train),
     
     io:format("Creating Network~n", []),
@@ -42,7 +43,7 @@ run() ->
     ok = fannerl:train_on_data(Network, Train, 3000, 10, DesiredError),
 
     io:format("Testing Network~n", []),
-    Test = fannerl:read_train_from_file("../datasets/robot.test"),
+    Test = fannerl:read_train_from_file(filename:join(DatasetDir, "robot.train")),
 
     ok = fannerl:reset_mse(Network),
 

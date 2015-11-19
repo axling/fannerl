@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# get the dir the SCRIPT is in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+erlc -pa "$DIR"/../ebin/ -o "$DIR"/../examples/ -v -Wall "$DIR"/../examples/*.erl
+erl -pa "$DIR"/../ebin/ -pa "$DIR"/../examples/ -s examples -noinput

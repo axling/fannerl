@@ -28,7 +28,8 @@ run() ->
     DesiredError = 0.0001,
     
     io:format("Reading train from file~n", []),
-    Train = fannerl:read_train_from_file("../datasets/mushroom.train"),
+    DatasetDir = code:lib_dir(fannerl, datasets),
+    Train = fannerl:read_train_from_file(filename:join(DatasetDir, "mushroom.train")),
     TrainParams = fannerl:get_train_params(Train),
     
     io:format("Creating Network~n", []),
@@ -41,7 +42,7 @@ run() ->
     ok = fannerl:train_on_data(Network, Train, 300, 10, DesiredError),
 
     io:format("Testing Network~n", []),
-    Test = fannerl:read_train_from_file("../datasets/mushroom.test"),
+    Test = fannerl:read_train_from_file(filename:join(DatasetDir, "mushroom.train")),
 
     ok = fannerl:reset_mse(Network),
 
