@@ -90,6 +90,7 @@ fannerl:stop().
 ```
 
 # Plan of FANN support
+This is the current status of what is supported from FANN and when more is planned to be supported. 
 
 ## Creation/Execution
 
