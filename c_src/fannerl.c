@@ -91,7 +91,6 @@ double get_double(byte * buf, int * index);
 int get_fann_ptr(byte * buf, int * index, struct fann** fann);
 int get_fann_train_ptr(byte * buf, int * index, struct fann_train_data** fann);
 
-int traverse_create_options(byte * buf, int * index, struct fann ** network);
 int get_activation_function(char * activation_function);
 void get_activation_function_atom(enum fann_activationfunc_enum activation_function, char * act_func);
 
@@ -428,110 +427,6 @@ int do_fann_create_standard(byte *buf, int * index, ei_x_buff * result) {
   if(ei_x_encode_atom(result, "ok") || ei_x_encode_long(result,
 							(long)hash_key))
     return -1;
-  return 1;
-}
-
-int traverse_create_options(byte * buf, int * index, struct fann ** network){
-  int arity=0;
-  int type, type_size;
-  char key[MAXATOMLEN];
-  char activation_function[MAXATOMLEN];
-  ei_print_term(stderr, (const char *)buf, index);
-  if(ei_decode_map_header((const char *)buf, index, &arity)) return -1;
-  if(arity == 0) return 1;
-  // Go through the map
-  for(int i = 0; i < arity; ++i) {
-    // keys should be atom
-    if(!is_atom(buf, index)) {
-      ei_skip_term((const char*)buf, index);
-      ei_skip_term((const char*)buf, index);
-      continue;
-    }
-    if(ei_decode_atom((const char *)buf, index, key)) return -1;
-    
-    if(!strcmp("learning_rate", key)) {
-      float learning_rate;
-      if(is_integer(buf, index)) {
-	long temp;
-	if(ei_decode_long((const char *)buf, index, &temp)) return -1;
-	learning_rate = (float)temp;
-	fann_set_learning_rate(*network, learning_rate);
-      } else if(is_float(buf, index)) {
-	double temp;
-	if(ei_decode_double((const char *)buf, index, &temp)) return -1;
-	learning_rate = (float)(temp);
-	fann_set_learning_rate(*network, learning_rate);
-      } else {
-	ei_skip_term((const char*)buf, index);
-      }
-    } else if(!strcmp("activation_func_input", key)) {
-      if(ei_get_type((const char *)buf, index, &type, &type_size)) return -1;
-      if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
-	 type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
-	if(ei_decode_atom((const char *)buf, index, activation_function))
-	  return -1;
-	int act_func = -1;
-	if((act_func = get_activation_function(activation_function)) == -1)
-	  return -1;
-	fann_set_activation_function_layer(*network, act_func, 0);
-      } else {
-	ei_skip_term((const char*)buf, index);
-      }
-    } else if(!strcmp("activation_func_hidden", key)) {
-      if(ei_get_type((const char *)buf, index, &type, &type_size)) return -1;
-      if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
-	 type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
-	if(ei_decode_atom((const char *)buf, index, activation_function))
-	  return -1;
-	int act_func = -1;
-	if((act_func = get_activation_function(activation_function)) == -1)
-	  return -1;
-	fann_set_activation_function_hidden(*network, act_func);
-      } else {
-	ei_skip_term((const char*)buf, index);
-      }
-    } else if(!strcmp("activation_func_output", key)) {
-      if(ei_get_type((const char *)buf, index, &type, &type_size)) return -1;
-      if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
-	 type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
-	if(ei_decode_atom((const char *)buf, index, activation_function))
-	  return -1;
-	int act_func = -1;
-	if((act_func = get_activation_function(activation_function)) == -1)
-	  return -1;
-	fann_set_activation_function_output(*network, act_func);
-      } else {
-	ei_skip_term((const char*)buf, index);
-      }      
-    } else if(!strcmp("activation_func_layer", key)) {
-      // Decode {Layer, ActivationFunction}
-      int layer_tuple = 0;
-      unsigned long layer = 0;
-      if(ei_decode_tuple_header((const char*)buf, index, &layer_tuple))
-	return -1;
-
-      if(ei_decode_ulong((const char*)buf, index, &layer)) return -1;
-      // Sanity check size of layer, must be less than number of layers
-      unsigned int num_layers = fann_get_num_layers(*network);
-      if( (unsigned int)layer >= num_layers ) return -1;
-
-      //Decode activation function
-      if(ei_get_type((const char *)buf, index, &type, &type_size)) return -1;
-      if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
-	 type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
-	if(ei_decode_atom((const char *)buf, index, activation_function))
-	  return -1;
-	int act_func = -1;
-	if((act_func = get_activation_function(activation_function)) == -1)
-	  return -1;
-	fann_set_activation_function_layer(*network, act_func, layer);
-      } else {
-	ei_skip_term((const char*)buf, index);
-      }      
-    } else {
-      ei_skip_term((const char*)buf, index);
-    }
-  }
   return 1;
 }
 
