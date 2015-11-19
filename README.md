@@ -54,35 +54,35 @@ fannerl:set_activation_function_all(N, fann_sigmoid_symmetric),
 fannerl:set_activation_steepness_all(N, 1),
 
 lists:foreach(
-fun(X) ->
-ok = fannerl:train(N, {1.0, 1.0}, {-1.0}),
-ok = fannerl:train(N, {1.0, -1.0}, {1.0}),
-ok = fannerl:train(N, {-1.0, 1.0}, {1.0}),
-ok = fannerl:train(N, {-1.0, -1.0}, {-1.0}),
-#{mean_square_error := Mse} = fannerl:get_params(N),
-if
-X rem EpochBetweenReports == 0 ->
-io:format("It #~p, MSE: ~p~n", [X, Mse]);
-true ->
-ok
-end
-end, lists:seq(1, MaxEpochs)),
+  fun(X) ->
+	  ok = fannerl:train(N, {1.0, 1.0}, {-1.0}),
+	  ok = fannerl:train(N, {1.0, -1.0}, {1.0}),
+	  ok = fannerl:train(N, {-1.0, 1.0}, {1.0}),
+	  ok = fannerl:train(N, {-1.0, -1.0}, {-1.0}),
+	  #{mean_square_error := Mse} = fannerl:get_params(N),
+	  if
+	      X rem EpochBetweenReports == 0 ->
+		  io:format("It #~p, MSE: ~p~n", [X, Mse]);
+	      true ->
+		  ok
+	  end
+  end, lists:seq(1, MaxEpochs)),
 %% Reset the MSE for the tests
 fannerl:reset_mse(N),
 %% Use the fann_threshold_symmetric activation function for this example for better values
 fannerl:set_activation_function_all(N, fann_threshold_symmetric),
 {Out1} = fannerl:test(N, {1, 1}, {-1}),
 io:format("Test 1,1 -> ~p, expected -1, diff: ~p~n",
-[Out1, abs(-1 - Out1)]),
+	  [Out1, abs(-1 - Out1)]),
 {Out2} = fannerl:test(N, {1, -1}, {1}),
 io:format("Test 1,1 -> ~p, expected 1, diff: ~p~n",
-[Out2, abs(1 - Out2)]),
+	  [Out2, abs(1 - Out2)]),
 {Out3} = fannerl:test(N, {-1, 1}, {1}),
 io:format("Test 1,1 -> ~p, expected 1, diff: ~p~n",
-[Out3, abs(1 - Out3)]),
+	  [Out3, abs(1 - Out3)]),
 {Out4} = fannerl:test(N, {-1, -1}, {-1}),
 io:format("Test 1,1 -> ~p, expected -1, diff: ~p~n",
-[Out4, abs(-1 - Out4)]),
+	  [Out4, abs(-1 - Out4)]),
 %% Cleanup
 fannerl:destroy(N),
 fannerl:stop().
