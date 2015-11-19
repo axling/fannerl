@@ -26,6 +26,10 @@
 <p><tt>connections() = #{{FromNeuron::integer(), ToNeuron::integer()} =&gt; Weight::number()}</tt></p>
 
 
+<h3 class="typedecl"><a name="type-create_options">create_options()</a></h3>
+<p><tt>create_options() = #{type =&gt; standard | sparse | shortcut, conn_rate =&gt; number(), <a href="#type-param">param()</a> =&gt; term()}</tt></p>
+
+
 <h3 class="typedecl"><a name="type-error_function">error_function()</a></h3>
 <p><tt>error_function() = fann_errorfunc_linear | fann_errorfunc_tanh</tt></p>
 
@@ -48,6 +52,10 @@
 
 <h3 class="typedecl"><a name="type-param">param()</a></h3>
 <p><tt>param() = bit_fail_limit | learning_momentum | learning_rate | quickprop_decay | quickprop_mu | rprop_decrease_factor | rprop_delta_max | rprop_delta_min | rprop_delta_zero | rprop_increase_factor | sarprop_step_error_shift | sarprop_step_error_threshold_factor | sarprop_temperature | sarprop_weight_decay_shift | train_error_function | train_stop_function | training_algorithm</tt></p>
+
+
+<h3 class="typedecl"><a name="type-set_params">set_params()</a></h3>
+<p><tt>set_params() = #{<a href="#type-param">param()</a> =&gt; term()}</tt></p>
 
 
 <h3 class="typedecl"><a name="type-stop_function">stop_function()</a></h3>
@@ -258,7 +266,7 @@ number layer, counting the input layer as layer 0.</td></tr>
 
 <h3 class="function"><a name="create-2">create/2</a></h3>
 <div class="spec">
-<p><tt>create(Layers::tuple(), Options::<a href="#type-options">options()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+<p><tt>create(Layers::tuple(), Options::<a href="#type-create_options">create_options()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
 </div><p>Equivalent to <a href="#create_on-3"><tt>create_on(fannerl, Layers, Options)</tt></a>.</p>
 
 
@@ -283,10 +291,23 @@ number layer, counting the input layer as layer 0.</td></tr>
 
 <h3 class="function"><a name="create_on-3">create_on/3</a></h3>
 <div class="spec">
-<p><tt>create_on(Instance::pid(), Layers::tuple(), Options::<a href="#type-options">options()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
-</div><p>Creates an artificial neural network with any number of layers.
-  The Layers tuple size describe the number of layers while each position
-  sets the size of the layer. See the FANN documentation of create_standard:
+<p><tt>create_on(Instance::pid(), Layers::tuple(), Options::<a href="#type-create_options">create_options()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+</div><p><p>Creates an artificial neural network with any number of layers.  
+The Layers tuple size describe the number of layers while each position  
+sets the size of the layer.</p>
+ 
+  <p>In the options map you can specify which type of network you want to create.
+  Set Options to <code>#{type=&gt;sparse, conn_rate =&gt; 0.1}</code> to create a sparse type  
+of ANN with the given connection rate. It is important to specify the  
+connection rate here as it will not be configurable later.</p>
+ 
+  <p>In the same way you can create a shortcut type of ANN by setting
+  Options to <code>#{type=shortcut}</code>.</p>
+ 
+  <p>Other options you can set are the same as those possible to set by  
+set_params/2.</p>
+ 
+ See the FANN documentation of create_standard:
   <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_create_standard" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_create_standard</tt></a></p>
 
 <h3 class="function"><a name="descale_train-2">descale_train/2</a></h3>
@@ -377,13 +398,13 @@ activation function will also give a more aggressive training.</p>
 
 <h3 class="function"><a name="get_params-1">get_params/1</a></h3>
 <div class="spec">
-<p><tt>get_params(Network::<a href="#type-network_ref">network_ref()</a>) -&gt; #{}</tt><br></p>
+<p><tt>get_params(Network::<a href="#type-network_ref">network_ref()</a>) -&gt; <a href="#type-options">options()</a></tt><br></p>
 </div><p>Equivalent to <a href="#get_params_on-2"><tt>get_params_on(fannerl, Network)</tt></a>.</p>
 
 
 <h3 class="function"><a name="get_params_on-2">get_params_on/2</a></h3>
 <div class="spec">
-<p><tt>get_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>) -&gt; #{}</tt><br></p>
+<p><tt>get_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>) -&gt; <a href="#type-options">options()</a></tt><br></p>
 </div><p>Fetch all the parameters associated with the neural network.</p>
 
 <h3 class="function"><a name="get_train_params-1">get_train_params/1</a></h3>
@@ -625,13 +646,13 @@ The default activation steepness is 0.5.</p>
 
 <h3 class="function"><a name="set_params-2">set_params/2</a></h3>
 <div class="spec">
-<p><tt>set_params(Network::<a href="#type-network_ref">network_ref()</a>, ParametersMap::<a href="#type-options">options()</a>) -&gt; ok</tt><br></p>
+<p><tt>set_params(Network::<a href="#type-network_ref">network_ref()</a>, ParametersMap::<a href="#type-set_params">set_params()</a>) -&gt; ok</tt><br></p>
 </div><p>Equivalent to <a href="#set_params_on-3"><tt>set_params_on(fannerl, Network, ParametersMap)</tt></a>.</p>
 
 
 <h3 class="function"><a name="set_params_on-3">set_params_on/3</a></h3>
 <div class="spec">
-<p><tt>set_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, ParamertersMap::<a href="#type-options">options()</a>) -&gt; ok</tt><br></p>
+<p><tt>set_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, ParamertersMap::<a href="#type-set_params">set_params()</a>) -&gt; ok</tt><br></p>
 </div><p>Sets parameters on a given network.</p>
 
 <h3 class="function"><a name="set_scaling_params-6">set_scaling_params/6</a></h3>
@@ -799,6 +820,6 @@ The default activation steepness is 0.5.</p>
 <hr>
 
 <div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<p><i>Generated by EDoc, Nov 20 2015, 00:11:29.</i></p>
+<p><i>Generated by EDoc, Nov 20 2015, 00:37:40.</i></p>
 </body>
 </html>
