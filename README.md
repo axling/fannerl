@@ -1,15 +1,36 @@
 # fannerl
 
-This is an attempt to write erlang bindings to the [FANN](http://leenissen.dk/), Fast Artificial Neural Networks, library written in C. The interfacing towards FANN is done by a port driver. 
+This is erlang bindings to the [FANN](http://leenissen.dk/), Fast Artificial Neural Networks, library written in C. The interfacing towards FANN is done by a port driver. 
 
-You can watch the documentation at <http://axling.github.io/fannerl/>.
+You can read the documentation at <http://axling.github.io/fannerl/>.
 
 # Introduction
 Fannerl is not a straight copy of FANN into erlang but alot looks the same. As the interface towards FANN is implemented as a port driver there are some special considerations that need to be taken. The user need to start an instance of fannerl which will handle all communication towards FANN. You are able to start multiple instances if need be. Note that if you start fannerl using `fannerl:start_instance/0` you will need to use the fannerl functions that end with the suffix _on. 
 
 When you create a neural network or read in training data from a file, it is important to realise that the return you get is an erlang reference created by `make_ref()`. The reference itself is of course immutable but you need to keep in mind that changes can of course occur to the neural network while the network is trained. 
 
-Fannerl uses maps so Erlang/OTP 17 or newer is required.
+**Fannerl uses maps so Erlang/OTP 17 or newer is required.**
+**A version of FANN that is at least 2.2.0 is required.**
+**Fannerl is currently only compatible with the libfanndouble version of FANN.** 
+
+# Installation
+Please make sure that FANN is installed on your system, follow FANNs [installation instructions](http://leenissen.dk/fann/wp/help/installing-fann/). 
+
+[Erlang/OTP](http://www.erlang.org) must of course be installed. Make sure the version is at least 17.0.
+
+Download a tarball, zipfile from github or clone the repo from a chosen point. Fannerl comes with a self contained rebar binary that can be used for setup. When you have unpacked or cloned a version of fannerl to your system, enter the directory where you store fannerl. Run the following:
+```
+# Compile fannerl
+./rebar compile
+# run eunit tests
+./rebar eunit
+
+# run the Common Test suite, bash script
+./bin/run_test
+
+# run the examples, bash script
+./bin/run_examples
+```
 
 
 # Plan of FANN support
