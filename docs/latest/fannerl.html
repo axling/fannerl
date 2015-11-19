@@ -23,7 +23,11 @@
 
 
 <h3 class="typedecl"><a name="type-connections">connections()</a></h3>
-<p><tt>connections() = #{}</tt></p>
+<p><tt>connections() = #{{FromNeuron::integer(), ToNeuron::integer()} =&gt; Weight::number()}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-error_function">error_function()</a></h3>
+<p><tt>error_function() = fann_errorfunc_linear | fann_errorfunc_tanh</tt></p>
 
 
 <h3 class="typedecl"><a name="type-network_layers">network_layers()</a></h3>
@@ -34,12 +38,28 @@
 <p><tt>network_ref() = reference()</tt></p>
 
 
+<h3 class="typedecl"><a name="type-network_type">network_type()</a></h3>
+<p><tt>network_type() = fann_nettype_layer | fann_nettype_shortcut</tt></p>
+
+
 <h3 class="typedecl"><a name="type-options">options()</a></h3>
-<p><tt>options() = #{}</tt></p>
+<p><tt>options() = #{bias =&gt; tuple(), bit_fail =&gt; number(), connection_rate =&gt; number(), connections =&gt; <a href="#type-connections">connections()</a>, layers =&gt; tuple(), learning_momentum =&gt; number(), learning_rate =&gt; number(), mean_square_error =&gt; number(), network_type =&gt; <a href="#type-network_type">network_type()</a>, num_input =&gt; pos_integer(), num_layers =&gt; pos_integer(), num_output =&gt; pos_integer(), quickprop_decay =&gt; number(), quickprop_mu =&gt; number(), rprop_decrease_factor =&gt; number(), rprop_delta_max =&gt; number(), rprop_delta_min =&gt; number(), rprop_delta_zero =&gt; number(), rprop_increase_factor =&gt; number(), sarprop_step_error_shift =&gt; number(), sarprop_step_error_threshold_factor =&gt; number(), sarprop_temperature =&gt; number(), sarprop_weight_decay_shift =&gt; number(), total_connections =&gt; pos_integer(), total_neurons =&gt; pos_integer(), train_error_function =&gt; <a href="#type-error_function">error_function()</a>, train_stop_function =&gt; <a href="#type-stop_function">stop_function()</a>, training_algorithm =&gt; <a href="#type-training_algorithm">training_algorithm()</a>}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-param">param()</a></h3>
+<p><tt>param() = bit_fail_limit | learning_momentum | learning_rate | quickprop_decay | quickprop_mu | rprop_decrease_factor | rprop_delta_max | rprop_delta_min | rprop_delta_zero | rprop_increase_factor | sarprop_step_error_shift | sarprop_step_error_threshold_factor | sarprop_temperature | sarprop_weight_decay_shift | train_error_function | train_stop_function | training_algorithm</tt></p>
+
+
+<h3 class="typedecl"><a name="type-stop_function">stop_function()</a></h3>
+<p><tt>stop_function() = fann_stopfunc_mse | fann_stopfunc_bit</tt></p>
 
 
 <h3 class="typedecl"><a name="type-train_ref">train_ref()</a></h3>
 <p><tt>train_ref() = reference()</tt></p>
+
+
+<h3 class="typedecl"><a name="type-training_algorithm">training_algorithm()</a></h3>
+<p><tt>training_algorithm() = fann_train_incremental | fann_train_batch | fann_train_rprop | fann_train_quickprop | fann_train_sarprop</tt></p>
 
 
 <h2><a name="index">Function Index</a></h2>
@@ -321,13 +341,13 @@ number layer, counting the input layer as layer 0.</td></tr>
 
 <h3 class="function"><a name="get_activation_function-3">get_activation_function/3</a></h3>
 <div class="spec">
-<p><tt>get_activation_function(Network::<a href="#type-network_ref">network_ref()</a>, Layer::pos_integer(), Neuron::non_neg_integer()) -&gt; atom()</tt><br></p>
+<p><tt>get_activation_function(Network::<a href="#type-network_ref">network_ref()</a>, Layer::pos_integer(), Neuron::non_neg_integer()) -&gt; <a href="#type-activation_function">activation_function()</a></tt><br></p>
 </div><p>Equivalent to <a href="#get_activation_function-4"><tt>get_activation_function(fannerl, Network, Layer, Neuron)</tt></a>.</p>
 
 
 <h3 class="function"><a name="get_activation_function_on-4">get_activation_function_on/4</a></h3>
 <div class="spec">
-<p><tt>get_activation_function_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Layer::pos_integer(), Neuron::non_neg_integer()) -&gt; atom()</tt><br></p>
+<p><tt>get_activation_function_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Layer::pos_integer(), Neuron::non_neg_integer()) -&gt; <a href="#type-activation_function">activation_function()</a></tt><br></p>
 </div><p>Get the activation function for neuron number neuron in layer number layer, counting the input layer as layer 0.
   It is not possible to get activation functions for the neurons in the input layer.
   See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_function" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_function</tt></a></p>
@@ -593,25 +613,25 @@ The default activation steepness is 0.5.</p>
 
 <h3 class="function"><a name="set_param-3">set_param/3</a></h3>
 <div class="spec">
-<p><tt>set_param(Network::<a href="#type-network_ref">network_ref()</a>, Param::atom(), Value::term()) -&gt; ok</tt><br></p>
+<p><tt>set_param(Network::<a href="#type-network_ref">network_ref()</a>, Param::<a href="#type-param">param()</a>, Value::term()) -&gt; ok</tt><br></p>
 </div><p>Equivalent to <a href="#set_param_on-4"><tt>set_param_on(fannerl, Network, Param, Value)</tt></a>.</p>
 
 
 <h3 class="function"><a name="set_param_on-4">set_param_on/4</a></h3>
 <div class="spec">
-<p><tt>set_param_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Param::atom(), Value::term()) -&gt; ok</tt><br></p>
+<p><tt>set_param_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Param::<a href="#type-param">param()</a>, Value::term()) -&gt; ok</tt><br></p>
 </div><p>Sets one param on a given network. Equivalent to set_params_on/3
   with a map with one key and value.</p>
 
 <h3 class="function"><a name="set_params-2">set_params/2</a></h3>
 <div class="spec">
-<p><tt>set_params(Network::<a href="#type-network_ref">network_ref()</a>, ParametersMap::#{}) -&gt; ok</tt><br></p>
+<p><tt>set_params(Network::<a href="#type-network_ref">network_ref()</a>, ParametersMap::<a href="#type-options">options()</a>) -&gt; ok</tt><br></p>
 </div><p>Equivalent to <a href="#set_params_on-3"><tt>set_params_on(fannerl, Network, ParametersMap)</tt></a>.</p>
 
 
 <h3 class="function"><a name="set_params_on-3">set_params_on/3</a></h3>
 <div class="spec">
-<p><tt>set_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, ParamertersMap::#{}) -&gt; ok</tt><br></p>
+<p><tt>set_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, ParamertersMap::<a href="#type-options">options()</a>) -&gt; ok</tt><br></p>
 </div><p>Sets parameters on a given network.</p>
 
 <h3 class="function"><a name="set_scaling_params-6">set_scaling_params/6</a></h3>
@@ -779,6 +799,6 @@ The default activation steepness is 0.5.</p>
 <hr>
 
 <div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<p><i>Generated by EDoc, Nov 19 2015, 16:07:36.</i></p>
+<p><i>Generated by EDoc, Nov 20 2015, 00:11:29.</i></p>
 </body>
 </html>
