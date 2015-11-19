@@ -97,6 +97,15 @@ fannerl_run_and_test_test_() ->
      ]
     }.
 
+fannerl_create_large_net_return_large_map_test_() ->
+    {foreach,
+     fun setup/0,
+     fun cleanup/1,
+     [
+      fun fannerl_create_large_net_return_large_map/1
+     ]
+    }.
+
 %%-----------------------------------------------------------
 %% FIXTURE FUNCTIONS
 %%-----------------------------------------------------------
@@ -222,7 +231,7 @@ fannerl_create_with_learning_rate(_Map) ->
     ?_test(
        begin
 	   LearningRate = 0.2,
-	   R = fannerl:create({5,7,3}, #{learning_rate => LearningRate}),
+	   R = fannerl:create({2,2,1}, #{learning_rate => LearningRate}),
 	   Map = fannerl:get_params(R),
 	   #{learning_rate := LearningRateAfter} = Map,
 	   ok = fannerl:destroy(R),
@@ -232,9 +241,9 @@ fannerl_create_with_learning_rate(_Map) ->
 fannerl_create_and_get_params(_Map) ->
     ?_test(
        begin
-	   NumInput = 5,
-	   NumOutput = 3,
-	   Hidden = 7,
+	   NumInput = 2,
+	   NumOutput = 1,
+	   Hidden = 2,
 	   Net = {NumInput, Hidden, NumOutput},
 	   R = fannerl:create(Net),
 	   Map = fannerl:get_params(R),
@@ -271,7 +280,7 @@ fannerl_create_and_get_params(_Map) ->
 	     sarprop_temperature := _SarpropTemperature
 	    } = Map,
 	   ?assert(is_map(Connections)),
-	   _Val = maps:get({0,Hidden-1}, Connections),
+	   _Val = maps:get({0,Hidden+1}, Connections),
 	   _ActFunct = fannerl:get_activation_function(R, 1, 1),
 	   _Steepness = fannerl:get_activation_steepness(R, 1, 1),
 	   ok = fannerl:destroy(R)
@@ -280,21 +289,21 @@ fannerl_create_and_get_params(_Map) ->
 fannerl_create_and_set_weights(_) -> 
     ?_test(
        begin
-	   R = fannerl:create({5,7,3}),
-	   fannerl:set_weights(R, #{{0,6}=>0.3, {1,9} => 1}),
-	   fannerl:set_weight(R, 0, 7, -0.3),
+	   R = fannerl:create({2,2,1}),
+	   fannerl:set_weights(R, #{{0,3}=>0.3, {1,3} => 1}),
+	   fannerl:set_weight(R, 0, 4, -0.3),
 	   MapAfter = fannerl:get_params(R),
 	   #{connections := Connections} = MapAfter,
-	   #{{0,6} := 0.3,
-	     {1,9} := 1.0,
-	     {0,7} := -0.3} = Connections,
+	   #{{0,3} := 0.3,
+	     {1,3} := 1.0,
+	     {0,4} := -0.3} = Connections,
 	   ok = fannerl:destroy(R)
        end).
 
 fannerl_create_and_set_params(_) -> 
     ?_test(
        begin
-	   R = fannerl:create({5,7,3}),
+	   R = fannerl:create({2,2,2}),
 	   fannerl:set_param(R, learning_rate, 0.1),
 	   fannerl:set_param(R, learning_rate, 1),
 	   fannerl:set_param(R, learning_momentum, 0),
@@ -567,4 +576,13 @@ fannerl_reset_mse(_) ->
 	   %% nothing crashes
 	   ok = fannerl:reset_mse(R), 
 	   ?assert(ok == fannerl:destroy(R))
+       end).
+
+
+fannerl_create_large_net_return_large_map(_) ->
+    ?_test(
+       begin
+	   R = fannerl:create({5,7,3}),
+	   Map = fannerl:get_params(R),
+	   _Conns = maps:get(connections, Map)
        end).
