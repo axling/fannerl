@@ -4,7 +4,7 @@ This is erlang bindings to the [FANN](http://leenissen.dk/), Fast Artificial Neu
 
 You can read the documentation at <http://axling.github.io/fannerl/>.
 
-[![Build Status](https://travis-ci.org/axling/fannerl.svg?branch=master)](https://travis-ci.org/axling/fannerl)
+Travis CI: [![Build Status](https://travis-ci.org/axling/fannerl.svg?branch=master)](https://travis-ci.org/axling/fannerl)
 
 # Introduction
 Fannerl is not a straight copy of FANN into erlang but alot looks the same. As the interface towards FANN is implemented as a port driver there are some special considerations that need to be taken. The user need to start an instance of fannerl which will handle all communication towards FANN. You are able to start multiple instances if need be. Note that if you start fannerl using `fannerl:start_instance/0` you will need to use the fannerl functions that end with the suffix _on. 
