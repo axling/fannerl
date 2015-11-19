@@ -1755,7 +1755,7 @@ int set_param(byte * buf, int * index, struct fann * network, char * param) {
     bit_fail_limit = (fann_type)get_double(buf, index);
     fann_set_bit_fail_limit(network,
 			    (float)bit_fail_limit);
-  } else if (!strcmp("train_error_func", param)) {
+  } else if (!strcmp("train_error_function", param)) {
     ei_get_type((const char *)buf, index, &type, &type_size);
     if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
        type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {
@@ -1770,7 +1770,7 @@ int set_param(byte * buf, int * index, struct fann * network, char * param) {
     } else {
       ei_skip_term((const char*)buf, index);
     }
-  } else if (!strcmp("train_stop_func", param)) {
+  } else if (!strcmp("train_stop_function", param)) {
     ei_get_type((const char *)buf, index, &type, &type_size);
     if(type == ERL_ATOM_EXT || type == ERL_SMALL_ATOM_EXT ||
        type == ERL_ATOM_UTF8_EXT || type == ERL_SMALL_ATOM_UTF8_EXT)  {

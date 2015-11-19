@@ -26,8 +26,57 @@
 -type network_layers() :: tuple().
 -type network_ref()    :: reference().
 -type train_ref()      :: reference().
--type options()        :: map().
--type connections()    :: map().
+-type options()        :: #{bias => tuple(),
+			    bit_fail => number(),
+			    connection_rate => number(),
+			    connections => connections(),
+			    layers => tuple(),
+			    learning_momentum => number(),
+			    learning_rate => number(),
+			    mean_square_error => number(),
+			    network_type => network_type(),
+			    num_input => pos_integer(),
+			    num_layers => pos_integer(),
+			    num_output => pos_integer(),
+			    quickprop_decay => number(),
+			    quickprop_mu => number(),
+			    rprop_decrease_factor => number(),
+			    rprop_delta_max => number(),
+			    rprop_delta_min => number(),
+			    rprop_delta_zero => number(),
+			    rprop_increase_factor => number(),
+			    sarprop_step_error_shift => number(),
+			    sarprop_step_error_threshold_factor => number(),
+			    sarprop_temperature => number(),
+			    sarprop_weight_decay_shift => number(),
+			    total_connections => pos_integer(),
+			    total_neurons => pos_integer(),
+			    train_error_function => error_function(),
+			    train_stop_function => stop_function(),
+			    training_algorithm => training_algorithm()
+			   }.
+
+-type param() :: bit_fail_limit |
+		 learning_momentum |
+		 learning_rate |
+		 quickprop_decay |
+		 quickprop_mu |
+		 rprop_decrease_factor |
+		 rprop_delta_max |
+		 rprop_delta_min |
+		 rprop_delta_zero |
+		 rprop_increase_factor |
+		 sarprop_step_error_shift |
+		 sarprop_step_error_threshold_factor |
+		 sarprop_temperature |
+		 sarprop_weight_decay_shift |
+		 train_error_function |
+		 train_stop_function |
+		 training_algorithm.
+
+-type connections()    :: #{{FromNeuron::integer(),
+			     ToNeuron::integer()} => Weight::number()}.
+
 -type activation_function() :: fann_linear              |
 			       fann_threshold           |
 			       fann_threshold_symmetric |
@@ -44,7 +93,20 @@
 			       fann_cos_symmetric       |
 			       fann_sin                 |
 			       fann_cos.
+-type training_algorithm() :: fann_train_incremental    |
+			      fann_train_batch          |
+			      fann_train_rprop          |
+			      fann_train_quickprop      |
+			      fann_train_sarprop.
 
+-type error_function() :: fann_errorfunc_linear |
+			  fann_errorfunc_tanh.
+
+-type stop_function() :: fann_stopfunc_mse |
+			 fann_stopfunc_bit.
+
+-type network_type() :: fann_nettype_layer |
+			fann_nettype_shortcut.
 
 -export([start/0,
 	 start_instance/0,
@@ -685,7 +747,7 @@ get_params_on(Instance, Network)
 -spec get_activation_function(Network::network_ref(),
 			      Layer::pos_integer(),
 			      Neuron::non_neg_integer())
-			     ->  atom().
+			     ->  activation_function().
 get_activation_function(Network, Layer, Neuron) 
   when is_reference(Network), is_integer(Layer), Layer > 0,
        is_integer(Neuron), Neuron >= 0 ->
@@ -700,7 +762,7 @@ get_activation_function(Network, Layer, Neuron)
 -spec get_activation_function_on(Instance::pid(), Network::network_ref(),
 				 Layer::pos_integer(),
 				 Neuron::non_neg_integer())
-				-> atom().
+				-> activation_function().
 get_activation_function_on(Instance, Network, Layer, Neuron)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network), is_integer(Layer), Layer > 0,
@@ -1258,7 +1320,7 @@ set_weight_on(Instance, Network, FromNeuron, ToNeuron, Weight)
 %% @equiv set_param_on({@module}, Network, Param, Value)
 %% @end
 %% --------------------------------------------------------------------- %%
--spec set_param(Network::network_ref(), Param::atom(), Value::term()) -> ok.
+-spec set_param(Network::network_ref(), Param::param(), Value::term()) -> ok.
 set_param(Network, Param, Value)
   when is_reference(Network),
        is_atom(Param) ->
@@ -1270,7 +1332,7 @@ set_param(Network, Param, Value)
 %% @end
 %% --------------------------------------------------------------------- %%
 -spec set_param_on(Instance::pid(), Network::network_ref(),
-		   Param::atom(), Value::term()) -> ok.
+		   Param::param(), Value::term()) -> ok.
 set_param_on(Instance, Network, Param, Value)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network),
@@ -1282,7 +1344,7 @@ set_param_on(Instance, Network, Param, Value)
 %% @equiv set_params_on({@module}, Network, ParametersMap)
 %% @end
 %% --------------------------------------------------------------------- %%
--spec set_params(Network::network_ref(), ParametersMap::map()) -> ok.
+-spec set_params(Network::network_ref(), ParametersMap::options()) -> ok.
 set_params(Network, ParametersMap)
   when is_reference(Network),
        is_map(ParametersMap) ->
@@ -1293,7 +1355,7 @@ set_params(Network, ParametersMap)
 %% @end
 %% --------------------------------------------------------------------- %%
 -spec set_params_on(Instance::pid(), Network::network_ref(),
-		    ParamertersMap::map()) -> ok.
+		    ParamertersMap::options()) -> ok.
 set_params_on(Instance, Network, ParametersMap)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network),
