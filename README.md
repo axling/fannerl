@@ -4,7 +4,6 @@ This is erlang bindings to the [FANN](http://leenissen.dk/), Fast Artificial Neu
 
 You can read the documentation at <http://axling.github.io/fannerl/>.
 
-*Travis CI Status*
 [![Build Status](https://travis-ci.org/axling/fannerl.svg?branch=master)](https://travis-ci.org/axling/fannerl)
 
 # Introduction
