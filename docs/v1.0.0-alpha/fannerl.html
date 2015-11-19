@@ -1,0 +1,784 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Module fannerl</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" title="EDoc">
+</head>
+<body bgcolor="white">
+<div class="navbar"><a name="#navbar_top"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
+<hr>
+
+<h1>Module fannerl</h1>
+<ul class="index"><li><a href="#description">Description</a></li><li><a href="#types">Data Types</a></li><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>.
+
+<p><b>Authors:</b> Erik Axling.</p>
+
+<h2><a name="description">Description</a></h2>
+  
+<h2><a name="types">Data Types</a></h2>
+
+<h3 class="typedecl"><a name="type-activation_function">activation_function()</a></h3>
+<p><tt>activation_function() = fann_linear | fann_threshold | fann_threshold_symmetric | fann_sigmoid | fann_sigmoid_stepwise | fann_sigmoid_symmetric | fann_gaussian | fann_gaussian_symmetric | fann_elliot | fann_elliot_symmetric | fann_linear_piece | fann_linear_piece_symmetric | fann_sin_symmetric | fann_cos_symmetric | fann_sin | fann_cos</tt></p>
+
+
+<h3 class="typedecl"><a name="type-connections">connections()</a></h3>
+<p><tt>connections() = #{}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-network_layers">network_layers()</a></h3>
+<p><tt>network_layers() = tuple()</tt></p>
+
+
+<h3 class="typedecl"><a name="type-network_ref">network_ref()</a></h3>
+<p><tt>network_ref() = reference()</tt></p>
+
+
+<h3 class="typedecl"><a name="type-options">options()</a></h3>
+<p><tt>options() = #{}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-train_ref">train_ref()</a></h3>
+<p><tt>train_ref() = reference()</tt></p>
+
+
+<h2><a name="index">Function Index</a></h2>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#clear_scaling_params-1">clear_scaling_params/1</a></td><td>Equivalent to <a href="#clear_scaling_params-2"><tt>clear_scaling_params(fannerl, Network)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#clear_scaling_params_on-2">clear_scaling_params_on/2</a></td><td>Clears scaling parameters.</td></tr>
+<tr><td valign="top"><a href="#copy-1">copy/1</a></td><td>Equivalent to <a href="#copy_on-2"><tt>copy_on(fannerl, Network)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#copy_on-2">copy_on/2</a></td><td>Creates a copy of a fann structure.</td></tr>
+<tr><td valign="top"><a href="#create-1">create/1</a></td><td>Equivalent to <a href="#create_on-3"><tt>create_on(fannerl, Layers, default_options())</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#create-2">create/2</a></td><td>Equivalent to <a href="#create_on-3"><tt>create_on(fannerl, Layers, Options)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#create_from_file-1">create_from_file/1</a></td><td>Equivalent to <a href="#create_from_file-2"><tt>create_from_file(fannerl, FileName)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#create_from_file-2">create_from_file/2</a></td><td>Creates an artificial neural network from a previously saved file.</td></tr>
+<tr><td valign="top"><a href="#create_on-2">create_on/2</a></td><td>Equivalent to <a href="#create_on-3"><tt>create_on(Instance, Layers, default_options())</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#create_on-3">create_on/3</a></td><td>Creates an artificial neural network with any number of layers.</td></tr>
+<tr><td valign="top"><a href="#descale_train-2">descale_train/2</a></td><td>Equivalent to <a href="#descale_train_on-3"><tt>descale_train_on(fannerl, Network, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#descale_train_on-3">descale_train_on/3</a></td><td>Descale input and output data based on previously calculated parameters.</td></tr>
+<tr><td valign="top"><a href="#destroy-1">destroy/1</a></td><td>Equivalent to <a href="#destroy_on-2"><tt>destroy_on(fannerl, Network)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#destroy_on-2">destroy_on/2</a></td><td>This will destroy all references to the neural network and free
+       up all associated memory.</td></tr>
+<tr><td valign="top"><a href="#destroy_train-1">destroy_train/1</a></td><td>Equivalent to <a href="#destroy_train_on-2"><tt>destroy_train_on(fannerl, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#destroy_train_on-2">destroy_train_on/2</a></td><td>Destructs the training data and properly deallocates all of the
+  associated data.</td></tr>
+<tr><td valign="top"><a href="#duplicate_train_data-1">duplicate_train_data/1</a></td><td>Equivalent to <a href="#duplicate_train_data_on-2"><tt>duplicate_train_data_on(fannerl, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#duplicate_train_data_on-2">duplicate_train_data_on/2</a></td><td>Returns an exact copy of the training data.</td></tr>
+<tr><td valign="top"><a href="#get_activation_function-3">get_activation_function/3</a></td><td>Equivalent to <a href="#get_activation_function-4"><tt>get_activation_function(fannerl, Network, Layer, Neuron)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#get_activation_function_on-4">get_activation_function_on/4</a></td><td>Get the activation function for neuron number neuron in layer number layer, counting the input layer as layer 0.</td></tr>
+<tr><td valign="top"><a href="#get_activation_steepness-3">get_activation_steepness/3</a></td><td>Equivalent to <a href="#get_activation_steepness-4"><tt>get_activation_steepness(fannerl, Network, Layer,
+			 Neuron)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#get_activation_steepness_on-4">get_activation_steepness_on/4</a></td><td>Get the activation steepness for neuron number neuron in layer number  
+layer, counting the input layer as layer 0.</td></tr>
+<tr><td valign="top"><a href="#get_params-1">get_params/1</a></td><td>Equivalent to <a href="#get_params_on-2"><tt>get_params_on(fannerl, Network)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#get_params_on-2">get_params_on/2</a></td><td>Fetch all the parameters associated with the neural network.</td></tr>
+<tr><td valign="top"><a href="#get_train_params-1">get_train_params/1</a></td><td>Equivalent to <a href="#get_train_params_on-2"><tt>get_train_params_on(fannerl, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#get_train_params_on-2">get_train_params_on/2</a></td><td>Fetches all the params associated with the training data.</td></tr>
+<tr><td valign="top"><a href="#init_weights-2">init_weights/2</a></td><td>Equivalent to <a href="#init_weights_on-3"><tt>init_weights_on(fannerl, Network, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#init_weights_on-3">init_weights_on/3</a></td><td>Initialize the weights using Widrow + Nguyen’s algorithm.</td></tr>
+<tr><td valign="top"><a href="#merge_train_data-2">merge_train_data/2</a></td><td>Equivalent to <a href="#merge_train_data_on-3"><tt>merge_train_data_on(fannerl, Train1, Train2)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#merge_train_data_on-3">merge_train_data_on/3</a></td><td>Merges the data from data1 and data2 into a new training data.</td></tr>
+<tr><td valign="top"><a href="#randomize_weights-3">randomize_weights/3</a></td><td>Equivalent to <a href="#randomize_weights_on-4"><tt>randomize_weights_on(fannerl, Network, MinWeight,
+		     MaxWeight)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#randomize_weights_on-4">randomize_weights_on/4</a></td><td>Give each connection a random weight between min_weight and max_weight.</td></tr>
+<tr><td valign="top"><a href="#read_train_from_file-1">read_train_from_file/1</a></td><td>Equivalent to <a href="#read_train_from_file_on-2"><tt>read_train_from_file_on(fannerl, Filename)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#read_train_from_file_on-2">read_train_from_file_on/2</a></td><td>Reads a file that stores training data.</td></tr>
+<tr><td valign="top"><a href="#reset_mse-1">reset_mse/1</a></td><td>Equivalent to <a href="#reset_mse_on-2"><tt>reset_mse_on(fannerl, Network)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#reset_mse_on-2">reset_mse_on/2</a></td><td>Resets the mean square error from the network.</td></tr>
+<tr><td valign="top"><a href="#run-2">run/2</a></td><td>Equivalent to <a href="#run_on-3"><tt>run_on(fannerl, Network, Input)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#run_on-3">run_on/3</a></td><td>Will run input through the neural network, returning a tuple of outputs, the number of which being equal to the number of neurons in the output layer.</td></tr>
+<tr><td valign="top"><a href="#save-2">save/2</a></td><td>Equivalent to <a href="#save_on-2"><tt>save_on(fannerl, FileName)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#save_on-3">save_on/3</a></td><td>Save the entire network to a configuration file.</td></tr>
+<tr><td valign="top"><a href="#save_train-2">save_train/2</a></td><td>Equivalent to <a href="#save_train_on-3"><tt>save_train_on(fannerl, Train, FileName)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#save_train_on-3">save_train_on/3</a></td><td>Save the training structure to a file, with the format as specified in fann_read_train_from_file
+  See http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_save_train.</td></tr>
+<tr><td valign="top"><a href="#scale_train-2">scale_train/2</a></td><td>Equivalent to <a href="#scale_train_on-3"><tt>scale_train_on(fannerl, Network, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#scale_train_on-3">scale_train_on/3</a></td><td>Scale input and output data based on previously calculated parameters.</td></tr>
+<tr><td valign="top"><a href="#set_activation_function-4">set_activation_function/4</a></td><td>Equivalent to <a href="#set_activation_function_on-5"><tt>set_activation_function_on(fannerl, Network,
+			   ActivationFunction, Layer, Neuron)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_activation_function_all-2">set_activation_function_all/2</a></td><td>Equivalent to <a href="#set_activation_function_all-5"><tt>set_activation_function_all(fannerl, Network,
+			    ActivationFunction, all, all)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_activation_function_hidden-2">set_activation_function_hidden/2</a></td><td>Equivalent to <a href="#set_activation_function_on-5"><tt>set_activation_function_on(fannerl, Network,
+			   ActivationFunction, hidden, all)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_activation_function_layer-3">set_activation_function_layer/3</a></td><td>Equivalent to <a href="#set_activation_function_layer-5"><tt>set_activation_function_layer(fannerl, Network,
+			      ActivationFunction, Layer, all)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_activation_function_on-5">set_activation_function_on/5</a></td><td>Set the activation function for neuron number neuron in layer number
+  layer, counting the input layer as layer 0.</td></tr>
+<tr><td valign="top"><a href="#set_activation_function_output-2">set_activation_function_output/2</a></td><td>Equivalent to <a href="#set_activation_function_on-5"><tt>set_activation_function_on(fannerl, Network,
+			   ActivationFunction, output, all)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_activation_steepness-4">set_activation_steepness/4</a></td><td>Equivalent to <a href="#set_activation_steepness_on-5"><tt>set_activation_steepness_on(fannerl, Network,
+			    ActivationSteepness, Layer, Neuron)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_activation_steepness_all-2">set_activation_steepness_all/2</a></td><td>Equivalent to <a href="#set_activation_steepness_all-5"><tt>set_activation_steepness_all(fannerl, Network,
+			     ActivationSteepness, all, all)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_activation_steepness_hidden-2">set_activation_steepness_hidden/2</a></td><td>Equivalent to <a href="#set_activation_steepness_on-5"><tt>set_activation_steepness_on(fannerl, Network,
+			    ActivationSteepness, hidden, all)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_activation_steepness_layer-3">set_activation_steepness_layer/3</a></td><td>Equivalent to <a href="#set_activation_steepness_layer-5"><tt>set_activation_steepness_layer(fannerl, Network,
+			       ActivationSteepness, Layer, all)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_activation_steepness_on-5">set_activation_steepness_on/5</a></td><td>Set the activation steepness for neuron number neuron in layer  
+number layer, counting the input layer as layer 0.</td></tr>
+<tr><td valign="top"><a href="#set_activation_steepness_output-2">set_activation_steepness_output/2</a></td><td>Equivalent to <a href="#set_activation_steepness_on-5"><tt>set_activation_steepness_on(fannerl, Network,
+			    ActivationSteepness, output, all)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_param-3">set_param/3</a></td><td>Equivalent to <a href="#set_param_on-4"><tt>set_param_on(fannerl, Network, Param, Value)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_param_on-4">set_param_on/4</a></td><td>Sets one param on a given network.</td></tr>
+<tr><td valign="top"><a href="#set_params-2">set_params/2</a></td><td>Equivalent to <a href="#set_params_on-3"><tt>set_params_on(fannerl, Network, ParametersMap)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_params_on-3">set_params_on/3</a></td><td>Sets parameters on a given network.</td></tr>
+<tr><td valign="top"><a href="#set_scaling_params-6">set_scaling_params/6</a></td><td>Equivalent to <a href="#set_scaling_params_on-7"><tt>set_scaling_params_on(fannerl, Network, Train,
+		      NewInputMin, NewInputMax, NewOutputMin, NewOutputMax)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_scaling_params_on-7">set_scaling_params_on/7</a></td><td>Calculate input and output scaling parameters for future use based on training data.</td></tr>
+<tr><td valign="top"><a href="#set_weight-4">set_weight/4</a></td><td>Equivalent to <a href="#set_weight_on-5"><tt>set_weight_on(fannerl, Network, FromNeuron, ToNeuron,
+	      Weight)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_weight_on-5">set_weight_on/5</a></td><td>Set a connection in the network.</td></tr>
+<tr><td valign="top"><a href="#set_weights-2">set_weights/2</a></td><td>Equivalent to <a href="#set_weights_on-3"><tt>set_weights_on(fannerl, Network, Connections)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#set_weights_on-3">set_weights_on/3</a></td><td>Set connections in the network.</td></tr>
+<tr><td valign="top"><a href="#shuffle_train-1">shuffle_train/1</a></td><td>Equivalent to <a href="#shuffle_train_on-2"><tt>shuffle_train_on(fannerl, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#shuffle_train_on-2">shuffle_train_on/2</a></td><td>Shuffles training data, randomizing the order.</td></tr>
+<tr><td valign="top"><a href="#start-0">start/0</a></td><td>Start an instance of the port driver that can be used for
+       creating artificial neural networks using fann.</td></tr>
+<tr><td valign="top"><a href="#start_instance-0">start_instance/0</a></td><td>Start an instance of the port driver that can be used for
+       creating artificial neural networks using fann.</td></tr>
+<tr><td valign="top"><a href="#stop-0">stop/0</a></td><td>This will stop the process interfacing the FANN library.</td></tr>
+<tr><td valign="top"><a href="#stop_instance-1">stop_instance/1</a></td><td>This will stop this instance's process interfacing the FANN
+       library .</td></tr>
+<tr><td valign="top"><a href="#subset_train_data-3">subset_train_data/3</a></td><td>Equivalent to <a href="#subset_train_data_on-4"><tt>subset_train_data_on(fannerl, Train, Pos, Length)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#subset_train_data_on-4">subset_train_data_on/4</a></td><td>Returns an copy of a subset of the struct fann_train_data, starting
+  at position pos and length elements forward.</td></tr>
+<tr><td valign="top"><a href="#test-3">test/3</a></td><td>Equivalent to <a href="#test_on-4"><tt>test_on(fannerl, Network, Input, DesiredOutput)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#test_data-2">test_data/2</a></td><td>Equivalent to <a href="#test_data-3"><tt>test_data(fannerl, Network, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#test_data_on-3">test_data_on/3</a></td><td>Test a set of training data and calculates the MSE for the training data.</td></tr>
+<tr><td valign="top"><a href="#test_on-4">test_on/4</a></td><td>Test with a set of inputs, and a set of desired outputs.</td></tr>
+<tr><td valign="top"><a href="#train-3">train/3</a></td><td>Equivalent to <a href="#train_on-4"><tt>train_on(fannerl, Network, Input, DesiredOutput)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#train_epoch-2">train_epoch/2</a></td><td>Equivalent to <a href="#train_epoch_on-3"><tt>train_epoch_on(fannerl, Network, Train)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#train_epoch_on-3">train_epoch_on/3</a></td><td>This will train your neural network for one epoch with the given
+       training data.</td></tr>
+<tr><td valign="top"><a href="#train_on-4">train_on/4</a></td><td>Train one iteration with a set of inputs, and a set of desired outputs.</td></tr>
+<tr><td valign="top"><a href="#train_on_data-5">train_on_data/5</a></td><td>Equivalent to <a href="#train_on_data_on-6"><tt>train_on_data_on(fannerl, Network, Train, MaxEpochs,
+		 EpochBetweenReports, DesiredError)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#train_on_data_on-6">train_on_data_on/6</a></td><td>Trains on an entire dataset, for a chosen period of time.</td></tr>
+<tr><td valign="top"><a href="#train_on_file-5">train_on_file/5</a></td><td>Equivalent to <a href="#train_on_file_on-6"><tt>train_on_file_on(fannerl, Network, FileName, MaxEpochs,
+		 EpochBetweenReports, DesiredError)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#train_on_file_on-6">train_on_file_on/6</a></td><td>Does the same as train_on_data_on/5, but reads the training data directly from a file.</td></tr>
+</table>
+
+<h2><a name="functions">Function Details</a></h2>
+
+<h3 class="function"><a name="clear_scaling_params-1">clear_scaling_params/1</a></h3>
+<div class="spec">
+<p><tt>clear_scaling_params(Network::<a href="#type-network_ref">network_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#clear_scaling_params-2"><tt>clear_scaling_params(fannerl, Network)</tt></a>.</p>
+
+
+<h3 class="function"><a name="clear_scaling_params_on-2">clear_scaling_params_on/2</a></h3>
+<div class="spec">
+<p><tt>clear_scaling_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Clears scaling parameters.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_clear_scaling_params" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_clear_scaling_params</tt></a>.</p>
+
+<h3 class="function"><a name="copy-1">copy/1</a></h3>
+<div class="spec">
+<p><tt>copy(Network::<a href="#type-network_ref">network_ref()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#copy_on-2"><tt>copy_on(fannerl, Network)</tt></a>.</p>
+
+
+<h3 class="function"><a name="copy_on-2">copy_on/2</a></h3>
+<div class="spec">
+<p><tt>copy_on(Instance, Network) -&gt; any()</tt></p>
+</div><p>Creates a copy of a fann structure. See
+  <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_copy" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_copy</tt></a>.</p>
+
+<h3 class="function"><a name="create-1">create/1</a></h3>
+<div class="spec">
+<p><tt>create(Layers::<a href="#type-network_layers">network_layers()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#create_on-3"><tt>create_on(fannerl, Layers, default_options())</tt></a>.</p>
+
+
+<h3 class="function"><a name="create-2">create/2</a></h3>
+<div class="spec">
+<p><tt>create(Layers::tuple(), Options::<a href="#type-options">options()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#create_on-3"><tt>create_on(fannerl, Layers, Options)</tt></a>.</p>
+
+
+<h3 class="function"><a name="create_from_file-1">create_from_file/1</a></h3>
+<div class="spec">
+<p><tt>create_from_file(FileName::string()) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#create_from_file-2"><tt>create_from_file(fannerl, FileName)</tt></a>.</p>
+
+
+<h3 class="function"><a name="create_from_file-2">create_from_file/2</a></h3>
+<div class="spec">
+<p><tt>create_from_file(Instance::pid(), FileName::string()) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+</div><p>Creates an artificial neural network from a previously saved file.
+  See
+  <a href="http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_create_from_file</tt></a>.</p>
+
+<h3 class="function"><a name="create_on-2">create_on/2</a></h3>
+<div class="spec">
+<p><tt>create_on(Instance::pid(), Layers::tuple()) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#create_on-3"><tt>create_on(Instance, Layers, default_options())</tt></a>.</p>
+
+
+<h3 class="function"><a name="create_on-3">create_on/3</a></h3>
+<div class="spec">
+<p><tt>create_on(Instance::pid(), Layers::tuple(), Options::<a href="#type-options">options()</a>) -&gt; <a href="#type-network_ref">network_ref()</a></tt><br></p>
+</div><p>Creates an artificial neural network with any number of layers.
+  The Layers tuple size describe the number of layers while each position
+  sets the size of the layer. See the FANN documentation of create_standard:
+  <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_create_standard" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_create_standard</tt></a></p>
+
+<h3 class="function"><a name="descale_train-2">descale_train/2</a></h3>
+<div class="spec">
+<p><tt>descale_train(Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#descale_train_on-3"><tt>descale_train_on(fannerl, Network, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="descale_train_on-3">descale_train_on/3</a></h3>
+<div class="spec">
+<p><tt>descale_train_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Descale input and output data based on previously calculated parameters.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_descale_train" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_descale_train</tt></a>.</p>
+
+<h3 class="function"><a name="destroy-1">destroy/1</a></h3>
+<div class="spec">
+<p><tt>destroy(Network::network_ref) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#destroy_on-2"><tt>destroy_on(fannerl, Network)</tt></a>.</p>
+
+
+<h3 class="function"><a name="destroy_on-2">destroy_on/2</a></h3>
+<div class="spec">
+<p><tt>destroy_on(Instance::pid(), Network::network_ref) -&gt; ok</tt><br></p>
+</div><p>This will destroy all references to the neural network and free
+       up all associated memory.
+  See <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_destroy" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_destroy</tt></a>.</p>
+
+<h3 class="function"><a name="destroy_train-1">destroy_train/1</a></h3>
+<div class="spec">
+<p><tt>destroy_train(Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#destroy_train_on-2"><tt>destroy_train_on(fannerl, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="destroy_train_on-2">destroy_train_on/2</a></h3>
+<div class="spec">
+<p><tt>destroy_train_on(Instance::pid(), Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Destructs the training data and properly deallocates all of the
+  associated data.
+  See http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_destroy_train</p>
+
+<h3 class="function"><a name="duplicate_train_data-1">duplicate_train_data/1</a></h3>
+<div class="spec">
+<p><tt>duplicate_train_data(Train::<a href="#type-train_ref">train_ref()</a>) -&gt; <a href="#type-train_ref">train_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#duplicate_train_data_on-2"><tt>duplicate_train_data_on(fannerl, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="duplicate_train_data_on-2">duplicate_train_data_on/2</a></h3>
+<div class="spec">
+<p><tt>duplicate_train_data_on(Instance::pid(), Train::<a href="#type-train_ref">train_ref()</a>) -&gt; <a href="#type-train_ref">train_ref()</a></tt><br></p>
+</div><p>Returns an exact copy of the training data.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_duplicate_train_data" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_duplicate_train_data</tt></a>.</p>
+
+<h3 class="function"><a name="get_activation_function-3">get_activation_function/3</a></h3>
+<div class="spec">
+<p><tt>get_activation_function(Network::<a href="#type-network_ref">network_ref()</a>, Layer::pos_integer(), Neuron::non_neg_integer()) -&gt; atom()</tt><br></p>
+</div><p>Equivalent to <a href="#get_activation_function-4"><tt>get_activation_function(fannerl, Network, Layer, Neuron)</tt></a>.</p>
+
+
+<h3 class="function"><a name="get_activation_function_on-4">get_activation_function_on/4</a></h3>
+<div class="spec">
+<p><tt>get_activation_function_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Layer::pos_integer(), Neuron::non_neg_integer()) -&gt; atom()</tt><br></p>
+</div><p>Get the activation function for neuron number neuron in layer number layer, counting the input layer as layer 0.
+  It is not possible to get activation functions for the neurons in the input layer.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_function" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_function</tt></a></p>
+
+<h3 class="function"><a name="get_activation_steepness-3">get_activation_steepness/3</a></h3>
+<div class="spec">
+<p><tt>get_activation_steepness(Network::<a href="#type-network_ref">network_ref()</a>, Layer::pos_integer(), Neuron::non_neg_integer()) -&gt; float()</tt><br></p>
+</div><p>Equivalent to <a href="#get_activation_steepness-4"><tt>get_activation_steepness(fannerl, Network, Layer,
+			 Neuron)</tt></a>.</p>
+
+
+<h3 class="function"><a name="get_activation_steepness_on-4">get_activation_steepness_on/4</a></h3>
+<div class="spec">
+<p><tt>get_activation_steepness_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Layer::pos_integer(), Neuron::non_neg_integer()) -&gt; float()</tt><br></p>
+</div><p><p>Get the activation steepness for neuron number neuron in layer number  
+layer, counting the input layer as layer 0. It is not possible to get  
+activation steepness for the neurons in the input layer. The steepness  
+of an activation function says something about how fast the activation  
+function goes from the minimum to the maximum.  A high value for the  
+activation function will also give a more aggressive training.</p>
+ 
+  When training neural networks where the output values should be at the
+  extremes (usually 0 and 1, depending on the activation function),
+   a steep activation function can be used (e.g.  1.0).
+  The default activation steepness is 0.5.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_steepness" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_steepness</tt></a></p>
+
+<h3 class="function"><a name="get_params-1">get_params/1</a></h3>
+<div class="spec">
+<p><tt>get_params(Network::<a href="#type-network_ref">network_ref()</a>) -&gt; #{}</tt><br></p>
+</div><p>Equivalent to <a href="#get_params_on-2"><tt>get_params_on(fannerl, Network)</tt></a>.</p>
+
+
+<h3 class="function"><a name="get_params_on-2">get_params_on/2</a></h3>
+<div class="spec">
+<p><tt>get_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>) -&gt; #{}</tt><br></p>
+</div><p>Fetch all the parameters associated with the neural network.</p>
+
+<h3 class="function"><a name="get_train_params-1">get_train_params/1</a></h3>
+<div class="spec">
+<p><tt>get_train_params(Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#get_train_params_on-2"><tt>get_train_params_on(fannerl, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="get_train_params_on-2">get_train_params_on/2</a></h3>
+<div class="spec">
+<p><tt>get_train_params_on(Instance::pid(), Train::<a href="#type-train_ref">train_ref()</a>) -&gt; #{}</tt><br></p>
+</div><p>Fetches all the params associated with the training data.</p>
+
+<h3 class="function"><a name="init_weights-2">init_weights/2</a></h3>
+<div class="spec">
+<p><tt>init_weights(Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#init_weights_on-3"><tt>init_weights_on(fannerl, Network, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="init_weights_on-3">init_weights_on/3</a></h3>
+<div class="spec">
+<p><tt>init_weights_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p><p>Initialize the weights using Widrow + Nguyen’s algorithm.</p>
+ 
+  This function behaves similarly to fann_randomize_weights.  It will use
+  the algorithm developed by Derrick Nguyen and Bernard Widrow to set
+  the weights in such a way as to speed up training.
+  See <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_init_weights" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_init_weights</tt></a>.</p>
+
+<h3 class="function"><a name="merge_train_data-2">merge_train_data/2</a></h3>
+<div class="spec">
+<p><tt>merge_train_data(Train1::<a href="#type-train_ref">train_ref()</a>, Train2::<a href="#type-train_ref">train_ref()</a>) -&gt; <a href="#type-train_ref">train_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#merge_train_data_on-3"><tt>merge_train_data_on(fannerl, Train1, Train2)</tt></a>.</p>
+
+
+<h3 class="function"><a name="merge_train_data_on-3">merge_train_data_on/3</a></h3>
+<div class="spec">
+<p><tt>merge_train_data_on(Instance::pid(), Train1::<a href="#type-train_ref">train_ref()</a>, Train2::<a href="#type-train_ref">train_ref()</a>) -&gt; <a href="#type-train_ref">train_ref()</a></tt><br></p>
+</div><p>Merges the data from data1 and data2 into a new training data.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_merge_train_data" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_merge_train_data</tt></a>.</p>
+
+<h3 class="function"><a name="randomize_weights-3">randomize_weights/3</a></h3>
+<div class="spec">
+<p><tt>randomize_weights(Network::<a href="#type-network_ref">network_ref()</a>, MinWeight::number(), MaxWeight::number()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#randomize_weights_on-4"><tt>randomize_weights_on(fannerl, Network, MinWeight,
+		     MaxWeight)</tt></a>.</p>
+
+
+<h3 class="function"><a name="randomize_weights_on-4">randomize_weights_on/4</a></h3>
+<div class="spec">
+<p><tt>randomize_weights_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, MinWeight::number(), MaxWeight::number()) -&gt; ok</tt><br></p>
+</div><p>Give each connection a random weight between min_weight and max_weight.
+  From the beginning the weights are random between -0.1 and 0.1.
+  See <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_randomize_weights" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_randomize_weights</tt></a>.</p>
+
+<h3 class="function"><a name="read_train_from_file-1">read_train_from_file/1</a></h3>
+<div class="spec">
+<p><tt>read_train_from_file(Filename::string()) -&gt; <a href="#type-train_ref">train_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#read_train_from_file_on-2"><tt>read_train_from_file_on(fannerl, Filename)</tt></a>.</p>
+
+
+<h3 class="function"><a name="read_train_from_file_on-2">read_train_from_file_on/2</a></h3>
+<div class="spec">
+<p><tt>read_train_from_file_on(Instance::pid(), Filename::string()) -&gt; <a href="#type-train_ref">train_ref()</a></tt><br></p>
+</div><p>Reads a file that stores training data. See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_read_train_from_file" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_read_train_from_file</tt></a>.</p>
+
+<h3 class="function"><a name="reset_mse-1">reset_mse/1</a></h3>
+<div class="spec">
+<p><tt>reset_mse(Network::<a href="#type-network_ref">network_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#reset_mse_on-2"><tt>reset_mse_on(fannerl, Network)</tt></a>.</p>
+
+
+<h3 class="function"><a name="reset_mse_on-2">reset_mse_on/2</a></h3>
+<div class="spec">
+<p><tt>reset_mse_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Resets the mean square error from the network.
+  This function also resets the number of bits that fail.
+  See http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_reset_MSE</p>
+
+<h3 class="function"><a name="run-2">run/2</a></h3>
+<div class="spec">
+<p><tt>run(Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Equivalent to <a href="#run_on-3"><tt>run_on(fannerl, Network, Input)</tt></a>.</p>
+
+
+<h3 class="function"><a name="run_on-3">run_on/3</a></h3>
+<div class="spec">
+<p><tt>run_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Will run input through the neural network, returning a tuple of outputs, the number of which being equal to the number of neurons in the output layer. See <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_run" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_run</tt></a>.</p>
+
+<h3 class="function"><a name="save-2">save/2</a></h3>
+<div class="spec">
+<p><tt>save(Network::<a href="#type-network_ref">network_ref()</a>, FileName::string()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#save_on-2"><tt>save_on(fannerl, FileName)</tt></a>.</p>
+
+
+<h3 class="function"><a name="save_on-3">save_on/3</a></h3>
+<div class="spec">
+<p><tt>save_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, FileName::string()) -&gt; ok</tt><br></p>
+</div><p>Save the entire network to a configuration file.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_save" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_io-h.html#fann_save</tt></a>.</p>
+
+<h3 class="function"><a name="save_train-2">save_train/2</a></h3>
+<div class="spec">
+<p><tt>save_train(Train::<a href="#type-train_ref">train_ref()</a>, FileName::string()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#save_train_on-3"><tt>save_train_on(fannerl, Train, FileName)</tt></a>.</p>
+
+
+<h3 class="function"><a name="save_train_on-3">save_train_on/3</a></h3>
+<div class="spec">
+<p><tt>save_train_on(Instance::pid(), Train::<a href="#type-train_ref">train_ref()</a>, FileName::string()) -&gt; ok</tt><br></p>
+</div><p>Save the training structure to a file, with the format as specified in fann_read_train_from_file
+  See http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_save_train</p>
+
+<h3 class="function"><a name="scale_train-2">scale_train/2</a></h3>
+<div class="spec">
+<p><tt>scale_train(Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#scale_train_on-3"><tt>scale_train_on(fannerl, Network, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="scale_train_on-3">scale_train_on/3</a></h3>
+<div class="spec">
+<p><tt>scale_train_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Scale input and output data based on previously calculated parameters.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_scale_train" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_scale_train</tt></a>.</p>
+
+<h3 class="function"><a name="set_activation_function-4">set_activation_function/4</a></h3>
+<div class="spec">
+<p><tt>set_activation_function(Network::<a href="#type-network_ref">network_ref()</a>, ActivationFunction::<a href="#type-activation_function">activation_function()</a>, Layer::pos_integer() | hidden | output | all, Neuron::non_neg_integer() | all) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_function_on-5"><tt>set_activation_function_on(fannerl, Network,
+			   ActivationFunction, Layer, Neuron)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_activation_function_all-2">set_activation_function_all/2</a></h3>
+<div class="spec">
+<p><tt>set_activation_function_all(Network::<a href="#type-network_ref">network_ref()</a>, ActivationFunction::<a href="#type-activation_function">activation_function()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_function_all-5"><tt>set_activation_function_all(fannerl, Network,
+			    ActivationFunction, all, all)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_activation_function_hidden-2">set_activation_function_hidden/2</a></h3>
+<div class="spec">
+<p><tt>set_activation_function_hidden(Network::<a href="#type-network_ref">network_ref()</a>, ActivationFunction::<a href="#type-activation_function">activation_function()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_function_on-5"><tt>set_activation_function_on(fannerl, Network,
+			   ActivationFunction, hidden, all)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_activation_function_layer-3">set_activation_function_layer/3</a></h3>
+<div class="spec">
+<p><tt>set_activation_function_layer(Network::<a href="#type-network_ref">network_ref()</a>, ActivationFunction::<a href="#type-activation_function">activation_function()</a>, Layer::pos_integer()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_function_layer-5"><tt>set_activation_function_layer(fannerl, Network,
+			      ActivationFunction, Layer, all)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_activation_function_on-5">set_activation_function_on/5</a></h3>
+<div class="spec">
+<p><tt>set_activation_function_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, ActivationFunction::<a href="#type-activation_function">activation_function()</a>, Layer::pos_integer() | hidden | output | all, Neuron::non_neg_integer() | all) -&gt; ok</tt><br></p>
+</div><p>Set the activation function for neuron number neuron in layer number
+  layer, counting the input layer as layer 0.
+  It is not possible to set activation functions for the neurons in the input layer.
+  If you specify Layer as hidden, output the activation function will be set
+  for all neurons. If all is specified then the activation function will be
+  set for all possible layers.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_function" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_get_activation_function</tt></a></p>
+
+<h3 class="function"><a name="set_activation_function_output-2">set_activation_function_output/2</a></h3>
+<div class="spec">
+<p><tt>set_activation_function_output(Network::<a href="#type-network_ref">network_ref()</a>, ActivationFunction::<a href="#type-activation_function">activation_function()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_function_on-5"><tt>set_activation_function_on(fannerl, Network,
+			   ActivationFunction, output, all)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_activation_steepness-4">set_activation_steepness/4</a></h3>
+<div class="spec">
+<p><tt>set_activation_steepness(Network::<a href="#type-network_ref">network_ref()</a>, ActivationSteepness::number(), Layer::pos_integer() | hidden | output | all, Neuron::non_neg_integer() | all) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_steepness_on-5"><tt>set_activation_steepness_on(fannerl, Network,
+			    ActivationSteepness, Layer, Neuron)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_activation_steepness_all-2">set_activation_steepness_all/2</a></h3>
+<div class="spec">
+<p><tt>set_activation_steepness_all(Network::<a href="#type-network_ref">network_ref()</a>, ActivationSteepness::number()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_steepness_all-5"><tt>set_activation_steepness_all(fannerl, Network,
+			     ActivationSteepness, all, all)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_activation_steepness_hidden-2">set_activation_steepness_hidden/2</a></h3>
+<div class="spec">
+<p><tt>set_activation_steepness_hidden(Network::<a href="#type-network_ref">network_ref()</a>, ActivationSteepness::number()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_steepness_on-5"><tt>set_activation_steepness_on(fannerl, Network,
+			    ActivationSteepness, hidden, all)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_activation_steepness_layer-3">set_activation_steepness_layer/3</a></h3>
+<div class="spec">
+<p><tt>set_activation_steepness_layer(Network::<a href="#type-network_ref">network_ref()</a>, ActivationSteepness::number(), Layer::pos_integer()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_steepness_layer-5"><tt>set_activation_steepness_layer(fannerl, Network,
+			       ActivationSteepness, Layer, all)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_activation_steepness_on-5">set_activation_steepness_on/5</a></h3>
+<div class="spec">
+<p><tt>set_activation_steepness_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, ActivationSteepness::number(), Layer::pos_integer() | hidden | output | all, Neuron::non_neg_integer() | all) -&gt; ok</tt><br></p>
+</div><p><p>Set the activation steepness for neuron number neuron in layer  
+number layer, counting the input layer as layer 0. It is not possible  
+to set activation steepness for the neurons in the input layer.  
+The steepness of an activation function says something about how fast  
+the activation function goes from the minimum to the maximum.  A high  
+value for the activation function will also give a more aggressive training.</p>
+ 
+  <p>When training neural networks where the output values should be at the  
+extremes (usually 0 and 1, depending on the activation function), a steep  
+activation function can be used (e.g.  1.0).  
+The default activation steepness is 0.5.</p>
+ 
+  If you specify Layer as hidden, output the activation function will be set
+  for all neurons. If all is specified then the activation function will be
+  set for all possible layers.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_set_activation_steepness" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_set_activation_steepness</tt></a></p>
+
+<h3 class="function"><a name="set_activation_steepness_output-2">set_activation_steepness_output/2</a></h3>
+<div class="spec">
+<p><tt>set_activation_steepness_output(Network::<a href="#type-network_ref">network_ref()</a>, ActivationSteepness::number()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_activation_steepness_on-5"><tt>set_activation_steepness_on(fannerl, Network,
+			    ActivationSteepness, output, all)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_param-3">set_param/3</a></h3>
+<div class="spec">
+<p><tt>set_param(Network::<a href="#type-network_ref">network_ref()</a>, Param::atom(), Value::term()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_param_on-4"><tt>set_param_on(fannerl, Network, Param, Value)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_param_on-4">set_param_on/4</a></h3>
+<div class="spec">
+<p><tt>set_param_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Param::atom(), Value::term()) -&gt; ok</tt><br></p>
+</div><p>Sets one param on a given network. Equivalent to set_params_on/3
+  with a map with one key and value.</p>
+
+<h3 class="function"><a name="set_params-2">set_params/2</a></h3>
+<div class="spec">
+<p><tt>set_params(Network::<a href="#type-network_ref">network_ref()</a>, ParametersMap::#{}) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_params_on-3"><tt>set_params_on(fannerl, Network, ParametersMap)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_params_on-3">set_params_on/3</a></h3>
+<div class="spec">
+<p><tt>set_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, ParamertersMap::#{}) -&gt; ok</tt><br></p>
+</div><p>Sets parameters on a given network.</p>
+
+<h3 class="function"><a name="set_scaling_params-6">set_scaling_params/6</a></h3>
+<div class="spec">
+<p><tt>set_scaling_params(Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>, NewInputMin::number(), NewInputMax::number(), NewOutputMin::number(), NewOutputMax::number()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_scaling_params_on-7"><tt>set_scaling_params_on(fannerl, Network, Train,
+		      NewInputMin, NewInputMax, NewOutputMin, NewOutputMax)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_scaling_params_on-7">set_scaling_params_on/7</a></h3>
+<div class="spec">
+<p><tt>set_scaling_params_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>, NewInputMin::number(), NewInputMax::number(), NewOutputMin::number(), NewOutputMax::number()) -&gt; ok</tt><br></p>
+</div><p>Calculate input and output scaling parameters for future use based on training data.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_set_scaling_params" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_set_scaling_params</tt></a>.</p>
+
+<h3 class="function"><a name="set_weight-4">set_weight/4</a></h3>
+<div class="spec">
+<p><tt>set_weight(Network::<a href="#type-network_ref">network_ref()</a>, FromNeuron::non_neg_integer(), ToNeuron::non_neg_integer(), Weight::number()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_weight_on-5"><tt>set_weight_on(fannerl, Network, FromNeuron, ToNeuron,
+	      Weight)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_weight_on-5">set_weight_on/5</a></h3>
+<div class="spec">
+<p><tt>set_weight_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, FromNeuron::non_neg_integer(), ToNeuron::non_neg_integer(), Weight::number()) -&gt; ok</tt><br></p>
+</div><p>Set a connection in the network.
+  See <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_set_weight" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_set_weight</tt></a>.</p>
+
+<h3 class="function"><a name="set_weights-2">set_weights/2</a></h3>
+<div class="spec">
+<p><tt>set_weights(Network::<a href="#type-network_ref">network_ref()</a>, Connections::<a href="#type-connections">connections()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#set_weights_on-3"><tt>set_weights_on(fannerl, Network, Connections)</tt></a>.</p>
+
+
+<h3 class="function"><a name="set_weights_on-3">set_weights_on/3</a></h3>
+<div class="spec">
+<p><tt>set_weights_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Connections::<a href="#type-connections">connections()</a>) -&gt; ok</tt><br></p>
+</div><p>Set connections in the network.
+  See <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_set_weight_array" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_set_weight_array</tt></a>.</p>
+
+<h3 class="function"><a name="shuffle_train-1">shuffle_train/1</a></h3>
+<div class="spec">
+<p><tt>shuffle_train(Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#shuffle_train_on-2"><tt>shuffle_train_on(fannerl, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="shuffle_train_on-2">shuffle_train_on/2</a></h3>
+<div class="spec">
+<p><tt>shuffle_train_on(Instance::pid(), Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Shuffles training data, randomizing the order.  This is recommended for incremental training, while it has no influence during batch training. See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_shuffle_train_data" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_shuffle_train_data</tt></a>.</p>
+
+<h3 class="function"><a name="start-0">start/0</a></h3>
+<div class="spec">
+<p><tt>start() -&gt; pid()</tt><br></p>
+</div><p>Start an instance of the port driver that can be used for
+       creating artificial neural networks using fann. Will return a pid
+       that could be used for monitoring. The pid will be registered with
+       the name fannerl.</p>
+
+<h3 class="function"><a name="start_instance-0">start_instance/0</a></h3>
+<div class="spec">
+<p><tt>start_instance() -&gt; pid()</tt><br></p>
+</div><p>Start an instance of the port driver that can be used for
+       creating artificial neural networks using fann. Will return a pid
+       that is needed for all operations. The pid will not be registered
+       in the name service.</p>
+
+<h3 class="function"><a name="stop-0">stop/0</a></h3>
+<div class="spec">
+<p><tt>stop() -&gt; ok | {error, fannerl_not_started} | {error, {instance_exit_abnormal, {reason, term()}}}</tt><br></p>
+</div><p>This will stop the process interfacing the FANN library. Any
+       networks or training datas created that have not been saved
+       will be lost.</p>
+
+<h3 class="function"><a name="stop_instance-1">stop_instance/1</a></h3>
+<div class="spec">
+<p><tt>stop_instance(Instance::<a href="#type-network_ref">network_ref()</a>) -&gt; ok | {error, {instance_exit_abnormal, {reason, term()}}}</tt><br></p>
+</div><p>This will stop this instance's process interfacing the FANN
+       library . Any networks or training datas created that have not
+       been saved will be lost.</p>
+
+<h3 class="function"><a name="subset_train_data-3">subset_train_data/3</a></h3>
+<div class="spec">
+<p><tt>subset_train_data(Train::<a href="#type-train_ref">train_ref()</a>, Pos::non_neg_integer(), Length::non_neg_integer()) -&gt; <a href="#type-train_ref">train_ref()</a></tt><br></p>
+</div><p>Equivalent to <a href="#subset_train_data_on-4"><tt>subset_train_data_on(fannerl, Train, Pos, Length)</tt></a>.</p>
+
+
+<h3 class="function"><a name="subset_train_data_on-4">subset_train_data_on/4</a></h3>
+<div class="spec">
+<p><tt>subset_train_data_on(Instance::pid(), Train::<a href="#type-train_ref">train_ref()</a>, Pos::non_neg_integer(), Length::non_neg_integer()) -&gt; <a href="#type-train_ref">train_ref()</a></tt><br></p>
+</div><p>Returns an copy of a subset of the struct fann_train_data, starting
+  at position pos and length elements forward.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_subset_train_data" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_subset_train_data</tt></a>.</p>
+
+<h3 class="function"><a name="test-3">test/3</a></h3>
+<div class="spec">
+<p><tt>test(Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple(), DesiredOutput::tuple()) -&gt; Output::tuple()</tt><br></p>
+</div><p>Equivalent to <a href="#test_on-4"><tt>test_on(fannerl, Network, Input, DesiredOutput)</tt></a>.</p>
+
+
+<h3 class="function"><a name="test_data-2">test_data/2</a></h3>
+<div class="spec">
+<p><tt>test_data(Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; {ok, MeanSquareError::number()}</tt><br></p>
+</div><p>Equivalent to <a href="#test_data-3"><tt>test_data(fannerl, Network, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="test_data_on-3">test_data_on/3</a></h3>
+<div class="spec">
+<p><tt>test_data_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; {ok, MeanSquareError::number()}</tt><br></p>
+</div><p>Test a set of training data and calculates the MSE for the training data. See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_test_data" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_test_data</tt></a>.</p>
+
+<h3 class="function"><a name="test_on-4">test_on/4</a></h3>
+<div class="spec">
+<p><tt>test_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple(), DesiredOutput::tuple()) -&gt; Output::tuple()</tt><br></p>
+</div><p>Test with a set of inputs, and a set of desired outputs.  This operation updates the mean square error, but does not change the network in any way. See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_test" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_test</tt></a>.</p>
+
+<h3 class="function"><a name="train-3">train/3</a></h3>
+<div class="spec">
+<p><tt>train(Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple(), DesiredOutput::tuple()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#train_on-4"><tt>train_on(fannerl, Network, Input, DesiredOutput)</tt></a>.</p>
+
+
+<h3 class="function"><a name="train_epoch-2">train_epoch/2</a></h3>
+<div class="spec">
+<p><tt>train_epoch(Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#train_epoch_on-3"><tt>train_epoch_on(fannerl, Network, Train)</tt></a>.</p>
+
+
+<h3 class="function"><a name="train_epoch_on-3">train_epoch_on/3</a></h3>
+<div class="spec">
+<p><tt>train_epoch_on(Instance::pid, Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>) -&gt; ok</tt><br></p>
+</div><p>This will train your neural network for one epoch with the given
+       training data. See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_epoch" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_epoch</tt></a></p>
+
+<h3 class="function"><a name="train_on-4">train_on/4</a></h3>
+<div class="spec">
+<p><tt>train_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple(), DesiredOutput::tuple()) -&gt; ok</tt><br></p>
+</div><p>Train one iteration with a set of inputs, and a set of desired outputs.
+  This training is always incremental training (see fann_train_enum),
+  since only one pattern is presented. See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train</tt></a>.</p>
+
+<h3 class="function"><a name="train_on_data-5">train_on_data/5</a></h3>
+<div class="spec">
+<p><tt>train_on_data(Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>, EpochBetweenReports::non_neg_integer(), MaxEpochs::non_neg_integer(), DesiredError::number()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#train_on_data_on-6"><tt>train_on_data_on(fannerl, Network, Train, MaxEpochs,
+		 EpochBetweenReports, DesiredError)</tt></a>.</p>
+
+
+<h3 class="function"><a name="train_on_data_on-6">train_on_data_on/6</a></h3>
+<div class="spec">
+<p><tt>train_on_data_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Train::<a href="#type-train_ref">train_ref()</a>, MaxEpochs::non_neg_integer(), EpochBetweenReports::non_neg_integer(), DesiredError::number()) -&gt; ok</tt><br></p>
+</div><p>Trains on an entire dataset, for a chosen period of time. See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_on_data" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_on_data</tt></a>.</p>
+
+<h3 class="function"><a name="train_on_file-5">train_on_file/5</a></h3>
+<div class="spec">
+<p><tt>train_on_file(Network::<a href="#type-network_ref">network_ref()</a>, FileName::string(), MaxEpochs::non_neg_integer(), EpochBetweenReports::non_neg_integer(), DesiredError::number()) -&gt; ok</tt><br></p>
+</div><p>Equivalent to <a href="#train_on_file_on-6"><tt>train_on_file_on(fannerl, Network, FileName, MaxEpochs,
+		 EpochBetweenReports, DesiredError)</tt></a>.</p>
+
+
+<h3 class="function"><a name="train_on_file_on-6">train_on_file_on/6</a></h3>
+<div class="spec">
+<p><tt>train_on_file_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, FileName::string(), MaxEpochs::non_neg_integer(), EpochBetweenReports::non_neg_integer(), DesiredError::number()) -&gt; ok</tt><br></p>
+</div><p>Does the same as train_on_data_on/5, but reads the training data directly from a file. See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_on_file" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_train_on_file</tt></a>.</p>
+<hr>
+
+<div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
+<p><i>Generated by EDoc, Nov 19 2015, 16:35:16.</i></p>
+</body>
+</html>
