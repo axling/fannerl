@@ -46,46 +46,46 @@ There are functions to destroy the networks and training data as there are for t
 There are more examples in the examples dir. This is an edited version of the ```simple.erl``` example which trains a network to recognize XOR.
 
 ```erlang
-    EpochBetweenReports = 100,
-    MaxEpochs = 1000,
-    fannerl:start(),
-    N = fannerl:create({2,3,1}),
-    fannerl:set_activation_function_all(N, fann_sigmoid_symmetric),
-    fannerl:set_activation_steepness_all(N, 1),
+EpochBetweenReports = 100,
+MaxEpochs = 1000,
+fannerl:start(),
+N = fannerl:create({2,3,1}),
+fannerl:set_activation_function_all(N, fann_sigmoid_symmetric),
+fannerl:set_activation_steepness_all(N, 1),
 
-    lists:foreach(
-      fun(X) ->
-	      ok = fannerl:train(N, {1.0, 1.0}, {-1.0}),
-	      ok = fannerl:train(N, {1.0, -1.0}, {1.0}),
-	      ok = fannerl:train(N, {-1.0, 1.0}, {1.0}),
-	      ok = fannerl:train(N, {-1.0, -1.0}, {-1.0}),
-	      #{mean_square_error := Mse} = fannerl:get_params(N),
-	      if
-		  X rem EpochBetweenReports == 0 ->
-		      io:format("It #~p, MSE: ~p~n", [X, Mse]);
-		  true ->
-		      ok
-	      end
-      end, lists:seq(1, MaxEpochs)),
-    %% Reset the MSE for the tests
-    fannerl:reset_mse(N),
-    %% Use the fann_threshold_symmetric activation function for this example for better values
-    fannerl:set_activation_function_all(N, fann_threshold_symmetric),
-    {Out1} = fannerl:test(N, {1, 1}, {-1}),
-    io:format("Test 1,1 -> ~p, expected -1, diff: ~p~n",
-	      [Out1, abs(-1 - Out1)]),
-    {Out2} = fannerl:test(N, {1, -1}, {1}),
-    io:format("Test 1,1 -> ~p, expected 1, diff: ~p~n",
-	      [Out2, abs(1 - Out2)]),
-    {Out3} = fannerl:test(N, {-1, 1}, {1}),
-    io:format("Test 1,1 -> ~p, expected 1, diff: ~p~n",
-	      [Out3, abs(1 - Out3)]),
-    {Out4} = fannerl:test(N, {-1, -1}, {-1}),
-    io:format("Test 1,1 -> ~p, expected -1, diff: ~p~n",
-	      [Out4, abs(-1 - Out4)]),
-    %% Cleanup
-    fannerl:destroy(N),
-    fannerl:stop().
+lists:foreach(
+fun(X) ->
+ok = fannerl:train(N, {1.0, 1.0}, {-1.0}),
+ok = fannerl:train(N, {1.0, -1.0}, {1.0}),
+ok = fannerl:train(N, {-1.0, 1.0}, {1.0}),
+ok = fannerl:train(N, {-1.0, -1.0}, {-1.0}),
+#{mean_square_error := Mse} = fannerl:get_params(N),
+if
+X rem EpochBetweenReports == 0 ->
+io:format("It #~p, MSE: ~p~n", [X, Mse]);
+true ->
+ok
+end
+end, lists:seq(1, MaxEpochs)),
+%% Reset the MSE for the tests
+fannerl:reset_mse(N),
+%% Use the fann_threshold_symmetric activation function for this example for better values
+fannerl:set_activation_function_all(N, fann_threshold_symmetric),
+{Out1} = fannerl:test(N, {1, 1}, {-1}),
+io:format("Test 1,1 -> ~p, expected -1, diff: ~p~n",
+[Out1, abs(-1 - Out1)]),
+{Out2} = fannerl:test(N, {1, -1}, {1}),
+io:format("Test 1,1 -> ~p, expected 1, diff: ~p~n",
+[Out2, abs(1 - Out2)]),
+{Out3} = fannerl:test(N, {-1, 1}, {1}),
+io:format("Test 1,1 -> ~p, expected 1, diff: ~p~n",
+[Out3, abs(1 - Out3)]),
+{Out4} = fannerl:test(N, {-1, -1}, {-1}),
+io:format("Test 1,1 -> ~p, expected -1, diff: ~p~n",
+[Out4, abs(-1 - Out4)]),
+%% Cleanup
+fannerl:destroy(N),
+fannerl:stop().
 
 ```
 
