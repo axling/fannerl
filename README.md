@@ -37,7 +37,7 @@ Now you can use fannerl for your own applications. Here are some commands that y
 ./bin/run_examples
 ```
 
-# Clarifiations
+# Clarifications
 As previously stated you need to start an instance where you create your neural networks. This instance is a process and you can only use your neural networks within this process. You can transfer any neural networks between instances by saving the network as a file and load it in the other instance.  
 
 There are functions to destroy the networks and training data as there are for the C-version. If the instance is stopped by the user the instance will first check if any networks or training data is present and destroy this data.
