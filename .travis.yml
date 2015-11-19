@@ -4,3 +4,4 @@ otp_release:
   - 17.3
 before_install:
   - sudo apt-get install -y libfann2
+  - sudo apt-get install -y libfann-dev
