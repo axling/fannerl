@@ -56,8 +56,21 @@
 			    training_algorithm => training_algorithm()
 			   }.
 
--type param() :: bit_fail_limit |
-		 learning_momentum |
+-type get_param() :: connections |
+		     connection_rate |
+		     layers |
+		     bias |
+		     mean_square_error |
+		     num_layers |
+		     num_input |
+		     num_output |
+		     total_neurons |
+		     total_connections |
+		     network_type |
+		     bit_fail |
+		     param().
+
+-type param() :: learning_momentum |
 		 learning_rate |
 		 quickprop_decay |
 		 quickprop_mu |
@@ -74,7 +87,8 @@
 		 train_stop_function |
 		 training_algorithm.
 
--type set_params() :: #{param() => term()}.
+-type set_params() :: #{bit_fail_ => integer(),
+			param() => term()}.
 
 -type create_options() :: #{type => standard | sparse | shortcut,
 			    conn_rate => number(),
@@ -131,6 +145,8 @@
 	 copy_on/2,
 	 destroy/1,
 	 destroy_on/2,
+	 get_param/2,
+	 get_param_on/3,
 	 get_params/1,
 	 get_params_on/2,
 	 get_activation_function/3,
@@ -742,6 +758,28 @@ subset_train_data_on(Instance, Train, Pos, Length)
     call_port(Instance, {subset_train_data, {train, Train}, {Pos, Length}}).
 
 %% --------------------------------------------------------------------- %%
+%% @equiv get_param_on({@module}, Network, Param)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_param(Network::network_ref(), Param::get_param()) -> options().
+get_param(Network, mse) ->
+    get_param(Network, mean_square_error);
+get_param(Network, Param) 
+  when is_reference(Network), is_atom(Param) ->
+    get_param_on(?MODULE, Network, Param).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Fetch the parameter given by `Param'.
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec get_param_on(Instance::pid(), Network::network_ref(),
+		   Param::get_param()) -> options().
+get_param_on(Instance, Network, Param)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network), is_atom(Param) ->
+    call_port(Instance, {get_param, Network, {Param}}).
+
+%% --------------------------------------------------------------------- %%
 %% @equiv get_params_on({@module}, Network)
 %% @end
 %% --------------------------------------------------------------------- %%
@@ -758,7 +796,42 @@ get_params(Network)
 get_params_on(Instance, Network)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network) ->
-    call_port(Instance, {get_params, Network, {}}).
+    Params = [bit_fail,
+	      learning_momentum,
+	      learning_rate,
+	      quickprop_decay,
+	      quickprop_mu,
+	      rprop_decrease_factor,
+	      rprop_delta_max,
+	      rprop_delta_min,
+	      rprop_delta_zero,
+	      rprop_increase_factor,
+	      sarprop_step_error_shift,
+	      sarprop_step_error_threshold_factor,
+	      sarprop_temperature,
+	      sarprop_weight_decay_shift,
+	      train_error_function,
+	      train_stop_function,
+	      training_algorithm,
+	      connections,
+	      connection_rate,
+	      layers,
+	      bias,
+	      mean_square_error,
+	      num_layers,
+	      num_input,
+	      num_output,
+	      total_neurons,
+	      total_connections,
+	      network_type
+	     ],
+    PropList =
+	lists:map(
+	  fun(Param) ->
+		  Val = get_param_on(Instance, Network, Param),
+		  {Param, Val}
+	  end, Params),
+    maps:from_list(PropList).
 
 %% --------------------------------------------------------------------- %%
 %% @equiv get_activation_function({@module}, Network, Layer, Neuron)

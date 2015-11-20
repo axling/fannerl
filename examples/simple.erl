@@ -27,14 +27,14 @@ run() ->
     N = fannerl:create({2,3,1}),
     fannerl:set_activation_function_all(N, fann_sigmoid_symmetric),
     fannerl:set_activation_steepness_all(N, 1),
-    %%io:format("~p~n", [fannerl:get_params(N)]),
+
     lists:foreach(
       fun(X) ->
 	      ok = fannerl:train(N, {1.0, 1.0}, {-1.0}),
 	      ok = fannerl:train(N, {1.0, -1.0}, {1.0}),
 	      ok = fannerl:train(N, {-1.0, 1.0}, {1.0}),
 	      ok = fannerl:train(N, {-1.0, -1.0}, {-1.0}),
-	      #{mean_square_error := Mse} = fannerl:get_params(N),
+	      Mse = fannerl:get_param(N, mse),
 	      if
 		  X rem EpochBetweenReports == 0 ->
 		      io:format("It #~p, MSE: ~p~n", [X, Mse]);
@@ -42,7 +42,7 @@ run() ->
 		      ok
 	      end
       end, lists:seq(1, MaxEpochs)),
-    %%io:format("~p~n", [fannerl:get_params(N)]),
+
     fannerl:reset_mse(N),
     fannerl:set_activation_function_all(N, fann_threshold_symmetric),
     {Out1} = fannerl:test(N, {1, 1}, {-1}),

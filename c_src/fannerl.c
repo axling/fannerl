@@ -56,7 +56,7 @@ int do_fann_destroy(byte *buf, int * index, ei_x_buff * result);
 int do_fann_train(byte *buf, int * index, ei_x_buff * result);
 int do_fann_run(byte *buf, int * index, ei_x_buff * result);
 int do_fann_train_on_file(byte *buf, int * index, ei_x_buff * result);
-int do_fann_get_params(byte*buf, int * index, ei_x_buff * result);
+int do_fann_get_param(byte*buf, int * index, ei_x_buff * result);
 int do_fann_read_train_from_file(byte*buf, int * index, ei_x_buff * result);
 int do_fann_destroy_train(byte *buf, int * index, ei_x_buff * result);
 int do_fann_train_on_data(byte*buf, int * index, ei_x_buff * result);
@@ -93,6 +93,9 @@ int get_fann_train_ptr(byte * buf, int * index, struct fann_train_data** fann);
 
 int get_activation_function(char * activation_function);
 void get_activation_function_atom(enum fann_activationfunc_enum activation_function, char * act_func);
+
+int get_param(byte*buf, int * index, struct fann * network,
+	      char * param, ei_x_buff * result);
 
 int set_params(byte * buf, int * index, struct fann * network);
 int set_param(byte * buf, int * index, struct fann * network, char * param);
@@ -261,9 +264,9 @@ int main() {
 
       if(do_fann_train_on_file(buf, &index, &result) != 1) return 15;
 
-    } else if(!strcmp("get_params", command)) {
+    } else if(!strcmp("get_param", command)) {
 
-      if(do_fann_get_params(buf, &index, &result) != 1) return 16;
+      if(do_fann_get_param(buf, &index, &result) != 1) return 16;
       
     } else if(!strcmp("read_train_from_file", command)) {
 
@@ -592,8 +595,24 @@ int do_fann_run(byte *buf, int * index, ei_x_buff * result) {
   return 1;
 }
 
-int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
+int do_fann_get_param(byte*buf, int * index, ei_x_buff * result)  {
   struct fann * network = 0;
+  char param[MAXATOMLEN];
+  int tuple_arity;
+  
+  
+  //Decode Ptr, {Param}
+  // Decode network ptr first
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+  if(ei_decode_atom((const char *)buf, index, param)) return -1;
+
+  if(get_param(buf, index, network, param, result) == -1) return -1;
+  return 1;
+}
+
+int get_param(byte*buf, int * index, struct fann * network,
+	      char * param, ei_x_buff * result) {
   float learning_rate, learning_momentum, mse, connection_rate;
   enum fann_train_enum train_alg;
   enum fann_errorfunc_enum error_func;
@@ -611,176 +630,159 @@ int do_fann_get_params(byte*buf, int * index, ei_x_buff * result)  {
   float rprop_delta_zero, sarprop_weight_decay_shift;
   float sarprop_step_error_threshold_factor;
   float sarprop_step_error_shift, sarprop_temperature;
-  
-  //Decode Ptr, {}
-  // Decode network ptr first
-  if(get_fann_ptr(buf, index, &network) != 1) return -1;
-  ei_skip_term((const char*)buf, index);
-  
-  // fetch params
-  learning_rate = fann_get_learning_rate(network);
-  learning_momentum= fann_get_learning_momentum(network);
-  train_alg = fann_get_training_algorithm(network);
-  mse = fann_get_MSE(network);
-  bit_fail = fann_get_bit_fail(network);
-  error_func = fann_get_train_error_function(network);
-  network_type = fann_get_network_type(network);
 
-  num_input = fann_get_num_input(network);
-  num_output = fann_get_num_output(network);
-  total_neurons = fann_get_total_neurons(network);
-  total_connections = fann_get_total_connections(network);
+  if(ei_x_new_with_version(result) == -1) return -1;
 
-  connection_rate = fann_get_connection_rate(network);
-
-  num_layers = fann_get_num_layers(network);
-
-  stop_func = fann_get_train_stop_function(network);
-   
-  quickprop_decay = fann_get_quickprop_decay(network);
-
-  quickprop_mu = fann_get_quickprop_mu(network);
-  rprop_increase_factor = fann_get_rprop_increase_factor(network);
-  rprop_decrease_factor = fann_get_rprop_decrease_factor(network);
-  rprop_delta_min = fann_get_rprop_delta_min(network);
-  rprop_delta_max = fann_get_rprop_delta_max(network);
-  rprop_delta_zero = fann_get_rprop_delta_zero(network);
-  sarprop_weight_decay_shift = fann_get_sarprop_weight_decay_shift(network);
-  sarprop_step_error_threshold_factor =
-    fann_get_sarprop_step_error_threshold_factor(network);
-  sarprop_step_error_shift = fann_get_sarprop_step_error_shift(network);
-  sarprop_temperature = fann_get_sarprop_temperature(network);
-
-  // encode to map
-  if(ei_x_new_with_version(result)) return -1;
-  ei_x_encode_map_header(result, 28);
-  ei_x_encode_atom(result, "learning_rate");
-  ei_x_encode_double(result, (double)learning_rate);
-  ei_x_encode_atom(result, "learning_momentum");
-  ei_x_encode_double(result, (double)learning_momentum);
-  ei_x_encode_atom(result, "training_algorithm");
-  if(train_alg == FANN_TRAIN_INCREMENTAL) {
-    ei_x_encode_atom(result, "fann_train_incremental");
-  } else if(train_alg == FANN_TRAIN_BATCH) {
-    ei_x_encode_atom(result, "fann_train_batch");
-  } else if(train_alg == FANN_TRAIN_RPROP) {
-    ei_x_encode_atom(result, "fann_train_rprop");
-  } else if(train_alg == FANN_TRAIN_QUICKPROP) {
-    ei_x_encode_atom(result, "fann_train_quickprop");
+  if(!strcmp("learning_rate", param)) {
+    learning_rate = fann_get_learning_rate(network);
+    if(ei_x_encode_double(result, (double)learning_rate) != 0) return -1;
+  } else if(!strcmp("learning_momentum", param)) {
+    learning_momentum = fann_get_learning_momentum(network);
+    if(ei_x_encode_double(result, (double)learning_momentum) != 0) return -1;
+  } else if(!strcmp("training_algorithm", param)) {
+    train_alg = fann_get_training_algorithm(network);
+    
+    if(train_alg == FANN_TRAIN_INCREMENTAL) {
+      ei_x_encode_atom(result, "fann_train_incremental");
+    } else if(train_alg == FANN_TRAIN_BATCH) {
+      ei_x_encode_atom(result, "fann_train_batch");
+    } else if(train_alg == FANN_TRAIN_RPROP) {
+      ei_x_encode_atom(result, "fann_train_rprop");
+    } else if(train_alg == FANN_TRAIN_QUICKPROP) {
+      ei_x_encode_atom(result, "fann_train_quickprop");
+    } else {
+      ei_x_encode_atom(result, "undefined");
+    }
+  } else if(!strcmp("mean_square_error", param)) {
+    mse = fann_get_MSE(network);
+    if(ei_x_encode_double(result, (double)mse) != 0) return -1;
+  } else if(!strcmp("bit_fail", param)) {
+    bit_fail = fann_get_bit_fail(network);
+    ei_x_encode_ulong(result, (unsigned long)bit_fail);
+  } else if(!strcmp("train_error_function", param)) {
+    error_func = fann_get_train_error_function(network);
+    if(error_func == FANN_ERRORFUNC_LINEAR) {
+      ei_x_encode_atom(result, "fann_errorfunc_linear");
+    } else if(error_func == FANN_ERRORFUNC_TANH) {
+      ei_x_encode_atom(result, "fann_errorfunc_tanh");
+    } else {
+      ei_x_encode_atom(result, "undefined");
+    }
+  } else if(!strcmp("network_type", param)) {
+    network_type = fann_get_network_type(network);
+    if(network_type == FANN_NETTYPE_LAYER) {
+      ei_x_encode_atom(result, "fann_nettype_layer");
+    } else if(network_type == FANN_NETTYPE_SHORTCUT) {
+      ei_x_encode_atom(result, "fann_nettype_shortcut");
+    } else {
+      ei_x_encode_atom(result, "undefined");
+    }
+  } else if(!strcmp("num_input", param)) {
+    num_input = fann_get_num_input(network);
+    ei_x_encode_ulong(result, (unsigned long)num_input);
+  } else if(!strcmp("num_output", param)) {
+    num_output = fann_get_num_output(network);
+    ei_x_encode_ulong(result, (unsigned long)num_output);
+  } else if(!strcmp("total_neurons", param)) {
+    total_neurons = fann_get_total_neurons(network);
+    ei_x_encode_ulong(result, (unsigned long)total_neurons);
+  } else if(!strcmp("total_connections", param)) {
+    total_connections = fann_get_total_connections(network);
+    ei_x_encode_ulong(result, (unsigned long)total_connections);
+  } else if(!strcmp("connection_rate", param)) {
+    connection_rate = fann_get_connection_rate(network);
+    if(ei_x_encode_double(result, (double)connection_rate) != 0) return -1;
+  } else if(!strcmp("num_layers", param)) {
+    num_layers = fann_get_num_layers(network);
+    ei_x_encode_ulong(result, (unsigned int)num_layers);
+  } else if(!strcmp("train_stop_function", param)) {
+    stop_func = fann_get_train_stop_function(network);
+    if(stop_func == FANN_STOPFUNC_MSE) {
+      ei_x_encode_atom(result, "fann_stopfunc_mse");
+    } else {
+      ei_x_encode_atom(result, "fann_stopfunc_bit");
+    }
+  } else if(!strcmp("quickprop_decay", param)) {
+    quickprop_decay = fann_get_quickprop_decay(network);
+    if(ei_x_encode_double(result, (double)quickprop_decay) != 0) return -1;
+  } else if(!strcmp("quickprop_mu", param)) {
+    quickprop_mu = fann_get_quickprop_mu(network);
+    if(ei_x_encode_double(result, (double)quickprop_mu) != 0) return -1;
+  } else if(!strcmp("rprop_increase_factor", param)) {
+    rprop_increase_factor = fann_get_rprop_increase_factor(network);
+    if(ei_x_encode_double(result, (double)  rprop_increase_factor) != 0)
+      return -1;
+  } else if(!strcmp("rprop_decrease_factor", param)) {
+    rprop_decrease_factor = fann_get_rprop_decrease_factor(network);
+    if(ei_x_encode_double(result, (double)  rprop_decrease_factor) != 0)
+      return -1;
+  } else if(!strcmp("rprop_delta_min", param)) {
+    rprop_delta_min = fann_get_rprop_delta_min(network);
+    if(ei_x_encode_double(result, (double)rprop_delta_min) != 0) return -1;
+  } else if(!strcmp("rprop_delta_max", param)) {
+    rprop_delta_max = fann_get_rprop_delta_max(network);
+    if(ei_x_encode_double(result, (double)rprop_delta_max) != 0) return -1;
+  } else if(!strcmp("rprop_delta_zero", param)) {
+    rprop_delta_zero = fann_get_rprop_delta_zero(network);
+    if(ei_x_encode_double(result, (double)rprop_delta_zero) != 0)
+      return -1;
+  } else if(!strcmp("sarprop_weight_decay_shift", param)) {
+    sarprop_weight_decay_shift = fann_get_sarprop_weight_decay_shift(network);
+    if(ei_x_encode_double(result, (double)sarprop_weight_decay_shift) != 0)
+      return -1;
+  } else if(!strcmp("sarprop_step_error_threshold_factor", param)) {
+    sarprop_step_error_threshold_factor =
+      fann_get_sarprop_step_error_threshold_factor(network);
+    if(ei_x_encode_double(result,
+			  (double)sarprop_step_error_threshold_factor) != 0)
+      return -1;
+  } else if(!strcmp("sarprop_step_error_shift", param)) {
+    sarprop_step_error_shift = fann_get_sarprop_step_error_shift(network);
+    if(ei_x_encode_double(result, (double)sarprop_step_error_shift) != 0)
+      return -1;
+  } else if(!strcmp("sarprop_temperature", param)) {
+    sarprop_temperature = fann_get_sarprop_temperature(network);
+    if(ei_x_encode_double(result, (double)sarprop_temperature) != 0) return -1;
+  } else if(!strcmp("layers", param)) {
+    num_layers = fann_get_num_layers(network);
+    layers = (unsigned int * )malloc(sizeof(unsigned int)*num_layers);
+    fann_get_layer_array(network, layers);
+    ei_x_encode_tuple_header(result, num_layers);
+    for(int i = 0; i < num_layers; ++i) {
+      if(ei_x_encode_ulong(result, (unsigned int)layers[i]) == -1) return -1;
+    }
+    free(layers);
+  } else if(!strcmp("bias", param)) {
+    num_layers = fann_get_num_layers(network);
+    bias = (unsigned int * )malloc(sizeof(unsigned int)*num_layers);
+    fann_get_bias_array(network, bias);
+    if(ei_x_encode_tuple_header(result, num_layers) != 0) return -1;
+    for(int i = 0; i < num_layers; ++i) {
+      ei_x_encode_ulong(result, (unsigned int)bias[i]);
+    }
+    free(bias);
+  } else if(!strcmp("connections", param)) {
+    total_connections = fann_get_total_connections(network);
+    // connections, encode into map where {From, To} is the key
+    connections = (struct fann_connection *)
+      malloc(sizeof(struct fann_connection)*total_connections);
+    fann_get_connection_array(network, connections);
+    if(ei_x_encode_map_header(result, total_connections) != 0) return -1;
+    for(int i = 0; i < total_connections; ++i) {
+      // size will be 2 as {From, To}
+      if(ei_x_encode_tuple_header(result, 2) != 0) return -1; 
+      if(ei_x_encode_ulong(result, connections[i].from_neuron) != 0) return -1;
+      if(ei_x_encode_ulong(result, connections[i].to_neuron) != 0) return -1;
+      if(ei_x_encode_double(result, connections[i].weight) != 0) return -1;
+    }
+    free(connections);
   } else {
-    ei_x_encode_atom(result, "unknown_training_algorithm");
+    if(ei_x_encode_tuple_header(result, 2) == -1) return -1;
+    if(ei_x_encode_atom(result, "error") == -1) return -1;
+    if(ei_x_encode_tuple_header(result, 2) == -1) return -1;
+    if(ei_x_encode_atom(result, "unrecognized_param") == -1) return -1;
+    if(ei_x_encode_atom(result, param) == -1) return -1;
   }
-  ei_x_encode_atom(result, "mean_square_error");
-  ei_x_encode_double(result, (double)mse);
-  ei_x_encode_atom(result, "bit_fail");
-  ei_x_encode_ulong(result, (unsigned long)bit_fail);
-
-  ei_x_encode_atom(result, "train_error_function");
-  if(error_func == FANN_ERRORFUNC_LINEAR) {
-    ei_x_encode_atom(result, "fann_errorfunc_linear");
-  } else if(error_func == FANN_ERRORFUNC_TANH) {
-    ei_x_encode_atom(result, "fann_errorfunc_tanh");
-  } else {
-    ei_x_encode_atom(result, "unknown_error_function");
-  }
-  
-  ei_x_encode_atom(result, "num_input");
-  ei_x_encode_ulong(result, (unsigned long)num_input);
-  ei_x_encode_atom(result, "num_output");
-  ei_x_encode_ulong(result, (unsigned long)num_output);
-  ei_x_encode_atom(result, "total_neurons");
-  ei_x_encode_ulong(result, (unsigned long)total_neurons);
-  ei_x_encode_atom(result, "total_connections");
-  ei_x_encode_ulong(result, (unsigned long)total_connections);
-
-  ei_x_encode_atom(result, "network_type");
-  if(network_type == FANN_NETTYPE_LAYER) {
-    ei_x_encode_atom(result, "fann_nettype_layer");
-  } else if(network_type == FANN_NETTYPE_SHORTCUT) {
-    ei_x_encode_atom(result, "fann_nettype_shortcut");
-  } else {
-    ei_x_encode_atom(result, "unknown_network_type");
-  }
-  ei_x_encode_atom(result, "connection_rate");
-  ei_x_encode_double(result, (double)connection_rate);
-  
-  ei_x_encode_atom(result, "num_layers");
-  ei_x_encode_ulong(result, (unsigned int)num_layers);
-
-  ei_x_encode_atom(result, "train_stop_function");
-  if(stop_func == FANN_STOPFUNC_MSE) {
-    ei_x_encode_atom(result, "fann_stopfunc_mse");
-  } else {
-    ei_x_encode_atom(result, "fann_stopfunc_bit");
-  }
-
-  ei_x_encode_atom(result, "quickprop_decay");
-  ei_x_encode_double(result, (double)quickprop_decay);
-
-  ei_x_encode_atom(result, "quickprop_mu");
-  ei_x_encode_double(result, (double)quickprop_mu);
-
-  ei_x_encode_atom(result, "rprop_increase_factor");
-  ei_x_encode_double(result, (double)  rprop_increase_factor);
-  
-  ei_x_encode_atom(result, "rprop_decrease_factor");
-  ei_x_encode_double(result, (double)  rprop_decrease_factor);
-
-  ei_x_encode_atom(result, "rprop_delta_min");
-  ei_x_encode_double(result, (double)rprop_delta_min);
-
-  ei_x_encode_atom(result, "rprop_delta_max");
-  ei_x_encode_double(result, (double)rprop_delta_max);
-
-  ei_x_encode_atom(result, "rprop_delta_zero");
-  ei_x_encode_double(result, (double)rprop_delta_zero);
-
-  ei_x_encode_atom(result, "sarprop_weight_decay_shift");
-  ei_x_encode_double(result, (double)sarprop_weight_decay_shift);
-
-  ei_x_encode_atom(result, "sarprop_step_error_threshold_factor");
-  ei_x_encode_double(result, (double)sarprop_step_error_threshold_factor);
-
-  ei_x_encode_atom(result, "sarprop_step_error_shift");
-  ei_x_encode_double(result, (double)sarprop_step_error_shift);
-
-  ei_x_encode_atom(result, "sarprop_temperature");
-  ei_x_encode_double(result, (double)sarprop_temperature);
-
-  // Handle arrays, turn into tuples
-  // layers array
-  layers = (unsigned int * )malloc(sizeof(unsigned int)*num_layers);
-  fann_get_layer_array(network, layers);
-  ei_x_encode_atom(result, "layers");
-  ei_x_encode_tuple_header(result, num_layers);
-  for(int i = 0; i < num_layers; ++i) {
-    ei_x_encode_ulong(result, (unsigned int)layers[i]);
-  }
-  free(layers);
-  // bias array
-  bias = (unsigned int * )malloc(sizeof(unsigned int)*num_layers);
-  fann_get_bias_array(network, bias);
-  ei_x_encode_atom(result, "bias");
-  ei_x_encode_tuple_header(result, num_layers);
-  for(int i = 0; i < num_layers; ++i) {
-    ei_x_encode_ulong(result, (unsigned int)bias[i]);
-  }
-  free(bias);
-
-  // connections, encode into map where {From, To} is the key
-  connections = (struct fann_connection *)malloc(sizeof(struct fann_connection)*
-						 total_connections);
-  fann_get_connection_array(network, connections);
-  ei_x_encode_atom(result, "connections");
-  ei_x_encode_map_header(result, total_connections);
-  for(int i = 0; i < total_connections; ++i) {
-    ei_x_encode_tuple_header(result, 2); // size will be 2 as {From, To}
-    ei_x_encode_ulong(result, connections[i].from_neuron);
-    ei_x_encode_ulong(result, connections[i].to_neuron);
-    ei_x_encode_double(result, connections[i].weight);
-  }
-  free(connections);
-  // The key will be a tuple
   return 1;
 }
 
