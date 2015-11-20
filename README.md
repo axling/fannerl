@@ -11,13 +11,13 @@ Fannerl is not a straight copy of FANN into erlang but alot looks the same. As t
 
 When you create a neural network or read in training data from a file, it is important to realise that the return you get is an erlang reference created by `make_ref()`. The reference itself is of course immutable but you need to keep in mind that changes can of course occur to the neural network while the network is trained. 
 
-**There is a known issue where a runtime error occurs on OTP >= 18.0, See issues. Bug created on Erlang/OTP for this. Use earlier OTP version, 17.0-17.5 works fine.**
-
 **Fannerl uses maps so Erlang/OTP 17 or newer is required.**
 
 **A version of FANN that is at least 2.2.0 is required.**
 
 **Fannerl is currently only compatible with the libfanndouble version of FANN.** 
+
+**Fannerl has been tested on Linux and Mac OS X where it works. It has not been tested on Windows and please consider this as unsupported. It most likely works on windows, it just isn't tested.**
 
 # Installation
 Please make sure that FANN is installed on your system, follow FANNs [installation instructions](http://leenissen.dk/fann/wp/help/installing-fann/). 
