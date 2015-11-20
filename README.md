@@ -1,13 +1,13 @@
 # fannerl
 
-This is erlang bindings to the [FANN](http://leenissen.dk/), Fast Artificial Neural Networks, library written in C. The interfacing towards FANN is done by a port driver. 
+This is erlang bindings to the [FANN](http://leenissen.dk/), Fast Artificial Neural Networks, library written in C. The interfacing towards FANN is done by a port. 
 
 You can read the documentation at <http://axling.github.io/fannerl/>.
 
 Travis CI: [![Build Status](https://travis-ci.org/axling/fannerl.svg?branch=master)](https://travis-ci.org/axling/fannerl)
 
 # Introduction
-Fannerl is not a straight copy of FANN into erlang but alot looks the same. As the interface towards FANN is implemented as a port driver there are some special considerations that need to be taken. The user need to start an instance of fannerl which will handle all communication towards FANN. You are able to start multiple instances if need be. Note that if you start fannerl using `fannerl:start_instance/0` you will need to use the fannerl functions that end with the suffix _on. 
+Fannerl is not a straight copy of FANN into erlang but alot looks the same. As the interface towards FANN is implemented as a port there are some special considerations that need to be taken. The user need to start an instance of fannerl which will handle all communication towards FANN. You are able to start multiple instances if need be. Note that if you start fannerl using `fannerl:start_instance/0` you will need to use the fannerl functions that end with the suffix _on. 
 
 When you create a neural network or read in training data from a file, it is important to realise that the return you get is an erlang reference created by `make_ref()`. The reference itself is of course immutable but you need to keep in mind that changes can of course occur to the neural network while the network is trained. 
 
