@@ -3,6 +3,7 @@
 This is erlang bindings to the [FANN](http://leenissen.dk/), Fast Artificial Neural Networks, library written in C. The interfacing towards FANN is done by a port. 
 
 You can read the documentation at <http://axling.github.io/fannerl/>.
+Please also check out the tutorials section in the wiki, https://github.com/axling/fannerl/wiki.
 
 Travis CI: [![Build Status](https://travis-ci.org/axling/fannerl.svg?branch=master)](https://travis-ci.org/axling/fannerl)
 
