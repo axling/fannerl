@@ -112,8 +112,8 @@ This is the current status of what is supported from FANN and when more is plann
 | fann_run                    | fannerl:run          | 1.0.0           |    |
 | fann_randomize_weights      | fannerl:randomize_weights  | 1.0.0     |    |
 | fann_init_weights           | fannerl:init_weights | 1.0.0           |    |
-| fann_print_connections      | -                    | 1.2.0           | Will be covered in future release |
-| fann_print_parameters       | -                    | 1.2.0           | Will be covered in future release |
+| fann_print_connections      | -                    | 1.1.0           | Will be covered in future release |
+| fann_print_parameters       | -                    | 1.1.0           | Will be covered in future release |
 | fann_get_num_input          | fannerl:get_params   | 1.0.0           |    |
 | fann_get_num_output         | fannerl:get_params   | 1.0.0           |    |	
 | fann_get_total_neurons      | fannerl:get_params   | 1.0.0           |    |
@@ -157,10 +157,10 @@ This is the current status of what is supported from FANN and when more is plann
 | fann_get_train_input        | -                    | 1.1.0           |          |
 | fann_get_train_output       | -                    | 1.1.0           |          |
 | fann_shuffle_train_data     | fannerl:shuffle_train| 1.0.0           |          |
-| fann_get_min_train_input    |                      | 1.0.0           | Supported in fann 2.3.0  |
-| fann_get_max_train_input    |                      | 1.0.0           | Supported in fann 2.3.0  |
-| fann_get_min_train_output   |                      | 1.0.0           | Supported in fann 2.3.0  |
-| fann_get_max_train_output   |                      | 1.0.0           | Supported in fann 2.3.0  |
+| fann_get_min_train_input    |                      | Later Release   | Supported in fann 2.3.0  |
+| fann_get_max_train_input    |                      | Later Release   | Supported in fann 2.3.0  |
+| fann_get_min_train_output   |                      | Later Release   | Supported in fann 2.3.0  |
+| fann_get_max_train_output   |                      | Later Release   | Supported in fann 2.3.0  |
 | fann_scale_train            | fannerl:scale_train  | 1.0.0           |          |
 | fann_descale_train          | fannerl:descale_train| 1.0.0           |          |
 | fann_set_input_scaling_params| -                   | 1.0.0           | Will be covered by fannerl:set_scaling_params |
@@ -204,7 +204,7 @@ This is the current status of what is supported from FANN and when more is plann
 | fann_set_train_stop_function      | fannerl:set_params   | 1.0.0           |    |
 | fann_get_bit_fail_limit           | fannerl:get_params   | 1.0.0           |    |
 | fann_set_bit_fail_limit           | fannerl:set_params   | 1.0.0           |    |
-| fann_set_callback                 | -                    | 1.0.0           | Will not be supported   |
+| fann_set_callback                 | -                    | -               | Will not be supported   |
 | fann_get_quickprop_decay          | fannerl:get_params   | 1.0.0           |    |
 | fann_set_quickprop_decay          | fannerl:set_params   | 1.0.0           |    |
 | fann_get_quickprop_mu             | fannerl:get_params   | 1.0.0           |    |
