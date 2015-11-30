@@ -208,6 +208,14 @@
 	 set_scaling_params_on/7,
 	 clear_scaling_params/1,
 	 clear_scaling_params_on/2,
+	 scale_input/2,
+	 scale_input_on/3,
+	 scale_output/2,
+	 scale_output_on/3,
+	 descale_input/2,
+	 descale_input_on/3,
+	 descale_output/2,
+	 descale_output_on/3,
 	 get_train_params/1,
 	 get_train_params_on/2,
 	 set_weights/2,
@@ -1336,6 +1344,90 @@ clear_scaling_params_on(Instance, Network)
   when Instance == ?MODULE; is_pid(Instance),
        is_reference(Network) ->
     call_port(Instance, {clear_scaling_params, Network, {}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv scale_input_on({@module}, Network, Input)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec scale_input(Network::network_ref(), Input::tuple()) -> tuple().
+scale_input(Network, Input)
+  when is_reference(Network), is_tuple(Input) ->
+    scale_input_on(?MODULE, Network, Input).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Scale data in input vector before feeding it to ann based on previously calculated parameters.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_scale_input].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec scale_input_on(
+	Instance::pid(), Network::network_ref(), Input::tuple()) -> tuple().
+scale_input_on(Instance, Network, Input)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network), is_tuple(Input) ->
+    call_port(Instance, {scale_input, Network, {Input}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv scale_output_on({@module}, Network, Output)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec scale_output(Network::network_ref(), Output::tuple()) -> tuple().
+scale_output(Network, Output)
+  when is_reference(Network), is_tuple(Output) ->
+    scale_output_on(?MODULE, Network, Output).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Scale data in output vector before feeding it to ann based on previously calculated parameters.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_scale_output].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec scale_output_on(
+	Instance::pid(), Network::network_ref(), Output::tuple()) -> tuple().
+scale_output_on(Instance, Network, Output)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network), is_tuple(Output) ->
+    call_port(Instance, {scale_output, Network, {Output}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv descale_input_on({@module}, Network, Input)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec descale_input(Network::network_ref(), Input::tuple()) -> tuple().
+descale_input(Network, Input)
+  when is_reference(Network), is_tuple(Input) ->
+    descale_input_on(?MODULE, Network, Input).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Scale data in input vector after getting it from ann based on previously calculated parameters.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_descale_input].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec descale_input_on(
+	Instance::pid(), Network::network_ref(), Input::tuple()) -> tuple().
+descale_input_on(Instance, Network, Input)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network), is_tuple(Input) ->
+    call_port(Instance, {descale_input, Network, {Input}}).
+
+%% --------------------------------------------------------------------- %%
+%% @equiv descale_output_on({@module}, Network, Output)
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec descale_output(Network::network_ref(), Output::tuple()) -> tuple().
+descale_output(Network, Output)
+  when is_reference(Network), is_tuple(Output) ->
+    descale_output_on(?MODULE, Network, Output).
+
+%% --------------------------------------------------------------------- %%
+%% @doc Scale data in output vector after getting it from ann based on previously calculated parameters.
+%% See [http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_descale_output].
+%% @end
+%% --------------------------------------------------------------------- %%
+-spec descale_output_on(
+	Instance::pid(), Network::network_ref(), Output::tuple()) -> tuple().
+descale_output_on(Instance, Network, Output)
+  when Instance == ?MODULE; is_pid(Instance),
+       is_reference(Network), is_tuple(Output) ->
+    call_port(Instance, {descale_output, Network, {Output}}).
 
 %% --------------------------------------------------------------------- %%
 %% @equiv get_train_params_on({@module}, Train)
