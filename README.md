@@ -2,7 +2,10 @@
 
 This is erlang bindings to the [FANN](http://leenissen.dk/), Fast Artificial Neural Networks, library written in C. The interfacing towards FANN is done by a port. 
 
-You can read the documentation at <http://axling.github.io/fannerl/>.<br>
+You can read the documentation at:
+[latest](http://axling.github.io/fannerl/docs/latest)
+[v1.0.0](http://axling.github.io/fannerl/docs/v1.0.0)
+
 Please also check out the tutorials section in the wiki, https://github.com/axling/fannerl/wiki.
 
 Travis CI: [![Build Status](https://travis-ci.org/axling/fannerl.svg?branch=master)](https://travis-ci.org/axling/fannerl)
@@ -154,8 +157,8 @@ This is the current status of what is supported from FANN and when more is plann
 | fann_create_train_array     | -                    | Later Release   | Supported in fann 2.3.0  |
 | fann_create_train_from_callback | -                | -               | Will not cover  
 | fann_destroy_train          | fannerl:destroy_train| 1.0.0           |          |
-| fann_get_train_input        | -                    | 1.1.0           |          |
-| fann_get_train_output       | -                    | 1.1.0           |          |
+| fann_get_train_input        | -                    | Later Release   | Supported in fann 2.3.0  |
+| fann_get_train_output       | -                    | Later Release   | Supported in fann 2.3.0  |
 | fann_shuffle_train_data     | fannerl:shuffle_train| 1.0.0           |          |
 | fann_get_min_train_input    |                      | Later Release   | Supported in fann 2.3.0  |
 | fann_get_max_train_input    |                      | Later Release   | Supported in fann 2.3.0  |
