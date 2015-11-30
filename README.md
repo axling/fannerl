@@ -170,10 +170,10 @@ This is the current status of what is supported from FANN and when more is plann
 | fann_set_output_scaling_params| -                  | 1.0.0           | Will be covered by fannerl:set_scaling_params |
 | fann_set_scaling_params     | fannerl:set_scaling_params | 1.0.0     |          |
 | fann_clear_scaling_params   | fannerl:clear_scaling_params| 1.0.0    |          |
-| fann_scale_input            | -                    | 1.1.0           |          |
-| fann_scale_output           | -                    | 1.1.0           |          |
-| fann_descale_input          | -                    | 1.1.0           |          |
-| fann_descale_output         | -                    | 1.1.0           |          |
+| fann_scale_input            | fannerl:scale_input  | 1.1.0           |          |
+| fann_scale_output           | fannerl:scale_output | 1.1.0           |          |
+| fann_descale_input          | fannerl:descale_input| 1.1.0           |          |
+| fann_descale_output         | fannerl:descale_output| 1.1.0           |          |
 | fann_scale_input_train_data | -                    | -               | Use scale_train instead   |
 | fann_scale_output_train_data| -                    | -               | Use scale_train instead   |
 | fann_scale_train_data       | -                    | -               | Use scale_train instead   |

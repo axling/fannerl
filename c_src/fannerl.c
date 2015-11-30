@@ -34,20 +34,16 @@
 #include "uthash.h"
  
 #define BUF_SIZE 128 
- 
-#define ERROR_WITH_LINE(RESULT, REASON)\
-  { \
-  char * _reason = "";\
-  sprintf(_reason, "fannerl.c:%i: %s", __LINE__, REASON);\
-  return error_with_reason(RESULT, _reason); \
-  }
-
+   
 typedef unsigned char byte;
 
 int read_cmd(byte **buf, int *size);
 int write_cmd(ei_x_buff* x);
 int read_exact(byte *buf, int len);
 int write_exact(byte *buf, int len);
+int error_with_reason(ei_x_buff * result, char * reason);
+static inline int error_with_line(ei_x_buff * result, long unsigned line,
+				  char * reason);
 
 int do_fann_create_standard(byte *buf, int * index, ei_x_buff * result);
 int do_fann_create_from_file(byte *buf, int * index, ei_x_buff * result);
@@ -84,6 +80,10 @@ int do_fann_get_activation_function(byte*buf, int * index, ei_x_buff * result);
 int do_fann_set_activation_function(byte*buf, int * index, ei_x_buff * result);
 int do_fann_get_activation_steepness(byte*buf, int * index, ei_x_buff * result);
 int do_fann_set_activation_steepness(byte*buf, int * index, ei_x_buff * result);
+int do_fann_scale_input(byte*buf, int * index, ei_x_buff * result);
+int do_fann_scale_output(byte*buf, int * index, ei_x_buff * result);
+int do_fann_descale_input(byte*buf, int * index, ei_x_buff * result);
+int do_fann_descale_output(byte*buf, int * index, ei_x_buff * result);
 
 int get_tuple_double_data(byte * buf, int * index, double * inputs,
 			  unsigned int num_inputs);
@@ -105,8 +105,6 @@ int is_integer(byte * buf, int * index);
 int is_string(byte * buf, int * index);
 int is_float(byte * buf, int * index);
 int get_strlen(byte * buf, int * index);
-
-int error_with_reason(ei_x_buff * result, char * reason);
 
 int FANN_API test_callback(struct fann *ann, struct fann_train_data *train,
                            unsigned int max_epochs,
@@ -375,6 +373,22 @@ int main() {
     } else if(!strcmp("set_activation_steepness", command)) {
       
       if(do_fann_set_activation_steepness(buf, &index, &result) != 1) return 46;
+      
+    } else if(!strcmp("scale_input", command)) {
+      
+      if(do_fann_scale_input(buf, &index, &result) != 1) return 47;
+      
+    } else if(!strcmp("scale_output", command)) {
+      
+      if(do_fann_scale_output(buf, &index, &result) != 1) return 48;
+      
+    }  else if(!strcmp("descale_input", command)) {
+      
+      if(do_fann_descale_input(buf, &index, &result) != 1) return 49;
+      
+    } else if(!strcmp("descale_output", command)) {
+      
+      if(do_fann_descale_output(buf, &index, &result) != 1) return 50;
       
     } else {
       if (ei_x_encode_atom(&result, "error") ||
@@ -1078,7 +1092,7 @@ int do_fann_scale_train(byte*buf, int * index, ei_x_buff * result) {
 
   // Decode {NetworkRef, TrainRef}, {}
   if(ei_decode_tuple_header((const char *)buf, index, &arity)) 
-    ERROR_WITH_LINE(result, "Error decoding tuple");
+    return error_with_line(result, __LINE__, "Error decoding tuple");
 
   get_fann_ptr(buf, index, &network);
   get_fann_train_ptr(buf, index, &train_data);
@@ -1513,6 +1527,142 @@ int do_fann_set_activation_steepness(byte*buf, int * index, ei_x_buff * result) 
   return 1;
 }
 
+int do_fann_scale_output(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  fann_type * output = 0;
+  
+  int arity, tuple_arity;
+  // Decode network, {Output}
+
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+  
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+
+  // Sanity check output length to see that it is not larger than output layer
+  if(fann_get_num_output(network) != tuple_arity) {
+    return error_with_line(result, __LINE__,
+			   "Output size not same as number of output neurons");
+  }
+  //allocate the output vector
+  output = malloc(tuple_arity*sizeof(fann_type));
+  for(int i = 0; i < tuple_arity; ++i) {
+    output[i] = (fann_type)get_double(buf, index);
+  }
+  fann_scale_output(network, output);
+  // Ok now we need to return the tuple
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_tuple_header(result, tuple_arity)) 
+    return -1;
+  for(int i = 0; i < tuple_arity; ++i) {
+    if(ei_x_encode_double(result, (double)output[i]) != 0) return -1;
+  }
+  free(output);
+  return 1;
+}
+
+int do_fann_descale_input(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  fann_type * input = 0;
+  
+  int arity, tuple_arity;
+  // Decode network, {Input}
+
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+  
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+
+  // Sanity check input length to see that it is not larger than input layer
+  if(fann_get_num_input(network) != tuple_arity) {
+    return error_with_line(result, __LINE__,
+			   "Input size not same as number of input neurons");
+  }
+  //allocate the input vector
+  input = malloc(tuple_arity*sizeof(fann_type));
+  for(int i = 0; i < tuple_arity; ++i) {
+    input[i] = (fann_type)get_double(buf, index);
+  }
+  fann_descale_input(network, input);
+  // Ok now we need to return the tuple
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_tuple_header(result, tuple_arity)) 
+    return -1;
+  for(int i = 0; i < tuple_arity; ++i) {
+    if(ei_x_encode_double(result, (double)input[i]) != 0) return -1;
+  }
+  free(input);
+  return 1;
+}
+
+int do_fann_descale_output(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  fann_type * output = 0;
+  
+  int arity, tuple_arity;
+  // Decode network, {Output}
+
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+  
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+
+  // Sanity check output length to see that it is not larger than output layer
+  if(fann_get_num_output(network) != tuple_arity) {
+    return error_with_line(result, __LINE__,
+			   "Output size not same as number of output neurons");
+  }
+  //allocate the output vector
+  output = malloc(tuple_arity*sizeof(fann_type));
+  for(int i = 0; i < tuple_arity; ++i) {
+    output[i] = (fann_type)get_double(buf, index);
+  }
+  fann_descale_output(network, output);
+  // Ok now we need to return the tuple
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_tuple_header(result, tuple_arity)) 
+    return -1;
+  for(int i = 0; i < tuple_arity; ++i) {
+    if(ei_x_encode_double(result, (double)output[i]) != 0) return -1;
+  }
+  free(output);
+  return 1;
+}
+
+int do_fann_scale_input(byte*buf, int * index, ei_x_buff * result) {
+  struct fann * network = 0;
+  fann_type * input = 0;
+  
+  int arity, tuple_arity;
+  // Decode network, {Input}
+
+  if(get_fann_ptr(buf, index, &network) != 1) return -1;
+  if(ei_decode_tuple_header((const char *)buf, index, &arity)) return -1;
+  
+  if(ei_decode_tuple_header((const char *)buf, index, &tuple_arity)) return -1;
+
+  // Sanity check input length to see that it is not larger than input layer
+  if(fann_get_num_input(network) != tuple_arity) {
+    return error_with_line(result, __LINE__,
+			   "Input size not same as number of input neurons");
+  }
+  //allocate the input vector
+  input = malloc(tuple_arity*sizeof(fann_type));
+  for(int i = 0; i < tuple_arity; ++i) {
+    input[i] = (fann_type)get_double(buf, index);
+  }
+  fann_scale_input(network, input);
+  // Ok now we need to return the tuple
+  if(ei_x_new_with_version(result) ||
+     ei_x_encode_tuple_header(result, tuple_arity)) 
+    return -1;
+  for(int i = 0; i < tuple_arity; ++i) {
+    if(ei_x_encode_double(result, (double)input[i]) != 0) return -1;
+  }
+  free(input);
+  return 1;
+}
+
 /*-----------------------------------------------------------------
  * Util functions
  *----------------------------------------------------------------*/
@@ -1591,6 +1741,13 @@ int get_strlen(byte * buf, int * index) {
   } else {
     return -1;
   }
+}
+
+static inline int error_with_line(ei_x_buff * result, long unsigned line,
+				  char * reason) {
+  char _reason[MAXATOMLEN];						
+  sprintf(_reason, "fannerl.c:%lu: %s", line, reason);
+  return error_with_reason(result, _reason);
 }
 
 int error_with_reason(ei_x_buff * result, char * reason) {
