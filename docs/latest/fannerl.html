@@ -91,6 +91,12 @@
 <tr><td valign="top"><a href="#create_on-2">create_on/2</a></td><td>Equivalent to <a href="#create_on-3"><tt>create_on(Instance, Layers, default_options())</tt></a>.
 </td></tr>
 <tr><td valign="top"><a href="#create_on-3">create_on/3</a></td><td>Creates an artificial neural network with any number of layers.</td></tr>
+<tr><td valign="top"><a href="#descale_input-2">descale_input/2</a></td><td>Equivalent to <a href="#descale_input_on-3"><tt>descale_input_on(fannerl, Network, Input)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#descale_input_on-3">descale_input_on/3</a></td><td>Scale data in input vector after getting it from ann based on previously calculated parameters.</td></tr>
+<tr><td valign="top"><a href="#descale_output-2">descale_output/2</a></td><td>Equivalent to <a href="#descale_output_on-3"><tt>descale_output_on(fannerl, Network, Output)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#descale_output_on-3">descale_output_on/3</a></td><td>Scale data in output vector after getting it from ann based on previously calculated parameters.</td></tr>
 <tr><td valign="top"><a href="#descale_train-2">descale_train/2</a></td><td>Equivalent to <a href="#descale_train_on-3"><tt>descale_train_on(fannerl, Network, Train)</tt></a>.
 </td></tr>
 <tr><td valign="top"><a href="#descale_train_on-3">descale_train_on/3</a></td><td>Descale input and output data based on previously calculated parameters.</td></tr>
@@ -148,6 +154,12 @@ layer, counting the input layer as layer 0.</td></tr>
 </td></tr>
 <tr><td valign="top"><a href="#save_train_on-3">save_train_on/3</a></td><td>Save the training structure to a file, with the format as specified in fann_read_train_from_file
   See http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_save_train.</td></tr>
+<tr><td valign="top"><a href="#scale_input-2">scale_input/2</a></td><td>Equivalent to <a href="#scale_input_on-3"><tt>scale_input_on(fannerl, Network, Input)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#scale_input_on-3">scale_input_on/3</a></td><td>Scale data in input vector before feeding it to ann based on previously calculated parameters.</td></tr>
+<tr><td valign="top"><a href="#scale_output-2">scale_output/2</a></td><td>Equivalent to <a href="#scale_output_on-3"><tt>scale_output_on(fannerl, Network, Output)</tt></a>.
+</td></tr>
+<tr><td valign="top"><a href="#scale_output_on-3">scale_output_on/3</a></td><td>Scale data in output vector before feeding it to ann based on previously calculated parameters.</td></tr>
 <tr><td valign="top"><a href="#scale_train-2">scale_train/2</a></td><td>Equivalent to <a href="#scale_train_on-3"><tt>scale_train_on(fannerl, Network, Train)</tt></a>.
 </td></tr>
 <tr><td valign="top"><a href="#scale_train_on-3">scale_train_on/3</a></td><td>Scale input and output data based on previously calculated parameters.</td></tr>
@@ -316,6 +328,30 @@ set_params/2.</p>
  
  See the FANN documentation of create_standard:
   <a href="http://libfann.github.io/fann/docs/files/fann-h.html#fann_create_standard" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann-h.html#fann_create_standard</tt></a></p>
+
+<h3 class="function"><a name="descale_input-2">descale_input/2</a></h3>
+<div class="spec">
+<p><tt>descale_input(Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Equivalent to <a href="#descale_input_on-3"><tt>descale_input_on(fannerl, Network, Input)</tt></a>.</p>
+
+
+<h3 class="function"><a name="descale_input_on-3">descale_input_on/3</a></h3>
+<div class="spec">
+<p><tt>descale_input_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Scale data in input vector after getting it from ann based on previously calculated parameters.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_descale_input" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_descale_input</tt></a>.</p>
+
+<h3 class="function"><a name="descale_output-2">descale_output/2</a></h3>
+<div class="spec">
+<p><tt>descale_output(Network::<a href="#type-network_ref">network_ref()</a>, Output::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Equivalent to <a href="#descale_output_on-3"><tt>descale_output_on(fannerl, Network, Output)</tt></a>.</p>
+
+
+<h3 class="function"><a name="descale_output_on-3">descale_output_on/3</a></h3>
+<div class="spec">
+<p><tt>descale_output_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Output::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Scale data in output vector after getting it from ann based on previously calculated parameters.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_descale_output" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_descale_output</tt></a>.</p>
 
 <h3 class="function"><a name="descale_train-2">descale_train/2</a></h3>
 <div class="spec">
@@ -536,6 +572,30 @@ activation function will also give a more aggressive training.</p>
 <p><tt>save_train_on(Instance::pid(), Train::<a href="#type-train_ref">train_ref()</a>, FileName::string()) -&gt; ok</tt><br></p>
 </div><p>Save the training structure to a file, with the format as specified in fann_read_train_from_file
   See http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_save_train</p>
+
+<h3 class="function"><a name="scale_input-2">scale_input/2</a></h3>
+<div class="spec">
+<p><tt>scale_input(Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Equivalent to <a href="#scale_input_on-3"><tt>scale_input_on(fannerl, Network, Input)</tt></a>.</p>
+
+
+<h3 class="function"><a name="scale_input_on-3">scale_input_on/3</a></h3>
+<div class="spec">
+<p><tt>scale_input_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Input::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Scale data in input vector before feeding it to ann based on previously calculated parameters.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_scale_input" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_scale_input</tt></a>.</p>
+
+<h3 class="function"><a name="scale_output-2">scale_output/2</a></h3>
+<div class="spec">
+<p><tt>scale_output(Network::<a href="#type-network_ref">network_ref()</a>, Output::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Equivalent to <a href="#scale_output_on-3"><tt>scale_output_on(fannerl, Network, Output)</tt></a>.</p>
+
+
+<h3 class="function"><a name="scale_output_on-3">scale_output_on/3</a></h3>
+<div class="spec">
+<p><tt>scale_output_on(Instance::pid(), Network::<a href="#type-network_ref">network_ref()</a>, Output::tuple()) -&gt; tuple()</tt><br></p>
+</div><p>Scale data in output vector before feeding it to ann based on previously calculated parameters.
+  See <a href="http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_scale_output" target="_top"><tt>http://libfann.github.io/fann/docs/files/fann_train-h.html#fann_scale_output</tt></a>.</p>
 
 <h3 class="function"><a name="scale_train-2">scale_train/2</a></h3>
 <div class="spec">
@@ -838,6 +898,6 @@ The default activation steepness is 0.5.</p>
 <hr>
 
 <div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<p><i>Generated by EDoc, Nov 20 2015, 22:12:16.</i></p>
+<p><i>Generated by EDoc, Nov 30 2015, 23:48:43.</i></p>
 </body>
 </html>
