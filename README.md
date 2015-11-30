@@ -3,7 +3,9 @@
 This is erlang bindings to the [FANN](http://leenissen.dk/), Fast Artificial Neural Networks, library written in C. The interfacing towards FANN is done by a port. 
 
 You can read the documentation at:
+
 [latest](http://axling.github.io/fannerl/docs/latest)
+
 [v1.0.0](http://axling.github.io/fannerl/docs/v1.0.0)
 
 Please also check out the tutorials section in the wiki, https://github.com/axling/fannerl/wiki.
