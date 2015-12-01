@@ -43,7 +43,7 @@ run() ->
     ok = fannerl:train_on_data(Network, Train, 3000, 10, DesiredError),
 
     io:format("Testing Network~n", []),
-    Test = fannerl:read_train_from_file(filename:join(DatasetDir, "robot.train")),
+    Test = fannerl:read_train_from_file(filename:join(DatasetDir, "robot.test")),
 
     ok = fannerl:reset_mse(Network),
 
